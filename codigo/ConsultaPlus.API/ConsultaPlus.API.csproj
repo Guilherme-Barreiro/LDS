@@ -10,4 +10,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\ConsultaPlus.Core\ConsultaPlus.Core.csproj" />
+    <ProjectReference Include="..\ConsultaPlus.Infrastructure\ConsultaPlus.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>

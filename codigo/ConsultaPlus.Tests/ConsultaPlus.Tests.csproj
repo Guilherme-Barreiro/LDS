@@ -15,6 +15,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ConsultaPlus.API\ConsultaPlus.API.csproj" />
+    <ProjectReference Include="..\ConsultaPlus.Core\ConsultaPlus.Core.csproj" />
+    <ProjectReference Include="..\ConsultaPlus.Infrastructure\ConsultaPlus.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Using Include="Xunit" />
   </ItemGroup>
 
