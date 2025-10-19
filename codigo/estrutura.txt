@@ -1,0 +1,85 @@
+Folder PATH listing
+Volume serial number is 206C-29E4
+C:.
+¦   estrutura.txt
+¦   
++---ConsultaPlus.API
+    ¦   ConsultaPlus.API.sln
+    ¦   
+    +---ConsultaPlus.API
+        ¦   appsettings.Development.json
+        ¦   appsettings.json
+        ¦   ConsultaPlus.API.csproj
+        ¦   ConsultaPlus.API.csproj.user
+        ¦   ConsultaPlus.API.http
+        ¦   Program.cs
+        ¦   
+        +---bin
+        ¦   +---Debug
+        ¦       +---net8.0
+        +---Controllers
+        ¦       AuthController.cs
+        ¦       ConsultasController.cs
+        ¦       MedicosController.cs
+        ¦       PacientesController.cs
+        ¦       WeatherForecastController.cs
+        ¦       
+        +---Data
+        ¦       ApplicationDbContext.cs
+        ¦       
+        +---DTOs
+        ¦       AuthRequestDTO.cs
+        ¦       AuthResponseDTO.cs
+        ¦       ConsultaDTO.cs
+        ¦       MedicoDTO.cs
+        ¦       
+        +---Helpers
+        ¦       AutoMapperProfile.cs
+        ¦       JwtSettings.cs
+        ¦       
+        +---Models
+        ¦       Consulta.cs
+        ¦       Especialidade.cs
+        ¦       Medico.cs
+        ¦       Paciente.cs
+        ¦       User.cs
+        ¦       
+        +---obj
+        ¦   ¦   ConsultaPlus.API.csproj.nuget.dgspec.json
+        ¦   ¦   ConsultaPlus.API.csproj.nuget.g.props
+        ¦   ¦   ConsultaPlus.API.csproj.nuget.g.targets
+        ¦   ¦   project.assets.json
+        ¦   ¦   project.nuget.cache
+        ¦   ¦   
+        ¦   +---Debug
+        ¦       +---net8.0
+        ¦           ¦   .NETCoreApp,Version=v8.0.AssemblyAttributes.cs
+        ¦           ¦   ConsultaPlus.API.AssemblyInfo.cs
+        ¦           ¦   ConsultaPlus.API.AssemblyInfoInputs.cache
+        ¦           ¦   ConsultaPlus.API.assets.cache
+        ¦           ¦   ConsultaPlus.API.csproj.AssemblyReference.cache
+        ¦           ¦   ConsultaPlus.API.GeneratedMSBuildEditorConfig.editorconfig
+        ¦           ¦   ConsultaPlus.API.GlobalUsings.g.cs
+        ¦           ¦   rpswa.dswa.cache.json
+        ¦           ¦   staticwebassets.removed.txt
+        ¦           ¦   
+        ¦           +---ref
+        ¦           +---refint
+        ¦           +---staticwebassets
+        +---Properties
+        ¦       launchSettings.json
+        ¦       
+        +---Repositories
+        ¦       ConsultaRepository.cs
+        ¦       IRepository.cs
+        ¦       MedicoRepository.cs
+        ¦       PacienteRepository.cs
+        ¦       
+        +---Services
+                AuthService.cs
+                ConsultaService.cs
+                IAuthService.cs
+                IConsultaService.cs
+                IMedicoService.cs
+                MedicoService.cs
+                
