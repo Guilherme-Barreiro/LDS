@@ -20,4 +20,4 @@ namespace ConsultaPlus.Core.Models
 		public ICollection<HorarioExcecaoMedico> HorariosExcecao { get; set; } = new List<HorarioExcecaoMedico>();
 		public ICollection<EspecialidadeMedico> EspecialidadesMedico { get; set; } = new List<EspecialidadeMedico>();
 	}
-}5
+}

@@ -19,6 +19,7 @@ namespace ConsultaPlus.Infrastructure.Data
         public DbSet<HorarioTrabalhoMedico> HorariosTrabalhoMedicos { get; set; }
         public DbSet<HorarioExcecaoMedico> HorariosExcecaoMedicos { get; set; }
         public DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
+        public DbSet<Notificacao> Notificacoes { get; set; }
 
 
         // O método OnModelCreating é onde configuramos as relações complexas
