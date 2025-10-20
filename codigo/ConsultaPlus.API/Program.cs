@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using ConsultaPlus.Infrastructure.Data;
+using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Infrastructure.Repositories;
+using ConsultaPlus.Infrastructure.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +15,8 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 // Configurar o DbContext para usar o sql server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
+builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
+builder.Services.AddScoped<IAuthService, AuthService>();
 
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();

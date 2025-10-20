@@ -1,6 +1,28 @@
-﻿namespace ConsultaPlus.API.Repositories
+﻿using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Core.Models;
+using ConsultaPlus.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
+using System.Threading.Tasks;
+
+namespace ConsultaPlus.Infrastructure.Repositories;
+
+public class PacienteRepository : IPacienteRepository
 {
-    public class PacienteRepository
+    private readonly ApplicationDbContext _context;
+
+    public PacienteRepository(ApplicationDbContext context)
     {
+        _context = context;
+    }
+
+    public async Task AddAsync(Paciente paciente)
+    {
+        await _context.Pacientes.AddAsync(paciente);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task<Paciente?> GetByNUtenteAsync(string nUtente)
+    {
+        return await _context.Pacientes.FirstOrDefaultAsync(p => p.NUtente == nUtente);
     }
 }
