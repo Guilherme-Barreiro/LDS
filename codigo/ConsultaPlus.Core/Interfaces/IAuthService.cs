@@ -1,9 +1,10 @@
-using System.Threading.Tasks;
-
-
-namespace ConsultaPlus.Core.Interfaces;
-
-public interface IAuthService
+using ConsultaPlus.Core.Models;
+namespace ConsultaPlus.Core.Interfaces
 {
-    Task RegisterPacienteAsync(string nomeCompleto, string nUtente, string password, string email /*...outros campos*/);
+    public interface IAuthService
+    {
+        Task RegisterPacienteAsync(Paciente novoPaciente, string password);
+        Task<string> LoginAsync(string nUtente, string password);
+    }
 }
+ 

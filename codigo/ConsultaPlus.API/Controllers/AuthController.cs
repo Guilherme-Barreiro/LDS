@@ -1,38 +1,50 @@
-﻿using ConsultaPlus.Core.Interfaces;
+﻿using ConsultaPlus.API.DTOs;
+using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Core.Models;
 using Microsoft.AspNetCore.Mvc;
+using System;
 using System.Threading.Tasks;
 
-// NOTA: Vamos precisar de um DTO para receber os dados
-public class RegisterPacienteRequest
+namespace ConsultaPlus.API.Controllers
 {
-    public string NomeCompleto { get; set; }
-    public string NUtente { get; set; }
-    public string Password { get; set; }
-    public string Email { get; set; }
-}
-
-[ApiController]
-[Route("api/[controller]")]
-public class AuthController : ControllerBase
-{
-    private readonly IAuthService _authService;
-
-    public AuthController(IAuthService authService)
+    [ApiController]
+    [Route("api/[controller]")]
+    public class AuthController : ControllerBase
     {
-        _authService = authService;
-    }
+        private readonly IAuthService _authService;
 
-    [HttpPost("registo-paciente")]
-    public async Task<IActionResult> Register(RegisterPacienteRequest request)
-    {
-        try
+        public AuthController(IAuthService authService)
         {
-            await _authService.RegisterPacienteAsync(request.NomeCompleto, request.NUtente, request.Password, request.Email);
-            return StatusCode(201); // 201 Created
+            _authService = authService;
         }
-        catch (Exception ex)
+
+        [HttpPost("registo-paciente")]
+        public async Task<IActionResult> Register(RegisterPacienteDto requestDto)
         {
-            return BadRequest(ex.Message); // Retorna uma mensagem de erro
+            try
+            {
+                // Mapeamento de DTO para Modelo
+                var novoPaciente = new Paciente
+                {
+                    NomeCompleto = requestDto.NomeCompleto,
+                    NUtente = requestDto.NUtente,
+                    Email = requestDto.Email,
+                    Nif = requestDto.Nif,
+                    Telemovel = requestDto.Telemovel,
+                    Morada = requestDto.Morada,
+                    DataNascimento = requestDto.DataNascimento
+                };
+
+                await _authService.RegisterPacienteAsync(novoPaciente, requestDto.Password);
+
+                return StatusCode(201, "Paciente registado com sucesso.");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
+        // Aqui virá o endpoint de Login 
     }
 }

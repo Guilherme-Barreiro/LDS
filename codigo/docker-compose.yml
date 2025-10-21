@@ -1,11 +1,11 @@
 version: '3.8'
 services:
   sql-server-db:
-    image: mcr.microsoft.com/mssql/server:2022-latest
+    image: mcr.microsoft.com/mssql/server:2019-latest
     restart: always
     environment:
       - ACCEPT_EULA=Y
-      - SA_PASSWORD=yourStrong(!)Password123
+      - SA_PASSWORD=Teste1234.
     ports:
       - '1433:1433'
     volumes:

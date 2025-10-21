@@ -12,7 +12,7 @@ namespace ConsultaPlus.Infrastructure
 
             // A "Opção Nuclear": Colamos a connection string diretamente aqui.
             // O código já não precisa de procurar pelo appsettings.json.
-            var connectionString = "Server=localhost,1433;Database=ConsultaPlusDB;User Id=sa;Password=yourStrong(!)Password123;TrustServerCertificate=True";
+            var connectionString = "Server=localhost,1433;Database=ConsultaPlusDB;User Id=sa;Password=Teste1234.;TrustServerCertificate=True";
 
             optionsBuilder.UseSqlServer(connectionString);
 
