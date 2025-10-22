@@ -1,0 +1,46 @@
+name: ConsultaPlus CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_test:
+    name: Build and Test (.NET 8)
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1️⃣ Faz checkout do repositório
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 2️⃣ Instala o SDK do .NET
+      - name: Setup .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'   # ajusta se usares outra versão
+
+      # 3️⃣ Restaura dependências
+      - name: Restore dependencies
+        working-directory: ./codigo
+        run: dotnet restore ConsultaPlus.sln
+
+      # 4️⃣ Compila a solução
+      - name: Build solution
+        working-directory: ./codigo
+        run: dotnet build ConsultaPlus.sln --configuration Release --no-restore
+
+      # 5️⃣ Executa testes unitários e de integração
+      - name: Run tests
+        working-directory: ./codigo
+        run: dotnet test ConsultaPlus.Tests/ConsultaPlus.Tests.csproj --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test_results.trx"
+
+      # 6️⃣ Publica os resultados dos testes (opcional, mas recomendado)
+      - name: Upload test results
+        if: success() || failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: '**/TestResults/*.trx'
