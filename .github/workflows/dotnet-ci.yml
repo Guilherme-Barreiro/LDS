@@ -55,3 +55,9 @@ jobs:
       - name: Publish container image
         working-directory: ./codigo
         run: dotnet publish ./ConsultaPlus.API/ConsultaPlus.API.csproj -c Release -t:PublishContainer
+
+      - name: Push container image (latest + sha)
+        run: |
+          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/consultaplus"
+          docker push "$IMAGE:latest"
+          docker push "$IMAGE:${GITHUB_SHA}"
