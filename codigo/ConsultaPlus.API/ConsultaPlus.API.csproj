@@ -6,6 +6,13 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <PropertyGroup>
+    <PublishProfile>DefaultContainer</PublishProfile>
+    <ContainerRepository>consultaplus</ContainerRepository>
+    <ContainerImageTags>latest;$(GITHUB_SHA)</ContainerImageTags>
+    <ContainerPort>8080</ContainerPort>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <PrivateAssets>all</PrivateAssets>
