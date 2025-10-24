@@ -52,12 +52,34 @@ jobs:
       - name: Docker Hub login
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Publish container image
+      - name: Publish container image (build)
         working-directory: ./codigo
         run: dotnet publish ./ConsultaPlus.API/ConsultaPlus.API.csproj -c Release -t:PublishContainer
 
-      - name: Push container image (latest + sha)
+      - name: Show built images (debug)
+        run: docker images | sed -n '1,80p'
+
+      - name: Retag (if needed) and push
+        shell: bash
         run: |
-          IMAGE="${{ secrets.DOCKERHUB_USERNAME }}/consultaplus"
-          docker push "$IMAGE:latest"
-          docker push "$IMAGE:${GITHUB_SHA}"
+          set -e
+          USER="${{ secrets.DOCKERHUB_USERNAME }}"
+          TARGET="$USER/consultaplus"
+
+          # Se já saiu com namespace certo, usamos tal e qual
+          if docker image inspect "$TARGET:latest" >/dev/null 2>&1; then
+            echo "Found $TARGET:latest"
+          # Se saiu sem namespace (ex.: consultaplus:latest), retagamos
+          elif docker image inspect "consultaplus:latest" >/dev/null 2>&1; then
+            docker tag consultaplus:latest "$TARGET:latest"
+            if docker image inspect "consultaplus:${GITHUB_SHA}" >/dev/null 2>&1; then
+              docker tag "consultaplus:${GITHUB_SHA}" "$TARGET:${GITHUB_SHA}"
+            fi
+          else
+            echo "Imagem 'consultaplus' não encontrada."; docker images; exit 1
+          fi
+
+          docker push "$TARGET:latest"
+          # a tag SHA é opcional — faz push só se existir
+          docker image inspect "$TARGET:${GITHUB_SHA}" >/dev/null 2>&1 && docker push "$TARGET:${GITHUB_SHA}" || true
+
