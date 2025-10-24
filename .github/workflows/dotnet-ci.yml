@@ -12,35 +12,46 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Faz checkout do repositório
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2️⃣ Instala o SDK do .NET
       - name: Setup .NET SDK
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'   # ajusta se usares outra versão
+          dotnet-version: '8.0.x'  
 
-      # 3️⃣ Restaura dependências
       - name: Restore dependencies
         working-directory: ./codigo
         run: dotnet restore ConsultaPlus.sln
 
-      # 4️⃣ Compila a solução
       - name: Build solution
         working-directory: ./codigo
         run: dotnet build ConsultaPlus.sln --configuration Release --no-restore
 
-      # 5️⃣ Executa testes unitários e de integração
       - name: Run tests
         working-directory: ./codigo
         run: dotnet test ConsultaPlus.Tests/ConsultaPlus.Tests.csproj --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test_results.trx"
 
-      # 6️⃣ Publica os resultados dos testes (opcional, mas recomendado)
       - name: Upload test results
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: '**/TestResults/*.trx'
+
+  publish_container:
+    name: Publish Container Image (no Dockerfile)
+    needs: build_and_test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      - name: Docker Hub login
+        run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
+
+      - name: Publish container image
+        working-directory: ./codigo/ConsultaPlus.Api 
+        run: dotnet publish -c Release -t:PublishContainer
