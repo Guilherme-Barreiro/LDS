@@ -53,5 +53,5 @@ jobs:
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
       - name: Publish container image
-        working-directory: ./codigo/ConsultaPlus.Api 
-        run: dotnet publish -c Release -t:PublishContainer
+        working-directory: ./codigo
+        run: dotnet publish ./ConsultaPlus.API/ConsultaPlus.API.csproj -c Release -t:PublishContainer
