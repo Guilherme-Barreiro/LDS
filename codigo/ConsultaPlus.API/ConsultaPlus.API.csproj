@@ -8,8 +8,7 @@
 
   <PropertyGroup>
     <PublishProfile>DefaultContainer</PublishProfile>
-    <ContainerRegistry>docker.io</ContainerRegistry>
-    <ContainerRepository>dids13/consultaplus</ContainerRepository>
+    <ContainerRepository>consultaplus</ContainerRepository>
     <ContainerImageTags>latest;$(GITHUB_SHA)</ContainerImageTags>
     <ContainerPort>8080</ContainerPort>
   </PropertyGroup>
