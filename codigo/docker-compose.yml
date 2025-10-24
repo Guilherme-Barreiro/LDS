@@ -16,6 +16,7 @@ services:
     depends_on:
       - sql-server-db
     environment:
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Server=sql-server-db,1433;Database=ConsultaPlusDb;User Id=sa;Password=Teste1234.;TrustServerCertificate=True;Encrypt=False
     ports:
