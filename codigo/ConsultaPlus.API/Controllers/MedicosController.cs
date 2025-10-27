@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ConsultaPlus.API.DTOs.Medicos;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
-
+using Microsoft.AspNetCore.Mvc;
 namespace ConsultaPlus.API.Controllers
 {
     [ApiController]
@@ -9,9 +9,7 @@ namespace ConsultaPlus.API.Controllers
     public class MedicosController : ControllerBase
     {
         private readonly IMedicoRepository _repo;
-
         public MedicosController(IMedicoRepository repo) => _repo = repo;
-
         [HttpGet]
         public async Task<IActionResult> GetAll() => Ok(await _repo.GetAllAsync());
 
@@ -23,20 +21,48 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] Medico medico)
+        public async Task<IActionResult> Create([FromBody] CreateMedicoDto dto)
         {
-            // NOTA: em produção não aceites PasswordHash no payload.
+            var medico = new Medico
+            {
+                NomeCompleto = dto.NomeCompleto,
+                Telemovel = dto.Telemovel,
+                Email = dto.Email,
+                NUtente = dto.NUtente,
+                PasswordHash = dto.Password, // TODO: hash a sério
+                DataNascimento = dto.DataNascimento
+            };
             await _repo.AddAsync(medico);
-            return CreatedAtAction(nameof(GetById), new { id = medico.Id }, medico);
+            return CreatedAtAction(nameof(GetById), new
+            {
+                id = medico.Id
+            }, new
+            {
+                medico.Id,
+                medico.NomeCompleto,
+                medico.Telemovel,
+                medico.Email,
+                medico.NUtente,
+                medico.DataNascimento,
+                medico.DataCriacao
+            });
         }
 
         [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, [FromBody] Medico medico)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateMedicoDto dto)
         {
-            if (id != medico.Id) return BadRequest("Id mismatch");
+            var medico = await _repo.GetByIdAsync(id);
+            if (medico is null) return NotFound();
+
+            medico.NomeCompleto = dto.NomeCompleto;
+            medico.Telemovel = dto.Telemovel;
+            medico.Email = dto.Email;
+            medico.DataNascimento = dto.DataNascimento;
+
             await _repo.UpdateAsync(medico);
-            return NoContent();
+            return NoContent(); // 204
         }
+
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)

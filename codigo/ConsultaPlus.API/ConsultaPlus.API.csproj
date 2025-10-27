@@ -15,6 +15,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="DTOs\NovaPasta\**" />
+    <Content Remove="DTOs\NovaPasta\**" />
+    <EmbeddedResource Remove="DTOs\NovaPasta\**" />
+    <None Remove="DTOs\NovaPasta\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.10">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
