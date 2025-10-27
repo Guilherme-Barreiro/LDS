@@ -8,7 +8,7 @@ namespace ConsultaPlus.Core.Interfaces
 {
     public interface IHorarioTrabalhoMedico
     {
-        Task DefinirHorarioAsync(
-       int medicoId, string diaSemana, TimeSpan horaInicio, TimeSpan horaFim, CancellationToken ct);
+        Task<int> DefinirHorarioAsync(int medicoId, string diaSemana, TimeSpan horaInicio, TimeSpan horaFim, CancellationToken ct);
+        Task AtualizarHorarioAsync(int medicoId, int horarioId, string diaSemana, TimeSpan horaInicio, TimeSpan horaFim, CancellationToken ct);
     }
 }
