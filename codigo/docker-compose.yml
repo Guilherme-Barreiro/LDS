@@ -7,9 +7,19 @@ services:
       - ACCEPT_EULA=Y
       - SA_PASSWORD=Teste1234.
     ports:
-      - '1433:1433'
+      - "1433:1433"
     volumes:
       - sqlserver_data:/var/opt/mssql
+
+  consulta-plus-api:
+    image: dids13/consultaplus:latest
+    depends_on:
+      - sql-server-db
+    environment:
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Server=sql-server-db,1433;Database=ConsultaPlusDb;User Id=sa;Password=Teste1234.;TrustServerCertificate=True;Encrypt=False
+    ports:
+      - "8080:8080"
 
 volumes:
   sqlserver_data:

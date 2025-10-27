@@ -55,4 +55,3 @@ jobs:
       - name: Publish container image
         working-directory: ./codigo
         run: dotnet publish ./ConsultaPlus.API/ConsultaPlus.API.csproj -c Release -t:PublishContainer
-     
