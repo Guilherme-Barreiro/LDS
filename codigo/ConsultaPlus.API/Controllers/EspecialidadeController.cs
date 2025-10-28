@@ -1,4 +1,4 @@
-using ConsultaPlus.API.DTOs;
+using ConsultaPlus.API.DTOs.Especialidade;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -32,7 +32,7 @@ namespace ConsultaPlus.API.Controllers
 
                 return CreatedAtAction(nameof(ObterEspecialidade),
                     new { id = novaEspecialidade.Id },
-                    new EspecialidadeDTO { Id = novaEspecialidade.Id, Nome = novaEspecialidade.Nome });
+                    new ReadEspecialidadeDTO { Id = novaEspecialidade.Id, Nome = novaEspecialidade.Nome });
             }
             catch (Exception ex)
             {

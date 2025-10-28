@@ -1,7 +1,7 @@
-namespace ConsultaPlus.API.DTOs
+namespace ConsultaPlus.API.DTOs.Especialidade
 {
-    public class EspecialidadeDTO
+    public class CreateEspecialidadeDTO
     {
-        public string Nome { get; set; }
+        public required string Nome { get; set; }
     }
 }
