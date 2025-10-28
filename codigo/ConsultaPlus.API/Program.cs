@@ -9,20 +9,16 @@ var builder = WebApplication.CreateBuilder(args);
 
 
 builder.Services.AddControllers();
-<<<<<<< HEAD
-=======
-// Obtém a connection string do ficheiro appsettings.json
->>>>>>> main
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+builder.Services.AddDbContext<ApplicationDbContext>(options => options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-<<<<<<< HEAD
+
 builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
 builder.Services.AddScoped<ISalaRepository, SalaRepository>();
 builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
@@ -30,23 +26,8 @@ builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-=======
-
-var app = builder.Build();
-
 app.UseSwagger();
 app.UseSwaggerUI();
->>>>>>> main
-
-//app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
