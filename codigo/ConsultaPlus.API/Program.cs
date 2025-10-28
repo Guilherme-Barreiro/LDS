@@ -18,6 +18,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
+builder.Services.AddScoped<ISalaRepository, SalaRepository>();
 
 
 var app = builder.Build();

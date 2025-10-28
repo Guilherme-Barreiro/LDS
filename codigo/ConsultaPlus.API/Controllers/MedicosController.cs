@@ -1,7 +1,10 @@
-﻿using ConsultaPlus.API.DTOs.Medicos;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
-using Microsoft.AspNetCore.Mvc;
+using ConsultaPlus.API.DTOs.Medicos;
+
 namespace ConsultaPlus.API.Controllers
 {
     [ApiController]
@@ -9,43 +12,52 @@ namespace ConsultaPlus.API.Controllers
     public class MedicosController : ControllerBase
     {
         private readonly IMedicoRepository _repo;
+
         public MedicosController(IMedicoRepository repo) => _repo = repo;
+
         [HttpGet]
-        public async Task<IActionResult> GetAll() => Ok(await _repo.GetAllAsync());
+        public async Task<IActionResult> GetAll()
+        {
+            var medicos = await _repo.GetAllAsync();
+            var res = medicos.Select(ToResponse);
+            return Ok(res);
+        }
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var medico = await _repo.GetByIdAsync(id);
-            return medico is null ? NotFound() : Ok(medico);
+            if (medico is null) return NotFound();
+
+            return Ok(ToResponse(medico));
         }
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateMedicoDto dto)
         {
+            if (string.IsNullOrWhiteSpace(dto.NomeCompleto))
+                return BadRequest("NomeCompleto é obrigatório.");
+            if (string.IsNullOrWhiteSpace(dto.NUtente))
+                return BadRequest("NUtente é obrigatório.");
+            if (string.IsNullOrWhiteSpace(dto.Email))
+                return BadRequest("Email é obrigatório.");
+            if (string.IsNullOrWhiteSpace(dto.Telemovel))
+                return BadRequest("Telemovel é obrigatório.");
+
             var medico = new Medico
             {
-                NomeCompleto = dto.NomeCompleto,
-                Telemovel = dto.Telemovel,
-                Email = dto.Email,
-                NUtente = dto.NUtente,
-                PasswordHash = dto.Password, // TODO: hash a sério
+                NomeCompleto = dto.NomeCompleto.Trim(),
+                Telemovel = dto.Telemovel.Trim(),
+                Email = dto.Email.Trim(),
+                NUtente = dto.NUtente.Trim(),
+                PasswordHash = dto.Password,
                 DataNascimento = dto.DataNascimento
             };
+
             await _repo.AddAsync(medico);
-            return CreatedAtAction(nameof(GetById), new
-            {
-                id = medico.Id
-            }, new
-            {
-                medico.Id,
-                medico.NomeCompleto,
-                medico.Telemovel,
-                medico.Email,
-                medico.NUtente,
-                medico.DataNascimento,
-                medico.DataCriacao
-            });
+
+            var res = ToResponse(medico);
+            return CreatedAtAction(nameof(GetById), new { id = medico.Id }, res);
         }
 
         [HttpPut("{id:int}")]
@@ -54,15 +66,14 @@ namespace ConsultaPlus.API.Controllers
             var medico = await _repo.GetByIdAsync(id);
             if (medico is null) return NotFound();
 
-            medico.NomeCompleto = dto.NomeCompleto;
-            medico.Telemovel = dto.Telemovel;
-            medico.Email = dto.Email;
+            medico.NomeCompleto = dto.NomeCompleto?.Trim() ?? medico.NomeCompleto;
+            medico.Telemovel = dto.Telemovel?.Trim() ?? medico.Telemovel;
+            medico.Email = dto.Email?.Trim() ?? medico.Email;
             medico.DataNascimento = dto.DataNascimento;
 
             await _repo.UpdateAsync(medico);
-            return NoContent(); // 204
+            return NoContent(); 
         }
-
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
@@ -70,5 +81,16 @@ namespace ConsultaPlus.API.Controllers
             await _repo.DeleteAsync(id);
             return NoContent();
         }
+
+        private static MedicoResponseDto ToResponse(Medico m) => new()
+        {
+            Id = m.Id,
+            NomeCompleto = m.NomeCompleto,
+            Telemovel = m.Telemovel,
+            Email = m.Email,
+            NUtente = m.NUtente,
+            DataNascimento = m.DataNascimento,
+            DataCriacao = m.DataCriacao
+        };
     }
 }
