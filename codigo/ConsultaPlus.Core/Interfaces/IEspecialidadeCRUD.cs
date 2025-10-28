@@ -3,9 +3,9 @@ using ConsultaPlus.Core.Models;
 public interface IEspecialidadeCRUD
 
 {
-    Task<IEnumerable<Especialidade>> GetAll();
-    Task<Especialidade?> GetById(int id);
-    Task Add(Especialidade especialidade);
-    Task Update(Especialidade especialidade);
-    Task Delete(int id);
+    Task<IEnumerable<Especialidade>> GetAllAsync();
+    Task<Especialidade?> GetByIdAsync(int id);
+    Task AddAsync(Especialidade especialidade);
+    Task UpdateAsync(Especialidade especialidade);
+    Task DeleteAsync(int id);
 }

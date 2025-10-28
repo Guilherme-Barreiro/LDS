@@ -7,7 +7,6 @@ namespace ConsultaPlus.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
-
     public class EspecialidadeController : ControllerBase
     {
         private readonly IEspecialidadeCRUD _especialidadeCRUD;
@@ -17,25 +16,25 @@ namespace ConsultaPlus.API.Controllers
             _especialidadeCRUD = especialidadeCRUD;
         }
 
-        [HttpPost("registo-especialidade")]
-    }
-    public async Task<IActionResult> Add(EspecialidadeDto requestDto)
+        [HttpPost]
+        public async Task<IActionResult> RegistarEspecialidade(EspecialidadeDto requestDto)
         {
             try
             {
+
                 var novaEspecialidade = new Especialidade
                 {
                     Nome = requestDto.Nome
                 };
-                
-                await _especialidadeCRUD.Add(novaEspecialidade);
-                
-                return StatusCode(201, "Paciente registado com sucesso.");
+
+                await _especialidadeCRUD.AddAsync(novaEspecialidade);
+
+                return StatusCode(201, "Especialidade registada com sucesso.");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
         }
-
+    }
 }
