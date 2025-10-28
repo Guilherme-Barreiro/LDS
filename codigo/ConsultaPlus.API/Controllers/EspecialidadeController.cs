@@ -19,5 +19,23 @@ namespace ConsultaPlus.API.Controllers
 
         [HttpPost("registo-especialidade")]
     }
+    public async Task<IActionResult> Add(EspecialidadeDto requestDto)
+        {
+            try
+            {
+                var novaEspecialidade = new Especialidade
+                {
+                    Nome = requestDto.Nome
+                };
+                
+                await _especialidadeCRUD.Add(novaEspecialidade);
+                
+                return StatusCode(201, "Paciente registado com sucesso.");
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
 }
