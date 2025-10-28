@@ -17,7 +17,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegistarEspecialidade(EspecialidadeDto requestDto)
+        public async Task<IActionResult> RegistarEspecialidade(EspecialidadeDTO requestDto)
         {
             try
             {
