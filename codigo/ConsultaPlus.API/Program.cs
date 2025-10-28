@@ -1,31 +1,47 @@
-using Microsoft.EntityFrameworkCore;
-using ConsultaPlus.Infrastructure.Data;
+using ConsultaPlus.API.Repositories;
 using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Infrastructure.Data;
 using ConsultaPlus.Infrastructure.Repositories;
 using ConsultaPlus.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
+<<<<<<< HEAD
+=======
 // Obtém a connection string do ficheiro appsettings.json
+>>>>>>> main
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Configurar o DbContext para usar o sql server
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+<<<<<<< HEAD
+builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
+builder.Services.AddScoped<ISalaRepository, SalaRepository>();
+builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
+
+
+var app = builder.Build();
+
+if (app.Environment.IsDevelopment())
+{
+    app.UseSwagger();
+    app.UseSwaggerUI();
+}
+=======
 
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
+>>>>>>> main
 
 //app.UseHttpsRedirection();
 
