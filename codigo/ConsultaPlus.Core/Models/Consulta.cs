@@ -9,7 +9,6 @@ public class Consulta
     public int Duracao { get; set; } 
     public string Estado { get; set; } 
 
-    // Chaves Estrangeiras
     public int PacienteId { get; set; }
     public int MedicoId { get; set; }
     public int EspecialidadeId { get; set; }
