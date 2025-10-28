@@ -13,9 +13,8 @@ public class Consulta
     public int PacienteId { get; set; }
     public int MedicoId { get; set; }
     public int EspecialidadeId { get; set; }
-    public int? SalaId { get; set; } // O '?' a sala pode ser opcional
+    public int SalaId { get; set; }
 
-    // Propriedades de Navegação 
     public Paciente Paciente { get; set; }
     public Medico Medico { get; set; }
     public Especialidade Especialidade { get; set; }

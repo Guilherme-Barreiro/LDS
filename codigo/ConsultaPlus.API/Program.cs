@@ -1,8 +1,9 @@
-using Microsoft.EntityFrameworkCore;
-using ConsultaPlus.Infrastructure.Data;
+using ConsultaPlus.API.Repositories;
 using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Infrastructure.Data;
 using ConsultaPlus.Infrastructure.Repositories;
 using ConsultaPlus.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,6 +20,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
 builder.Services.AddScoped<ISalaRepository, SalaRepository>();
+builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
 
 
 var app = builder.Build();
