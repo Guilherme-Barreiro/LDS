@@ -1,3 +1,4 @@
+using ConsultaPlus.Infrastructure.Data;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +12,7 @@ namespace ConsultaPlus.Infrastructure.Repositories
 	{
 		private readonly ConsultaPlusDbContext _context;
 
-		public EspecialidadeMedicoRepository(ConsultaPlusDbContext context)
+		public EspecialidadeMedicoRepository(ApplicationDbContext context)
 		{
 			_context = context;
 		}
