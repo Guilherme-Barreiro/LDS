@@ -7,6 +7,6 @@ public class EspecialidadeMedico
     public int EspecialidadeId { get; set; }
 
     // Propriedades de Navegação 
-    public required Medico Medico { get; set; }
-    public required Especialidade Especialidade { get; set; }
+    public Medico? Medico { get; set; }
+    public Especialidade? Especialidade { get; set; }
 }
