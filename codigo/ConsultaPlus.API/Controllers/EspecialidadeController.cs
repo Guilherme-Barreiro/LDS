@@ -2,6 +2,7 @@ using ConsultaPlus.API.DTOs.Especialidade;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConsultaPlus.API.Controllers
 {
@@ -21,18 +22,18 @@ namespace ConsultaPlus.API.Controllers
         {
             try
             {
-                var existente = (await _especialidadeCRUD.GetAllAsync())
-                    .FirstOrDefault(e => e.Nome.ToLower() == requestDto.Nome.ToLower());
-
-                if (existente != null)
-                    return Conflict(new { message = "Já existe uma especialidade com esse nome." });
-
-                var novaEspecialidade = new Especialidade { Nome = requestDto.Nome };
+                var novaEspecialidade = new Especialidade { Nome = requestDto.Nome.Trim() };
                 await _especialidadeCRUD.AddAsync(novaEspecialidade);
-
-                return CreatedAtAction(nameof(ObterEspecialidade),
-                    new { id = novaEspecialidade.Id },
-                    new ReadEspecialidadeDTO { Id = novaEspecialidade.Id, Nome = novaEspecialidade.Nome });
+                var readDto = new ReadEspecialidadeDTO { Id = novaEspecialidade.Id, Nome = novaEspecialidade.Nome };
+                return CreatedAtAction(nameof(ObterEspecialidade), new { id = readDto.Id }, readDto);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "Não foi possível registar a especialidade devido a um conflito na base de dados." });
             }
             catch (Exception ex)
             {
@@ -45,13 +46,12 @@ namespace ConsultaPlus.API.Controllers
         {
             try
             {
-                var especialidade = await _especialidadeCRUD.GetByIdAsync(id);
-                if (especialidade == null)
-                {
-                    return NotFound(new { message = "Especialidade não encontrada." });
-                }
                 await _especialidadeCRUD.DeleteAsync(id);
                 return NoContent();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "Não foi possível remover a especialidade devido a um conflito na base de dados." });
             }
             catch (Exception ex)
             {
@@ -60,28 +60,22 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpPut("atualizar-especialidade/{id}")]
-        public async Task<IActionResult> AtualizarEspecialidade(int id, [FromBody] ReadEspecialidadeDTO requestDto)
+        public async Task<IActionResult> AtualizarEspecialidade(int id, [FromBody] UpdateEspecialidadeDTO requestDto)
         {
             try
             {
-                var especialidadeExistente = await _especialidadeCRUD.GetByIdAsync(id);
-                if (especialidadeExistente == null)
-                {
-                    return NotFound(new { message = "Especialidade não encontrada." });
-                }
-
-                var todasEspecialidades = await _especialidadeCRUD.GetAllAsync();
-                var nomeDuplicado = todasEspecialidades
-                    .Any(e => e.Nome.ToLower() == requestDto.Nome.ToLower() && e.Id != id);
-
-                if (nomeDuplicado)
-                {
-                    return Conflict(new { message = "Já existe outra especialidade com esse nome." });
-                }
-
-                especialidadeExistente.Nome = requestDto.Nome;
-                await _especialidadeCRUD.UpdateAsync(especialidadeExistente);
-                return StatusCode(201, "Especialidade atualizada com sucesso.");
+                var especialidade = await _especialidadeCRUD.GetByIdAsync(id);
+                var novoNome = requestDto.Nome.Trim();
+                await _especialidadeCRUD.UpdateAsync(especialidade, novoNome);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "Não foi possível atualizar a especialidade devido a um conflito na base de dados." });
             }
             catch (Exception ex)
             {
@@ -94,17 +88,10 @@ namespace ConsultaPlus.API.Controllers
         {
             try
             {
-                var especialidade = await _especialidadeCRUD.GetByIdAsync(id);
-                if (especialidade == null)
-                {
-                    return NotFound(new { message = "Especialidade não encontrada." });
-                }
-                var especialidadeDto = new
-                {
-                    Nome = especialidade.Nome
-                };
+                var ent = await _especialidadeCRUD.GetByIdAsync(id);
+                if (ent == null) return NotFound(new { message = "Especialidade não encontrada." });
 
-                return StatusCode(201, especialidadeDto);
+                return Ok(new ReadEspecialidadeDTO { Id = ent.Id, Nome = ent.Nome });
             }
             catch (Exception ex)
             {
@@ -119,11 +106,9 @@ namespace ConsultaPlus.API.Controllers
         {
             try
             {
-                var especialidades = await _especialidadeCRUD.GetAllAsync();
-                var especialidadesDto = especialidades
-                .Select(e => new { Nome = e.Nome })
-                .ToList();
-                return StatusCode(201, especialidadesDto);
+                var todas = await _especialidadeCRUD.GetAllAsync();
+                var dtos = todas.Select(e => new ReadEspecialidadeDTO { Id = e.Id, Nome = e.Nome });
+                return Ok(dtos);
             }
             catch (Exception ex)
             {
