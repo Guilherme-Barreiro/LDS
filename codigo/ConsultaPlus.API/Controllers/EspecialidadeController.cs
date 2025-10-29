@@ -51,7 +51,7 @@ namespace ConsultaPlus.API.Controllers
                     return NotFound(new { message = "Especialidade não encontrada." });
                 }
                 await _especialidadeCRUD.DeleteAsync(id);
-                return StatusCode(201, "Especialidade removida com sucesso.");
+                return NoContent();
             }
             catch (Exception ex)
             {
