@@ -12,9 +12,19 @@ builder.Services.AddControllers();
 // Obtém a connection string do ficheiro appsettings.json
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-// Configurar o DbContext para usar o sql server
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(connectionString));
+if (builder.Environment.IsEnvironment("Testing"))
+{
+    // Usado só nos testes (WebApplicationFactory define o ambiente)
+    builder.Services.AddDbContext<ApplicationDbContext>(opts =>
+        opts.UseInMemoryDatabase("TestingDb"));
+}
+else
+{
+    // Desenvolvimento/Produção
+    builder.Services.AddDbContext<ApplicationDbContext>(opts =>
+        opts.UseSqlServer(connectionString));
+}
+
 builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 
@@ -42,3 +52,5 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+public partial class Program { }
