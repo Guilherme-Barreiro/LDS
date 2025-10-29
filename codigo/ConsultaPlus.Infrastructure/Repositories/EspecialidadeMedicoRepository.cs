@@ -10,7 +10,7 @@ namespace ConsultaPlus.Infrastructure.Repositories
 {
 	public class EspecialidadeMedicoRepository : IEspecialidadeMedico
 	{
-		private readonly ConsultaPlusDbContext _context;
+		private readonly ApplicationDbContext _context;
 
 		public EspecialidadeMedicoRepository(ApplicationDbContext context)
 		{
