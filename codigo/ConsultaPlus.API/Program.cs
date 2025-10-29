@@ -1,26 +1,26 @@
-using Microsoft.EntityFrameworkCore;
-using ConsultaPlus.Infrastructure.Data;
+using ConsultaPlus.API.Repositories;
 using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Infrastructure.Data;
 using ConsultaPlus.Infrastructure.Repositories;
 using ConsultaPlus.Infrastructure.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 
 builder.Services.AddControllers();
-// Obtém a connection string do ficheiro appsettings.json
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (builder.Environment.IsEnvironment("Testing"))
 {
-    // Usado só nos testes (WebApplicationFactory define o ambiente)
+    // Usado sï¿½ nos testes (WebApplicationFactory define o ambiente)
     builder.Services.AddDbContext<ApplicationDbContext>(opts =>
         opts.UseInMemoryDatabase("TestingDb"));
 }
 else
 {
-    // Desenvolvimento/Produção
+    // Desenvolvimento/Produï¿½ï¿½o
     builder.Services.AddDbContext<ApplicationDbContext>(opts =>
         opts.UseSqlServer(connectionString));
 }
@@ -34,23 +34,18 @@ builder.Services.AddScoped<IHorarioExcecaoMedico, HorarioExcecaoMedicoService>()
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-//OLA
+
+builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
+builder.Services.AddScoped<ISalaRepository, SalaRepository>();
+builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
+
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-
-app.UseHttpsRedirection();
-
+app.UseSwagger();
+app.UseSwaggerUI();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
 
 public partial class Program { }
