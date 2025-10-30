@@ -15,7 +15,10 @@ public class Paciente
     public string Email { get; set; }
     public DateTime DataNascimento { get; set; }
     public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
+    public string? PasswordResetToken { get; set; }
+    public DateTime? ResetTokenExpires { get; set; }
 
     // Propriedade de Navegação: Um Paciente pode ter muitas Consultas
     public ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
+    
 }

@@ -1,6 +1,6 @@
 ﻿using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
-using Microsoft.Extensions.Configuration; 
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using System;
 using System.IdentityModel.Tokens.Jwt;
@@ -13,16 +13,16 @@ namespace ConsultaPlus.Infrastructure.Services
     public class AuthService : IAuthService
     {
         private readonly IPacienteRepository _pacienteRepository;
-        private readonly IConfiguration _configuration; // Variável para guardar a configuração
+        private readonly IConfiguration _configuration;
 
-        //recebe o  IConfiguration
         public AuthService(IPacienteRepository pacienteRepository, IConfiguration configuration)
         {
             _pacienteRepository = pacienteRepository;
             _configuration = configuration;
         }
 
-        //metodo de registo
+        // --- MÉTODOS EXISTENTES (ESTAVAM PERFEITOS) ---
+
         public async Task RegisterPacienteAsync(Paciente novoPaciente, string password)
         {
             var existingUser = await _pacienteRepository.GetByNUtenteAsync(novoPaciente.NUtente);
@@ -35,42 +35,75 @@ namespace ConsultaPlus.Infrastructure.Services
             await _pacienteRepository.AddAsync(novoPaciente);
         }
 
-        // Método de Login 
         public async Task<string> LoginAsync(string nUtente, string password)
         {
-            // Encontrar o utilizador na base de dados
             var paciente = await _pacienteRepository.GetByNUtenteAsync(nUtente);
-            if (paciente == null)
-            {
-                
-                throw new Exception("Número de utente ou password inválidos.");
-            }
-
-            //  Verificar a password
-            if (!BCrypt.Net.BCrypt.Verify(password, paciente.PasswordHash))
+            if (paciente == null || !BCrypt.Net.BCrypt.Verify(password, paciente.PasswordHash))
             {
                 throw new Exception("Número de utente ou password inválidos.");
             }
-
-            // gera e retorna um  token JWT
             return GenerateJwtToken(paciente);
         }
 
-        // Método privado para gerar o token
+        // --- NOVOS MÉTODOS PARA RECUPERAÇÃO DE PASSWORD ---
+
+        public async Task ForgotPasswordAsync(string email)
+        {
+            // Nota: Este método requer que o seu IPacienteRepository tenha um método GetByEmailAsync.
+            var paciente = await _pacienteRepository.GetByEmailAsync(email);
+            if (paciente == null)
+            {
+                // Por segurança, não revelamos se o email existe. Agimos como se tudo tivesse corrido bem.
+                return;
+            }
+
+            // Gerar token de reset e definir expiração
+            paciente.PasswordResetToken = Guid.NewGuid().ToString("N"); // "N" para remover hífens
+            paciente.ResetTokenExpires = DateTime.UtcNow.AddHours(1); // Validade de 1 hora
+
+            // Nota: Este método requer que o seu IPacienteRepository tenha um método UpdateAsync.
+            await _pacienteRepository.UpdateAsync(paciente);
+
+            // TODO: Aqui entraria a chamada a um serviço de envio de email.
+            // Por agora, vamos simular escrevendo na consola.
+            Console.WriteLine($"EMAIL SIMULADO para {email}: O seu token de reset é {paciente.PasswordResetToken}");
+        }
+
+        public async Task<bool> ResetPasswordAsync(string email, string token, string newPassword)
+        {
+            var paciente = await _pacienteRepository.GetByEmailAsync(email);
+
+            if (paciente == null ||
+                paciente.PasswordResetToken != token ||
+                paciente.ResetTokenExpires < DateTime.UtcNow)
+            {
+                // Se o paciente não existe, o token é inválido, ou o token expirou, a operação falha.
+                return false;
+            }
+
+            // Tudo válido, redefinir a password
+            paciente.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
+
+            // Limpar os campos de reset para que o token não possa ser reutilizado
+            paciente.PasswordResetToken = null;
+            paciente.ResetTokenExpires = null;
+
+            await _pacienteRepository.UpdateAsync(paciente);
+
+            return true;
+        }
+
+        // --- MÉTODO PRIVADO (ESTAVA PERFEITO) ---
         private string GenerateJwtToken(Paciente paciente)
         {
             var tokenHandler = new JwtSecurityTokenHandler();
-
-            // Lê a chave secreta do appsettings.json
             var key = Encoding.ASCII.GetBytes(_configuration["JwtSettings:Secret"]);
-
             var claims = new[]
             {
                 new Claim(JwtRegisteredClaimNames.Sub, paciente.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, paciente.Email),
                 new Claim(ClaimTypes.Role, "Paciente")
             };
-
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
@@ -79,7 +112,6 @@ namespace ConsultaPlus.Infrastructure.Services
                 Audience = _configuration["JwtSettings:Audience"],
                 SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
             };
-
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
