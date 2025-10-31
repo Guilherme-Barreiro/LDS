@@ -1,28 +1,16 @@
-﻿using ConsultaPlus.Core.Interfaces;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
-namespace ConsultaPlus.Infrastructure.Repositories;
-
-public class PacienteRepository : IPacienteRepository
+namespace ConsultaPlus.Infrastructure.Repositories
 {
-    private readonly ApplicationDbContext _context;
-
-    public PacienteRepository(ApplicationDbContext context)
+    public class PacienteRepository : GenericRepository<Paciente>, IPacienteRepository
     {
-        _context = context;
-    }
+        public PacienteRepository(ApplicationDbContext context) : base(context) { }
 
-    public async Task AddAsync(Paciente paciente)
-    {
-        await _context.Pacientes.AddAsync(paciente);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<Paciente?> GetByNUtenteAsync(string nUtente)
-    {
-        return await _context.Pacientes.FirstOrDefaultAsync(p => p.NUtente == nUtente);
+        public Task<Paciente?> GetByNUtenteAsync(string nUtente) =>
+            _context.Pacientes.AsNoTracking().FirstOrDefaultAsync(p => p.NUtente == nUtente);
     }
 }

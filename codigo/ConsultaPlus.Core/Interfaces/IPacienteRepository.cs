@@ -1,9 +1,10 @@
-using ConsultaPlus.Core.Models;
 using System.Threading.Tasks;
+using ConsultaPlus.Core.Models;
 
-namespace ConsultaPlus.Core.Interfaces;
-
-public interface IPacienteRepository    {
-    Task<Paciente?> GetByNUtenteAsync(string nUtente);
-    Task AddAsync(Paciente paciente);
+namespace ConsultaPlus.Core.Interfaces
+{
+    public interface IPacienteRepository : IGenericRepository<Paciente>
+    {
+        Task<Paciente?> GetByNUtenteAsync(string nUtente);
+    }
 }
