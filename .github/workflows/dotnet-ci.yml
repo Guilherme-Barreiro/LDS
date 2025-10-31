@@ -47,8 +47,9 @@ jobs:
           dotnet test ./ConsultaPlus.Tests/ConsultaPlus.Tests.csproj \
             -c Release --no-build \
             --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults
-
+            --results-directory ./TestResults \
+            --settings ../coverlet.runsettings
+            
       # --- relatório HTML (igual ao das imagens) ---
       - name: Generate HTML coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
