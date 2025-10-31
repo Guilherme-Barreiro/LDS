@@ -5,11 +5,23 @@
       <DataCollector friendlyName="XPlat Code Coverage">
         <Configuration>
           <Format>cobertura</Format>
-          <!-- Excluir ficheiros “saco de dados” e gerados -->
-          <ExcludeByFile>**/DTOs/*.cs;**/Models/*.cs;**/Migrations/*.cs;**/Program.cs</ExcludeByFile>
-          <!-- Excluir libs de teste -->
-          <Exclude>[xunit.*]*,[Moq]*</Exclude>
-          <!-- Incluir apenas o teu código -->
+
+          <!-- Excluir por ficheiro (paths glob) -->
+          <ExcludeByFile>
+            **/ConsultaPlus.API/DTOs/**/*.cs;
+            **/ConsultaPlus.Core/Models/**/*.cs;
+            **/Migrations/**/*.cs;
+            **/Program.cs
+          </ExcludeByFile>
+
+          <!-- Excluir por assembly/namespace -->
+          <!-- Sintaxe: [Assembly]Namespace.Class -->
+          <Exclude>
+            [ConsultaPlus.API]ConsultaPlus.API.DTOs.*;
+            [ConsultaPlus.Core]ConsultaPlus.Core.Models.*;
+          </Exclude>
+
+          <!-- Opcional: apenas os teus assemblies de app -->
           <Include>[ConsultaPlus.*]*</Include>
         </Configuration>
       </DataCollector>
