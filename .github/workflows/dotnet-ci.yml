@@ -57,6 +57,7 @@ jobs:
           reports: './codigo/TestResults/**/coverage.cobertura.xml'
           targetdir: 'coverage-report'
           reporttypes: 'HtmlInline_AzurePipelines;Cobertura'
+          classfilters: '-ConsultaPlus.API.DTOs.*;-ConsultaPlus.Core.Models.*'
 
       # artefactos: relatório HTML
       - name: Upload coverage report
