@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RunSettings>
+  <DataCollectionRunSettings>
+    <DataCollectors>
+      <DataCollector friendlyName="XPlat Code Coverage">
+        <Configuration>
+          <Format>cobertura</Format>
+          <!-- Excluir ficheiros “saco de dados” e gerados -->
+          <ExcludeByFile>**/DTOs/*.cs;**/Models/*.cs;**/Migrations/*.cs;**/Program.cs</ExcludeByFile>
+          <!-- Excluir libs de teste -->
+          <Exclude>[xunit.*]*,[Moq]*</Exclude>
+          <!-- Incluir apenas o teu código -->
+          <Include>[ConsultaPlus.*]*</Include>
+        </Configuration>
+      </DataCollector>
+    </DataCollectors>
+  </DataCollectionRunSettings>
+</RunSettings>
