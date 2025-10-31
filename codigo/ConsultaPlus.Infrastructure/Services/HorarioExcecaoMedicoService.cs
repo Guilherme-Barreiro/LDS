@@ -26,14 +26,28 @@ namespace ConsultaPlus.Infrastructure.Services
 
             var dataDate = data.ToDateTime(TimeOnly.MinValue).Date;
 
-            // opcional: impedir duplicado exato
             var dup = await _db.HorariosExcecaoMedicos
-                .AnyAsync(e => e.MedicoId == medicoId &&
-                               e.Data == dataDate &&
-                               e.HoraInicio == horaInicio &&
-                               e.HoraFim == horaFim &&
-                               e.IsReducao == isReducao, ct);
+                .AnyAsync(e =>
+                    e.MedicoId == medicoId &&
+                    e.Data == dataDate &&
+                    e.HoraInicio == horaInicio &&
+                    e.HoraFim == horaFim &&
+                    e.IsReducao == isReducao, ct);
+
+            if (!dup)
+            {
+                dup = _db.HorariosExcecaoMedicos
+                    .AsEnumerable() 
+                    .Any(e =>
+                        e.MedicoId == medicoId &&
+                        e.Data == dataDate &&
+                        e.HoraInicio == horaInicio &&
+                        e.HoraFim == horaFim &&
+                        e.IsReducao == isReducao);
+            }
+
             if (dup) return;
+
 
             _db.HorariosExcecaoMedicos.Add(new HorarioExcecaoMedico
             {
