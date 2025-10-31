@@ -11,15 +11,15 @@ namespace ConsultaPlus.Infrastructure.Data
         }
 
         // Cada DbSet está a representar cada tabela da base de dados
-        public DbSet<Paciente> Pacientes { get; set; }
-        public DbSet<Medico> Medicos { get; set; }
-        public DbSet<Consulta> Consultas { get; set; }
-        public DbSet<Especialidade> Especialidades { get; set; }
-        public DbSet<Sala> Salas { get; set; }
-        public DbSet<HorarioTrabalhoMedico> HorariosTrabalhoMedicos { get; set; }
-        public DbSet<HorarioExcecaoMedico> HorariosExcecaoMedicos { get; set; }
-        public DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
-        public DbSet<Notificacao> Notificacoes { get; set; }
+        public virtual DbSet<Paciente> Pacientes { get; set; }
+        public virtual DbSet<Medico> Medicos { get; set; }
+        public virtual DbSet<Consulta> Consultas { get; set; }
+        public virtual DbSet<Especialidade> Especialidades { get; set; }
+        public virtual DbSet<Sala> Salas { get; set; }
+        public virtual DbSet<HorarioTrabalhoMedico> HorariosTrabalhoMedicos { get; set; }
+        public virtual DbSet<HorarioExcecaoMedico> HorariosExcecaoMedicos { get; set; }
+        public virtual DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
+        public virtual DbSet<Notificacao> Notificacoes { get; set; }
 
 
         // O método OnModelCreating é onde configuramos as relações complexas
