@@ -7,31 +7,39 @@ on:
     branches: [ main ]
 
 jobs:
-  build_and_test:
-    name: Build and Test (.NET 8)
+  build:
+    name: Build (.NET 8)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup .NET SDK
-        uses: actions/setup-dotnet@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '8.0.x'  
-
-      - name: Restore dependencies
+          dotnet-version: '8.0.x'
+      - name: Restore
         working-directory: ./codigo
         run: dotnet restore ConsultaPlus.sln
-
-      - name: Build solution
+      - name: Build
         working-directory: ./codigo
-        run: dotnet build ConsultaPlus.sln --configuration Release --no-restore
+        run: dotnet build ConsultaPlus.sln -c Release --no-restore
 
+  test:
+    name: Test (.NET 8)
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Restore
+        working-directory: ./codigo
+        run: dotnet restore ConsultaPlus.sln
+      - name: Build (for tests)
+        working-directory: ./codigo
+        run: dotnet build ConsultaPlus.sln -c Release --no-restore
       - name: Run tests
         working-directory: ./codigo
-        run: dotnet test ConsultaPlus.Tests/ConsultaPlus.Tests.csproj --configuration Release --no-build --verbosity normal --logger "trx;LogFileName=test_results.trx"
-
+        run: dotnet test ConsultaPlus.Tests/ConsultaPlus.Tests.csproj -c Release --no-build --logger "trx;LogFileName=test_results.trx"
       - name: Upload test results
         if: success() || failure()
         uses: actions/upload-artifact@v4
@@ -40,18 +48,16 @@ jobs:
           path: '**/TestResults/*.trx'
 
   publish_container:
-    name: Publish Container Image (no Dockerfile)
-    needs: build_and_test
+    name: Publish Container Image
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-
       - name: Docker Hub login
         run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-
       - name: Publish container image
         working-directory: ./codigo
         run: dotnet publish ./ConsultaPlus.API/ConsultaPlus.API.csproj -c Release -t:PublishContainer
