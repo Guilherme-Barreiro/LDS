@@ -6,9 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
-using ConsultaPlus.API.Controllers;                   
-using ConsultaPlus.API.DTOs;                           
-using ConsultaPlus.Infrastructure.Services;           
+using ConsultaPlus.Tests; 
+using ConsultaPlus.API.Controllers;
+using ConsultaPlus.API.DTOs;
+using ConsultaPlus.Infrastructure.Services;
 using EspecialidadeModel = ConsultaPlus.Core.Models.Especialidade;
 
 namespace ConsultaPlus.Tests.Especialidades
@@ -23,6 +24,10 @@ namespace ConsultaPlus.Tests.Especialidades
             _svc = new Mock<IEspecialidadesService>(MockBehavior.Strict);
             _controller = new EspecialidadeController(_svc.Object);
         }
+
+        // Helper: extrai o campo "message" de um anonymous object
+        private static string GetMessage(object? value)
+            => value?.GetType().GetProperty("message")?.GetValue(value)?.ToString() ?? string.Empty;
 
         [Fact]
         public async Task GetAll_DeveRetornarOk_ComListaMapeada()
@@ -67,7 +72,8 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.GetById(999);
 
             var nf = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Contains("nao encontrada", nf.Value!.ToString());
+            var message = GetMessage(nf.Value);
+            TextAssert.ContainsIgnoringDiacritics("nao encontrada", message);
 
             _svc.Verify(s => s.GetByIdAsync(999), Times.Once);
         }
@@ -81,7 +87,8 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.GetByNome(nome!);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("obrigatorio", bad.Value!.ToString());
+            var message = GetMessage(bad.Value);
+            TextAssert.ContainsIgnoringDiacritics("obrigatorio", message);
 
             _svc.Verify(s => s.SearchAsync(It.IsAny<string>()), Times.Never);
         }
@@ -95,7 +102,8 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.GetByNome("derma");
 
             var nf = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Contains("Nenhuma especialidade", nf.Value!.ToString());
+            var msg = GetMessage(nf.Value);
+            TextAssert.ContainsIgnoringDiacritics("nenhuma especialidade", msg);
 
             _svc.Verify(s => s.SearchAsync("derma"), Times.Once);
         }
