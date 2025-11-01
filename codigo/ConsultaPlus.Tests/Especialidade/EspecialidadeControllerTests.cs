@@ -67,7 +67,7 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.GetById(999);
 
             var nf = Assert.IsType<NotFoundObjectResult>(result);
-            Assert.Contains("não encontrada", nf.Value!.ToString());
+            Assert.Contains("nao encontrada", nf.Value!.ToString());
 
             _svc.Verify(s => s.GetByIdAsync(999), Times.Once);
         }
@@ -81,7 +81,7 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.GetByNome(nome!);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Contains("obrigatório", bad.Value!.ToString());
+            Assert.Contains("obrigatorio", bad.Value!.ToString());
 
             _svc.Verify(s => s.SearchAsync(It.IsAny<string>()), Times.Never);
         }
@@ -149,12 +149,12 @@ namespace ConsultaPlus.Tests.Especialidades
         {
             var dto = new EspecialidadeDTO { Nome = "   " };
             _svc.Setup(s => s.CreateAsync("   "))
-                .ThrowsAsync(new ArgumentException("Nome é obrigatório."));
+                .ThrowsAsync(new ArgumentException("Nome obrigatorio."));
 
             var result = await _controller.RegistarEspecialidade(dto);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Nome é obrigatório.", bad.Value);
+            Assert.Equal("Nome obrigatorio.", bad.Value);
 
             _svc.Verify(s => s.CreateAsync("   "), Times.Once);
         }
@@ -203,12 +203,12 @@ namespace ConsultaPlus.Tests.Especialidades
         {
             var dto = new EspecialidadeDTO { Nome = "" };
             _svc.Setup(s => s.UpdateAsync(7, ""))
-                .ThrowsAsync(new ArgumentException("Nome é obrigatório."));
+                .ThrowsAsync(new ArgumentException("Nome obrigatorio."));
 
             var result = await _controller.Update(7, dto);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Nome é obrigatório.", bad.Value);
+            Assert.Equal("Nome obrigatorio.", bad.Value);
 
             _svc.Verify(s => s.UpdateAsync(7, ""), Times.Once);
         }
