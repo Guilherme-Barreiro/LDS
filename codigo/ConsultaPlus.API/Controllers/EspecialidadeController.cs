@@ -21,7 +21,7 @@ namespace ConsultaPlus.API.Controllers
         {
             var esp = await _svc.GetByIdAsync(id);
             return esp is null
-                ? NotFound(new { message = $"Especialidade {id} não encontrada." })
+                ? NotFound(new { message = $"Especialidade {id} nao encontrada." })
                 : Ok(new EspecialidadeDTO { Id = esp.Id, Nome = esp.Nome });
         }
 
@@ -29,7 +29,7 @@ namespace ConsultaPlus.API.Controllers
         public async Task<IActionResult> GetByNome(string nome)
         {
             if (string.IsNullOrWhiteSpace(nome))
-                return BadRequest(new { message = "Nome é obrigatório." });
+                return BadRequest(new { message = "Nome obrigatorio." });
 
             var results = (await _svc.SearchAsync(nome))
                 .Select(e => new EspecialidadeDTO { Id = e.Id, Nome = e.Nome })

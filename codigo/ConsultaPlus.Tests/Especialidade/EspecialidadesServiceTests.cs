@@ -83,7 +83,7 @@ namespace ConsultaPlus.Tests.Especialidades
         public async Task CreateAsync_NomeInvalido_DeveLancarArgumentException(string? nome)
         {
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => _svc.CreateAsync(nome!));
-            Assert.Equal("Nome é obrigatório.", ex.Message);
+            Assert.Equal("Nome obrigatorio.", ex.Message);
 
             _repo.Verify(r => r.ExistsByNameAsync(It.IsAny<string>()), Times.Never);
             _repo.Verify(r => r.AddAsync(It.IsAny<EspecialidadeModel>()), Times.Never);
@@ -98,7 +98,7 @@ namespace ConsultaPlus.Tests.Especialidades
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => _svc.CreateAsync("  Cardiologia  ")
             );
-            Assert.Equal("Já existe uma especialidade com esse nome.", ex.Message);
+            Assert.Equal("Ja existe uma especialidade com esse nome.", ex.Message);
 
             _repo.Verify(r => r.ExistsByNameAsync("Cardiologia"), Times.Once);
             _repo.Verify(r => r.AddAsync(It.IsAny<EspecialidadeModel>()), Times.Never);
@@ -129,7 +129,7 @@ namespace ConsultaPlus.Tests.Especialidades
             _repo.Setup(r => r.GetByIdAsync(7)).ReturnsAsync((EspecialidadeModel?)null);
 
             var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _svc.UpdateAsync(7, "Novo"));
-            Assert.Equal("Especialidade não existe.", ex.Message);
+            Assert.Equal("Especialidade nao existe.", ex.Message);
 
             _repo.Verify(r => r.GetByIdAsync(7), Times.Once);
             _repo.Verify(r => r.ExistsByNameAsync(It.IsAny<string>()), Times.Never);
@@ -146,7 +146,7 @@ namespace ConsultaPlus.Tests.Especialidades
             _repo.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(new EspecialidadeModel { Id = 3, Nome = "Gastro" });
 
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => _svc.UpdateAsync(3, novoNome!));
-            Assert.Equal("Nome é obrigatório.", ex.Message);
+            Assert.Equal("Nome obrigatorio.", ex.Message);
 
             _repo.Verify(r => r.GetByIdAsync(3), Times.Once);
             _repo.Verify(r => r.ExistsByNameAsync(It.IsAny<string>()), Times.Never);
@@ -161,7 +161,7 @@ namespace ConsultaPlus.Tests.Especialidades
             _repo.Setup(r => r.ExistsByNameAsync("Cardiologia")).ReturnsAsync(true);
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _svc.UpdateAsync(5, "Cardiologia"));
-            Assert.Equal("Já existe uma especialidade com esse nome.", ex.Message);
+            Assert.Equal("Ja existe uma especialidade com esse nome.", ex.Message);
 
             _repo.Verify(r => r.GetByIdAsync(5), Times.Once);
             _repo.Verify(r => r.ExistsByNameAsync("Cardiologia"), Times.Once);
@@ -193,7 +193,7 @@ namespace ConsultaPlus.Tests.Especialidades
             _repo.Setup(r => r.GetByIdAsync(11)).ReturnsAsync((EspecialidadeModel?)null);
 
             var ex = await Assert.ThrowsAsync<KeyNotFoundException>(() => _svc.DeleteAsync(11));
-            Assert.Equal("Especialidade não existe.", ex.Message);
+            Assert.Equal("Especialidade nao existe.", ex.Message);
 
             _repo.Verify(r => r.GetByIdAsync(11), Times.Once);
             _repo.Verify(r => r.HasMedicosAsync(It.IsAny<int>()), Times.Never);
@@ -208,7 +208,7 @@ namespace ConsultaPlus.Tests.Especialidades
             _repo.Setup(r => r.HasMedicosAsync(11)).ReturnsAsync(true);
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _svc.DeleteAsync(11));
-            Assert.Equal("Não é possível remover: existem médicos associados.", ex.Message);
+            Assert.Equal("Nao e possível remover: existem medicos associados.", ex.Message);
 
             _repo.Verify(r => r.GetByIdAsync(11), Times.Once);
             _repo.Verify(r => r.HasMedicosAsync(11), Times.Once);
