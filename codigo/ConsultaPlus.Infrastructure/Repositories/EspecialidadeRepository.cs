@@ -16,16 +16,16 @@ namespace ConsultaPlus.Infrastructure.Repositories
         public Task<Especialidade?> GetByIdAsync(int id) =>
             _ctx.Especialidades.AsNoTracking().FirstOrDefaultAsync(e => e.Id == id);
 
-        public async Task AddAsync(Especialidade especialidade)
+        public Task AddAsync(Especialidade especialidade)
         {
             _ctx.Especialidades.Add(especialidade);
-            await _ctx.SaveChangesAsync();
+            return Task.CompletedTask; 
         }
 
-        public async Task UpdateAsync(Especialidade especialidade)
+        public Task UpdateAsync(Especialidade especialidade)
         {
             _ctx.Especialidades.Update(especialidade);
-            await _ctx.SaveChangesAsync();
+            return Task.CompletedTask; 
         }
 
         public async Task DeleteAsync(int id)
@@ -33,7 +33,19 @@ namespace ConsultaPlus.Infrastructure.Repositories
             var e = await _ctx.Especialidades.FindAsync(id);
             if (e is null) return;
             _ctx.Especialidades.Remove(e);
-            await _ctx.SaveChangesAsync();
+        }
+
+        public async Task<bool> ExistsByNameAsync(string nome)
+        {
+            var n = (nome ?? "").Trim();
+            return await _ctx.Especialidades.AsNoTracking()
+                .AnyAsync(e => e.Nome.ToLower() == n.ToLower());
+        }
+
+        public Task<bool> HasMedicosAsync(int especialidadeId)
+        {        
+            return _ctx.EspecialidadesMedico.AsNoTracking()
+                .AnyAsync(em => em.EspecialidadeId == especialidadeId);  
         }
     }
 }

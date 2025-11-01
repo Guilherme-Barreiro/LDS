@@ -1,6 +1,6 @@
 using ConsultaPlus.API.DTOs;
-using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
+using ConsultaPlus.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ConsultaPlus.API.Controllers
@@ -9,28 +9,20 @@ namespace ConsultaPlus.API.Controllers
     [Route("api/[controller]")]
     public class EspecialidadeController : ControllerBase
     {
-        private readonly IEspecialidadeCRUD _especialidades;
-
-        public EspecialidadeController(IEspecialidadeCRUD especialidades)
-        {
-            _especialidades = especialidades;
-        }
+        private readonly IEspecialidadesService _svc;
+        public EspecialidadeController(IEspecialidadesService svc) => _svc = svc;
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
-        {
-            var list = await _especialidades.GetAllAsync();
-            return Ok(list.Select(e => new { e.Id, e.Nome }));
-        }
+            => Ok((await _svc.GetAllAsync()).Select(e => new { e.Id, e.Nome }));
 
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var esp = await _especialidades.GetByIdAsync(id);
-            if (esp is null)
-                return NotFound(new { message = $"Especialidade {id} não encontrada." });
-
-            return Ok(new EspecialidadeDTO { Id = esp.Id, Nome = esp.Nome });
+            var esp = await _svc.GetByIdAsync(id);
+            return esp is null
+                ? NotFound(new { message = $"Especialidade {id} não encontrada." })
+                : Ok(new EspecialidadeDTO { Id = esp.Id, Nome = esp.Nome });
         }
 
         [HttpGet("nome/{nome}")]
@@ -39,37 +31,42 @@ namespace ConsultaPlus.API.Controllers
             if (string.IsNullOrWhiteSpace(nome))
                 return BadRequest(new { message = "Nome é obrigatório." });
 
-            var list = await _especialidades.GetAllAsync();
-
-            var results = list
-                .Where(e => !string.IsNullOrEmpty(e.Nome) &&
-                            e.Nome.Contains(nome, StringComparison.OrdinalIgnoreCase))
+            var results = (await _svc.SearchAsync(nome))
                 .Select(e => new EspecialidadeDTO { Id = e.Id, Nome = e.Nome })
                 .ToList();
 
-            if (results.Count == 0)
-                return NotFound(new { message = $"Nenhuma especialidade com nome contendo '{nome}'." });
-
-            return Ok(results);
+            return results.Count == 0
+                ? NotFound(new { message = $"Nenhuma especialidade com nome contendo '{nome}'." })
+                : Ok(results);
         }
 
         [HttpPost]
         public async Task<IActionResult> RegistarEspecialidade(EspecialidadeDTO requestDto)
         {
-            var nova = new Especialidade { Nome = requestDto.Nome };
-            await _especialidades.AddAsync(nova);
-            return CreatedAtAction(nameof(GetAll), new { id = nova.Id }, new { nova.Id, nova.Nome });
+            try
+            {
+                var id = await _svc.CreateAsync(requestDto.Nome);
+                return CreatedAtAction(nameof(GetById), new { id }, new { id, nome = requestDto.Nome.Trim() });
+            }
+            catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+        }
+
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, EspecialidadeDTO dto)
+        {
+            try { await _svc.UpdateAsync(id, dto.Nome); return NoContent(); }
+            catch (KeyNotFoundException) { return NotFound(); }
+            catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            var exists = await _especialidades.GetByIdAsync(id);
-            if (exists is null)
-                return NotFound(new { message = $"Especialidade {id} não existe." });
-
-            await _especialidades.DeleteAsync(id);
-            return NoContent();
+            try { await _svc.DeleteAsync(id); return NoContent(); }
+            catch (KeyNotFoundException) { return NotFound(); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         }
     }
 }

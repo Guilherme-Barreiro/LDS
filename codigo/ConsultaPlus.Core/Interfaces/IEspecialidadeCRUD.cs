@@ -9,5 +9,8 @@ namespace ConsultaPlus.Core.Interfaces
         Task AddAsync(Especialidade especialidade);
         Task UpdateAsync(Especialidade especialidade);
         Task DeleteAsync(int id);
+
+        Task<bool> ExistsByNameAsync(string nome);
+        Task<bool> HasMedicosAsync(int especialidadeId);
     }
 }
