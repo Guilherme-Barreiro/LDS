@@ -28,6 +28,17 @@ namespace ConsultaPlus.API.Controllers
             return Ok(new SalaResponseDto { Id = s.Id, Nome = s.Nome });
         }
 
+        [HttpGet("search")]
+        public async Task<IActionResult> SearchByNome([FromQuery] string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                return BadRequest("Parâmetro 'nome' é obrigatório para pesquisa.");
+
+            var list = await _repo.SearchByNameAsync(nome);
+            var res = list.Select(s => new SalaResponseDto { Id = s.Id, Nome = s.Nome });
+            return Ok(res);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateSalaDto dto)
         {

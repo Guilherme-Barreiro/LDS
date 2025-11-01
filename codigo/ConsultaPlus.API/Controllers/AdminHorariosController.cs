@@ -69,7 +69,6 @@ namespace ConsultaPlus.API.Controllers
             catch (KeyNotFoundException e) { return NotFound(new { error = e.Message }); }
             catch (ArgumentException e) { return BadRequest(new { error = e.Message }); }
         }
-        // GET lista de horários do médico
         [HttpGet("horario")]
         public async Task<IActionResult> GetHorarios(int medicoId, CancellationToken ct)
         {
@@ -82,7 +81,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(lista);
         }
 
-        // GET um horário específico
         [HttpGet("horario/{horarioId:int}")]
         public async Task<IActionResult> GetHorario(int medicoId, int horarioId, CancellationToken ct)
         {
@@ -94,7 +92,6 @@ namespace ConsultaPlus.API.Controllers
             return h is null ? NotFound(new { error = "Horário não encontrado." }) : Ok(h);
         }
 
-        // PUT atualizar um horário (usa a normalização e as mesmas validações do service)
         [HttpPut("horario/{horarioId:int}")]
         public async Task<IActionResult> AtualizarHorario(
             int medicoId, int horarioId, [FromBody] AtualizarHorarioRequest req, CancellationToken ct)
@@ -118,7 +115,6 @@ namespace ConsultaPlus.API.Controllers
             catch (ArgumentException e) { return BadRequest(new { error = e.Message }); }
             catch (InvalidOperationException e) { return Conflict(new { error = e.Message }); }
         }
-        // GET lista de exceções de horario do médico
         [HttpGet("excecoes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetExcecoes(
@@ -164,6 +160,85 @@ namespace ConsultaPlus.API.Controllers
             await _db.SaveChangesAsync(ct);
             return NoContent();
         }
+
+        [HttpGet("excecoes/{horarioId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetExcecao(int medicoId, int horarioId, CancellationToken ct)
+        {
+            var e = await _db.HorariosExcecaoMedicos
+                .Where(x => x.MedicoId == medicoId && x.Id == horarioId)
+                .Select(x => new ExcecaoDto
+                {
+                    Id = x.Id,
+                    MedicoId = x.MedicoId,
+                    Data = DateOnly.FromDateTime(x.Data),
+                    HoraInicio = x.HoraInicio,
+                    HoraFim = x.HoraFim,
+                    IsReducao = x.IsReducao,
+                    Motivo = x.Motivo
+                })
+                .FirstOrDefaultAsync(ct);
+
+            return e is null ? NotFound(new { error = "Exceção não encontrada." }) : Ok(e);
+        }
+
+        [HttpPut("excecoes/{horarioId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> AtualizarExcecao(
+            int medicoId,
+            int horarioId,
+            [FromBody] AtualizarExcecaoRequest req,
+            CancellationToken ct)
+        {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+            if (req.HoraInicio >= req.HoraFim)
+                return BadRequest(new { error = "HoraInicio deve ser anterior a HoraFim." });
+
+            var e = await _db.HorariosExcecaoMedicos
+                .FirstOrDefaultAsync(x => x.MedicoId == medicoId && x.Id == horarioId, ct);
+
+            if (e is null) return NotFound(new { error = "Exceção não encontrada." });
+
+            e.Data = req.Data.ToDateTime(TimeOnly.MinValue);
+            e.HoraInicio = req.HoraInicio;
+            e.HoraFim = req.HoraFim;
+            e.IsReducao = req.IsReducao;
+            e.Motivo = req.Motivo;
+
+            await _db.SaveChangesAsync(ct);
+
+            var dto = new ExcecaoDto
+            {
+                Id = e.Id,
+                MedicoId = e.MedicoId,
+                Data = DateOnly.FromDateTime(e.Data),
+                HoraInicio = e.HoraInicio,
+                HoraFim = e.HoraFim,
+                IsReducao = e.IsReducao,
+                Motivo = e.Motivo
+            };
+
+            return Ok(dto);
+        }
+
+        [HttpDelete("excecoes/{horarioId:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> RemoverExcecao(int medicoId, int horarioId, CancellationToken ct)
+        {
+            var e = await _db.HorariosExcecaoMedicos
+                .FirstOrDefaultAsync(x => x.MedicoId == medicoId && x.Id == horarioId, ct);
+
+            if (e is null) return NotFound(new { error = "Exceção não encontrada." });
+
+            _db.HorariosExcecaoMedicos.Remove(e);
+            await _db.SaveChangesAsync(ct);
+            return NoContent();
+        }
+
 
     }
 }

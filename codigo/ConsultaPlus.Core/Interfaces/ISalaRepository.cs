@@ -6,5 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace ConsultaPlus.Core.Interfaces{
-    public interface ISalaRepository : IGenericRepository<Sala> { }
+    public interface ISalaRepository : IGenericRepository<Sala>
+    {
+        Task<IEnumerable<Sala>> SearchByNameAsync(string nome);
+    }
 }
+

@@ -1,5 +1,4 @@
 using System.Text;
-using ConsultaPlus.API.Repositories;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Infrastructure.Data;
 using ConsultaPlus.Infrastructure.Repositories;
@@ -29,6 +28,7 @@ builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
 builder.Services.AddScoped<ISalaRepository, SalaRepository>();
 builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
 builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
+builder.Services.AddScoped<IEspecialidadeCRUD, EspecialidadeRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorarioTrabalhoMedico, HorarioTrabalhoMedicoService>();
