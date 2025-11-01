@@ -7,141 +7,197 @@ using Xunit;
 
 using ConsultaPlus.API.Controllers;
 using ConsultaPlus.API.DTOs.Salas;
-using ConsultaPlus.Core.Interfaces;
-using SalaModel = ConsultaPlus.Core.Models.Sala;
+using ConsultaPlus.Core.Models;
+using ConsultaPlus.Core.Interfaces; // onde vive o ISalasService
 
 namespace ConsultaPlus.Tests.Controllers
 {
     public class SalasControllerTests
     {
-        private readonly Mock<ISalaRepository> _repoMock;
+        private readonly Mock<ISalasService> _svc;
         private readonly SalasController _controller;
 
         public SalasControllerTests()
         {
-            _repoMock = new Mock<ISalaRepository>(MockBehavior.Strict);
-            _controller = new SalasController(_repoMock.Object);
+            _svc = new Mock<ISalasService>(MockBehavior.Strict);
+            _controller = new SalasController(_svc.Object);
         }
 
         [Fact]
-        public async Task GetAll_DeveRetornarOk_ComListaDeSalaResponseDto()
+        public async Task GetAll_DeveRetornarOk_ComListaMapeada()
         {
-            // Arrange
-            var dados = new List<SalaModel>
+            var dados = new List<Sala>
             {
-                new SalaModel { Id = 1, Nome = "Sala A" },
-                new SalaModel { Id = 2, Nome = "Sala B" }
+                new Sala { Id = 1, Nome = "Sala A" },
+                new Sala { Id = 2, Nome = "Sala B" },
             };
-            _repoMock.Setup(r => r.GetAllAsync())
-                     .ReturnsAsync(dados.AsEnumerable());
 
-            // Act
+            _svc.Setup(s => s.GetAllAsync()).ReturnsAsync(dados.AsEnumerable());
+
             var result = await _controller.GetAll();
 
-            // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var body = Assert.IsAssignableFrom<IEnumerable<SalaResponseDto>>(ok.Value);
             Assert.Equal(2, body.Count());
-            Assert.Contains(body, s => s.Id == 1 && s.Nome == "Sala A");
-            Assert.Contains(body, s => s.Id == 2 && s.Nome == "Sala B");
+            Assert.Contains(body, x => x.Id == 1 && x.Nome == "Sala A");
+            Assert.Contains(body, x => x.Id == 2 && x.Nome == "Sala B");
 
-            _repoMock.Verify(r => r.GetAllAsync(), Times.Once);
+            _svc.Verify(s => s.GetAllAsync(), Times.Once);
         }
 
         [Fact]
-        public async Task GetById_Existente_DeveRetornarOk_ComSalaResponseDto()
+        public async Task GetById_Existente_DeveRetornarOk()
         {
-            // Arrange
-            var sala = new SalaModel { Id = 10, Nome = "Sala X" };
-            _repoMock.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(sala);
+            _svc.Setup(s => s.GetByIdAsync(10))
+                .ReturnsAsync(new Sala { Id = 10, Nome = "X" });
 
-            // Act
             var result = await _controller.GetById(10);
 
-            // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
-            var body = Assert.IsType<SalaResponseDto>(ok.Value);
-            Assert.Equal(10, body.Id);
-            Assert.Equal("Sala X", body.Nome);
+            var dto = Assert.IsType<SalaResponseDto>(ok.Value);
+            Assert.Equal(10, dto.Id);
+            Assert.Equal("X", dto.Nome);
 
-            _repoMock.Verify(r => r.GetByIdAsync(10), Times.Once);
+            _svc.Verify(s => s.GetByIdAsync(10), Times.Once);
         }
 
         [Fact]
         public async Task GetById_Inexistente_DeveRetornarNotFound()
         {
-            // Arrange
-            _repoMock.Setup(r => r.GetByIdAsync(999)).ReturnsAsync((SalaModel?)null);
+            _svc.Setup(s => s.GetByIdAsync(999))
+                .ReturnsAsync((Sala?)null);
 
-            // Act
             var result = await _controller.GetById(999);
 
-            // Assert
             Assert.IsType<NotFoundResult>(result);
-            _repoMock.Verify(r => r.GetByIdAsync(999), Times.Once);
+            _svc.Verify(s => s.GetByIdAsync(999), Times.Once);
         }
 
         [Theory]
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public async Task Create_NomeInvalido_DeveRetornarBadRequest(string nomeInvalido)
+        public async Task SearchByNome_Invalido_DeveRetornarBadRequest(string? nome)
         {
-            // Arrange
-            var dto = new CreateSalaDto { Nome = nomeInvalido };
+            var result = await _controller.SearchByNome(nome!);
 
-            // Act
-            var result = await _controller.Create(dto);
-
-            // Assert
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Nome da sala é obrigatório.", bad.Value);
+            Assert.Equal("Parâmetro 'nome' é obrigatório para pesquisa.", bad.Value);
 
-            _repoMock.Verify(r => r.AddAsync(It.IsAny<SalaModel>()), Times.Never);
+            _svc.Verify(s => s.SearchAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
-        public async Task Create_Valido_DeveChamarRepoAddAsync_E_ReturnarCreatedAtAction()
+        public async Task SearchByNome_Valido_DeveRetornarOk_ComLista()
         {
-            // Arrange
-            var dto = new CreateSalaDto { Nome = "  Sala Nova  " };
-            _repoMock
-                .Setup(r => r.AddAsync(It.IsAny<SalaModel>()))
-                .Callback<SalaModel>(s => s.Id = 42) // simula atribuição de Id
-                .Returns(Task.CompletedTask);
+            var dados = new List<Sala>
+            {
+                new Sala { Id = 3, Nome = "Sala Azul" },
+                new Sala { Id = 4, Nome = "Sala Azul Clara" },
+            };
 
-            // Act
+            _svc.Setup(s => s.SearchAsync("azul"))
+                .ReturnsAsync(dados.AsEnumerable());
+
+            var result = await _controller.SearchByNome("azul");
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var body = Assert.IsAssignableFrom<IEnumerable<SalaResponseDto>>(ok.Value);
+            Assert.Equal(2, body.Count());
+            Assert.Contains(body, s => s.Id == 3 && s.Nome == "Sala Azul");
+            Assert.Contains(body, s => s.Id == 4 && s.Nome == "Sala Azul Clara");
+
+            _svc.Verify(s => s.SearchAsync("azul"), Times.Once);
+        }
+
+        [Fact]
+        public async Task SearchByNome_DeveEncaminharParametroTalComoVem()
+        {
+            _svc.Setup(s => s.SearchAsync(It.IsAny<string>()))
+                .ReturnsAsync(Enumerable.Empty<Sala>());
+
+            var result = await _controller.SearchByNome("  Sala  ");
+
+            Assert.IsType<OkObjectResult>(result);
+            _svc.Verify(s => s.SearchAsync("  Sala  "), Times.Once);
+        }
+
+        [Fact]
+        public async Task Create_Valido_DeveRetornarCreatedAtAction()
+        {
+            var dto = new CreateSalaDto { Nome = "  Nova  " };
+            _svc.Setup(s => s.CreateAsync("  Nova  ")).ReturnsAsync(42);
+
             var result = await _controller.Create(dto);
 
-            // Assert
             var created = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(nameof(SalasController.GetById), created.ActionName);
-
-            // route values
-            Assert.NotNull(created.RouteValues);
-            Assert.True(created.RouteValues!.ContainsKey("id"));
-            Assert.Equal(42, created.RouteValues["id"]);
-
-            // body
+            Assert.Equal(42, created.RouteValues!["id"]);
             var body = Assert.IsType<SalaResponseDto>(created.Value);
             Assert.Equal(42, body.Id);
-            Assert.Equal("Sala Nova", body.Nome);
+            Assert.Equal("Nova", body.Nome); // Trim aplicado no controller
 
-            _repoMock.Verify(r => r.AddAsync(It.Is<SalaModel>(s => s.Nome == "Sala Nova")), Times.Once);
+            _svc.Verify(s => s.CreateAsync("  Nova  "), Times.Once);
         }
 
         [Fact]
-        public async Task Delete_DeveInvocarRepo_ERetornarNoContent()
+        public async Task Create_ArgumentException_DeveRetornarBadRequest()
         {
-            // Arrange
-            _repoMock.Setup(r => r.DeleteAsync(7)).Returns(Task.CompletedTask);
+            var dto = new CreateSalaDto { Nome = "" };
+            _svc.Setup(s => s.CreateAsync(""))
+                .ThrowsAsync(new ArgumentException("Nome da sala é obrigatório."));
 
-            // Act
+            var result = await _controller.Create(dto);
+
+            var bad = Assert.IsType<BadRequestObjectResult>(result);
+            Assert.Equal("Nome da sala é obrigatório.", bad.Value);
+        }
+
+        [Fact]
+        public async Task Create_Conflict_DeveRetornar409()
+        {
+            var dto = new CreateSalaDto { Nome = "Sala A" };
+            _svc.Setup(s => s.CreateAsync("Sala A"))
+                .ThrowsAsync(new InvalidOperationException("Sala já existe."));
+
+            var result = await _controller.Create(dto);
+
+            var conf = Assert.IsType<ConflictObjectResult>(result);
+            Assert.Equal("Sala já existe.", conf.Value);
+        }
+
+        [Fact]
+        public async Task Delete_Sucesso_DeveRetornarNoContent()
+        {
+            _svc.Setup(s => s.DeleteAsync(7)).Returns(Task.CompletedTask);
+
             var result = await _controller.Delete(7);
 
-            // Assert
             Assert.IsType<NoContentResult>(result);
-            _repoMock.Verify(r => r.DeleteAsync(7), Times.Once);
+            _svc.Verify(s => s.DeleteAsync(7), Times.Once);
+        }
+
+        [Fact]
+        public async Task Delete_NotFound_DeveRetornar404()
+        {
+            _svc.Setup(s => s.DeleteAsync(7))
+                .ThrowsAsync(new KeyNotFoundException());
+
+            var result = await _controller.Delete(7);
+
+            Assert.IsType<NotFoundResult>(result);
+        }
+
+        [Fact]
+        public async Task Delete_Conflict_DeveRetornar409()
+        {
+            _svc.Setup(s => s.DeleteAsync(7))
+                .ThrowsAsync(new InvalidOperationException("Existe marcação para a sala."));
+
+            var result = await _controller.Delete(7);
+
+            var conf = Assert.IsType<ConflictObjectResult>(result);
+            Assert.Equal("Existe marcação para a sala.", conf.Value);
         }
     }
 }

@@ -1,11 +1,12 @@
-using System.Text;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Infrastructure.Data;
 using ConsultaPlus.Infrastructure.Repositories;
 using ConsultaPlus.Infrastructure.Services;
+using ConsultaPlus.Infrastructure.UoW;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,6 +34,8 @@ builder.Services.AddScoped<IEspecialidadeCRUD, EspecialidadeRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorarioTrabalhoMedico, HorarioTrabalhoMedicoService>();
 builder.Services.AddScoped<IHorarioExcecaoMedico, HorarioExcecaoMedicoService>();
+builder.Services.AddScoped<ISalasService, SalasService>();
+builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

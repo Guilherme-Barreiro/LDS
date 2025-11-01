@@ -206,5 +206,64 @@ namespace ConsultaPlus.Tests.Medicos
             Assert.IsType<NoContentResult>(result);
             _repo.Verify(r => r.DeleteAsync(5), Times.Once);
         }
+
+        [Theory]
+        [InlineData(null)]
+        [InlineData("")]
+        [InlineData("   ")]
+        public async Task Search_SemNome_DeveRetornarBadRequest(string? nome)
+        {
+            // Act
+            var result = await _controller.Search(nome!);
+
+            // Assert
+            var bad = Assert.IsType<BadRequestObjectResult>(result);
+            // o controller devolve um objeto { message = "..." }
+            var prop = bad.Value!.GetType().GetProperty("message");
+            Assert.NotNull(prop);
+            Assert.Equal("Parâmetro 'nome' é obrigatório.", prop!.GetValue(bad.Value)?.ToString());
+
+            _repo.Verify(r => r.SearchByNameAsync(It.IsAny<string>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task Search_ComNome_DeveRetornarOk_ComListaMapeada()
+        {
+            // Arrange
+            var dados = new List<MedicoModel>
+    {
+        new MedicoModel { Id = 1, NomeCompleto = "Ana Médica", Telemovel = "911", Email = "ana@ex.com", NUtente = "U1", DataNascimento = new DateTime(1990,1,1) },
+        new MedicoModel { Id = 2, NomeCompleto = "Anabela",   Telemovel = "922", Email = "anabela@ex.com", NUtente = "U2", DataNascimento = new DateTime(1991,2,2) },
+    };
+            _repo.Setup(r => r.SearchByNameAsync("ana")).ReturnsAsync(dados.AsEnumerable());
+
+            // Act
+            var result = await _controller.Search("ana");
+
+            // Assert
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var list = Assert.IsAssignableFrom<IEnumerable<MedicoResponseDto>>(ok.Value);
+            Assert.Equal(2, list.Count());
+            Assert.Contains(list, x => x.Id == 1 && x.NomeCompleto == "Ana Médica" && x.Email == "ana@ex.com" && x.NUtente == "U1");
+            Assert.Contains(list, x => x.Id == 2 && x.NomeCompleto == "Anabela" && x.Email == "anabela@ex.com" && x.NUtente == "U2");
+
+            _repo.Verify(r => r.SearchByNameAsync("ana"), Times.Once);
+        }
+
+        [Fact]
+        public async Task Search_DeveEncaminharParametroAoRepositorio_SemAlterar()
+        {
+            // Arrange
+            _repo.Setup(r => r.SearchByNameAsync(It.IsAny<string>()))
+                 .ReturnsAsync(Enumerable.Empty<MedicoModel>());
+
+            // Act
+            var result = await _controller.Search("  Ana  ");
+
+            // Assert
+            Assert.IsType<OkObjectResult>(result);
+            _repo.Verify(r => r.SearchByNameAsync("  Ana  "), Times.Once); // o controller não faz trim/normalize
+        }
+
     }
 }
