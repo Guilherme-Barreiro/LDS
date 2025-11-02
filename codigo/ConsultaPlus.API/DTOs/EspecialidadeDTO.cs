@@ -1,9 +1,11 @@
+using System.ComponentModel;
+
 namespace ConsultaPlus.API.DTOs
 {
     public class EspecialidadeDTO
     {
-        public string Nome { get; set; }
+        [ReadOnly(true)] 
         public int Id { get; set; }
-
+        public string Nome { get; set; }
     }
 }
