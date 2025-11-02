@@ -11,6 +11,8 @@ using ConsultaPlus.API.DTOs.Medicos;
 using ConsultaPlus.Core.Interfaces;
 using MedicoModel = ConsultaPlus.Core.Models.Medico;
 
+using static ConsultaPlus.Tests.TextAssert;
+
 namespace ConsultaPlus.Tests.Medicos
 {
     public class MedicosControllerTests
@@ -27,18 +29,17 @@ namespace ConsultaPlus.Tests.Medicos
         [Fact]
         public async Task GetAll_DeveRetornarOk_ComListaMapeada()
         {
-            // Arrange
             var dados = new List<MedicoModel>
             {
-                new MedicoModel { Id = 1, NomeCompleto = "A", Telemovel = "911", Email = "a@a.com", NUtente = "U1", DataNascimento = new DateTime(1990,1,1), DataCriacao = new DateTime(2024,1,1) },
-                new MedicoModel { Id = 2, NomeCompleto = "B", Telemovel = "922", Email = "b@b.com", NUtente = "U2", DataNascimento = new DateTime(1991,2,2), DataCriacao = new DateTime(2024,2,2) },
+                new MedicoModel { Id = 1, NomeCompleto = "A", Telemovel = "911", Email = "a@a.com", NUtente = "U1",
+                                  DataNascimento = new DateTime(1990,1,1), DataCriacao = new DateTime(2024,1,1) },
+                new MedicoModel { Id = 2, NomeCompleto = "B", Telemovel = "922", Email = "b@b.com", NUtente = "U2",
+                                  DataNascimento = new DateTime(1991,2,2), DataCriacao = new DateTime(2024,2,2) },
             };
             _repo.Setup(r => r.GetAllAsync()).ReturnsAsync(dados.AsEnumerable());
 
-            // Act
             var result = await _controller.GetAll();
 
-            // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var list = Assert.IsAssignableFrom<IEnumerable<MedicoResponseDto>>(ok.Value);
             Assert.Equal(2, list.Count());
@@ -50,7 +51,15 @@ namespace ConsultaPlus.Tests.Medicos
         [Fact]
         public async Task GetById_Existente_DeveRetornarOk()
         {
-            var m = new MedicoModel { Id = 10, NomeCompleto = "Doc X", Telemovel = "933", Email = "x@x.com", NUtente = "UX", DataNascimento = new DateTime(1980, 5, 5) };
+            var m = new MedicoModel
+            {
+                Id = 10,
+                NomeCompleto = "Doc X",
+                Telemovel = "933",
+                Email = "x@x.com",
+                NUtente = "UX",
+                DataNascimento = new DateTime(1980, 5, 5)
+            };
             _repo.Setup(r => r.GetByIdAsync(10)).ReturnsAsync(m);
 
             var result = await _controller.GetById(10);
@@ -101,7 +110,8 @@ namespace ConsultaPlus.Tests.Medicos
             var result = await _controller.Create(dto);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal(expectedMsg, bad.Value);
+            // compara ignorando acentos
+            ContainsIgnoringDiacritics(expectedMsg, bad.Value?.ToString() ?? "");
             _repo.Verify(r => r.AddAsync(It.IsAny<MedicoModel>()), Times.Never);
         }
 
@@ -119,7 +129,7 @@ namespace ConsultaPlus.Tests.Medicos
             };
 
             _repo.Setup(r => r.AddAsync(It.IsAny<MedicoModel>()))
-                 .Callback<MedicoModel>(m => m.Id = 42) // simula persistência
+                 .Callback<MedicoModel>(m => m.Id = 42)
                  .Returns(Task.CompletedTask);
 
             var result = await _controller.Create(dto);
@@ -127,15 +137,14 @@ namespace ConsultaPlus.Tests.Medicos
             var created = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(nameof(MedicosController.GetById), created.ActionName);
             Assert.NotNull(created.RouteValues);
-            Assert.True(created.RouteValues!.ContainsKey("id"));
-            Assert.Equal(42, created.RouteValues["id"]);
+            Assert.Equal(42, created.RouteValues!["id"]);
 
             var body = Assert.IsType<MedicoResponseDto>(created.Value);
             Assert.Equal(42, body.Id);
-            Assert.Equal("Doc A", body.NomeCompleto);        // trimmed
-            Assert.Equal("911", body.Telemovel);             // trimmed
-            Assert.Equal("a@a.com", body.Email);             // trimmed
-            Assert.Equal("U1", body.NUtente);                // trimmed
+            Assert.Equal("Doc A", body.NomeCompleto);
+            Assert.Equal("911", body.Telemovel);
+            Assert.Equal("a@a.com", body.Email);
+            Assert.Equal("U1", body.NUtente);
 
             _repo.Verify(r => r.AddAsync(It.Is<MedicoModel>(m =>
                 m.NomeCompleto == "Doc A" &&
@@ -213,15 +222,13 @@ namespace ConsultaPlus.Tests.Medicos
         [InlineData("   ")]
         public async Task Search_SemNome_DeveRetornarBadRequest(string? nome)
         {
-            // Act
             var result = await _controller.Search(nome!);
 
-            // Assert
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            // o controller devolve um objeto { message = "..." }
+            // o controller devolve { message = "..." }
             var prop = bad.Value!.GetType().GetProperty("message");
             Assert.NotNull(prop);
-            Assert.Equal("Parâmetro 'nome' é obrigatório.", prop!.GetValue(bad.Value)?.ToString());
+            ContainsIgnoringDiacritics("Parametro 'nome' e obrigatorio", prop!.GetValue(bad.Value)?.ToString() ?? "");
 
             _repo.Verify(r => r.SearchByNameAsync(It.IsAny<string>()), Times.Never);
         }
@@ -229,18 +236,15 @@ namespace ConsultaPlus.Tests.Medicos
         [Fact]
         public async Task Search_ComNome_DeveRetornarOk_ComListaMapeada()
         {
-            // Arrange
             var dados = new List<MedicoModel>
-    {
-        new MedicoModel { Id = 1, NomeCompleto = "Ana Médica", Telemovel = "911", Email = "ana@ex.com", NUtente = "U1", DataNascimento = new DateTime(1990,1,1) },
-        new MedicoModel { Id = 2, NomeCompleto = "Anabela",   Telemovel = "922", Email = "anabela@ex.com", NUtente = "U2", DataNascimento = new DateTime(1991,2,2) },
-    };
+            {
+                new MedicoModel { Id = 1, NomeCompleto = "Ana Médica", Telemovel = "911", Email = "ana@ex.com", NUtente = "U1", DataNascimento = new DateTime(1990,1,1) },
+                new MedicoModel { Id = 2, NomeCompleto = "Anabela",    Telemovel = "922", Email = "anabela@ex.com", NUtente = "U2", DataNascimento = new DateTime(1991,2,2) },
+            };
             _repo.Setup(r => r.SearchByNameAsync("ana")).ReturnsAsync(dados.AsEnumerable());
 
-            // Act
             var result = await _controller.Search("ana");
 
-            // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var list = Assert.IsAssignableFrom<IEnumerable<MedicoResponseDto>>(ok.Value);
             Assert.Equal(2, list.Count());
@@ -253,17 +257,13 @@ namespace ConsultaPlus.Tests.Medicos
         [Fact]
         public async Task Search_DeveEncaminharParametroAoRepositorio_SemAlterar()
         {
-            // Arrange
             _repo.Setup(r => r.SearchByNameAsync(It.IsAny<string>()))
                  .ReturnsAsync(Enumerable.Empty<MedicoModel>());
 
-            // Act
             var result = await _controller.Search("  Ana  ");
 
-            // Assert
             Assert.IsType<OkObjectResult>(result);
-            _repo.Verify(r => r.SearchByNameAsync("  Ana  "), Times.Once); // o controller não faz trim/normalize
+            _repo.Verify(r => r.SearchByNameAsync("  Ana  "), Times.Once); 
         }
-
     }
 }

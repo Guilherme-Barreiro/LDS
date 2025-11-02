@@ -11,7 +11,7 @@ using ConsultaPlus.API.DTOs.Consultas;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 
-namespace ConsultaPlus.Tests.Controllers
+namespace ConsultaPlus.Tests.Consultas
 {
     public class ConsultasControllerTests
     {
