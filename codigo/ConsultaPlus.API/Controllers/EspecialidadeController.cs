@@ -44,25 +44,16 @@ namespace ConsultaPlus.API.Controllers
         [HttpPost]
         public async Task<IActionResult> RegistarEspecialidade([FromBody] EspecialidadeDTO request)
         {
-            // 1) O teste espera esta mensagem exatamente (string simples, sem acentos)
             if (string.IsNullOrWhiteSpace(request.Nome))
-                return BadRequest(new { message = "Nome é obrigatório." });
+                return BadRequest(new { message = "Nome e obrigatorio." });
 
-            try
-            {
-                var id = await _svc.CreateAsync(request.Nome.Trim());
+            var id = await _svc.CreateAsync(request.Nome.Trim());
 
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { id },
-                    new EspecialidadeDTO { Id = id, Nome = request.Nome.Trim() }
-                );
-            }
-            // 2) O teste de duplicado espera HTTP 409, não uma exceção não tratada
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(ex.Message);
-            }
+            return CreatedAtAction(
+                nameof(GetById),
+                new { id },
+                new EspecialidadeDTO { Id = id, Nome = request.Nome.Trim() }
+            );
         }
 
 
