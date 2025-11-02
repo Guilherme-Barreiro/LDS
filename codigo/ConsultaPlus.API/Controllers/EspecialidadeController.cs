@@ -1,4 +1,5 @@
 using ConsultaPlus.API.DTOs;
+using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -51,6 +52,29 @@ namespace ConsultaPlus.API.Controllers
             catch (ArgumentException ex) { return BadRequest(ex.Message); }
             catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         }
+        //[HttpPost]
+        //public async Task<IActionResult> RegistarEspecialidade([FromBody] EspecialidadeDTO request)
+        //{
+        //    try
+        //    {
+        //        var id = await _svc.CreateAsync(request.Nome);
+
+        //        return CreatedAtAction(
+        //            nameof(GetById),
+        //            new { id },
+        //            new EspecialidadeDTO { Id = id, Nome = request.Nome }
+        //        );
+
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return Conflict(ex.Message);
+        //    }
+        //}
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, EspecialidadeDTO dto)

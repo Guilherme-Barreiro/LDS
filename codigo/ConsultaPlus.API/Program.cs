@@ -30,6 +30,7 @@ builder.Services.AddScoped<ISalaRepository, SalaRepository>();
 builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
 builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
 builder.Services.AddScoped<IEspecialidadeCRUD, EspecialidadeRepository>();
+builder.Services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorarioTrabalhoMedico, HorarioTrabalhoMedicoService>();
