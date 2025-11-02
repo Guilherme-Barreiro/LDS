@@ -1,5 +1,5 @@
 using ConsultaPlus.API.DTOs;
-using ConsultaPlus.API.DTOs.Especialidade;
+using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -42,28 +42,39 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> RegistarEspecialidade([FromBody] EspecialidadeDTO request)
+        public async Task<IActionResult> RegistarEspecialidade(EspecialidadeDTO requestDto)
         {
             try
             {
-                var id = await _svc.CreateAsync(request.Nome);
-
-                return CreatedAtAction(
-                    nameof(GetById),
-                    new { Id = id },
-                    new EspecialidadeDTO { Id = id, Nome = request.Nome }
-                );
-
+                var id = await _svc.CreateAsync(requestDto.Nome);
+                return CreatedAtAction(nameof(GetById), new { id }, new { id, nome = requestDto.Nome.Trim() });
             }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(ex.Message);
-            }
+            catch (ArgumentException ex) { return BadRequest(ex.Message); }
+            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
         }
+        //[HttpPost]
+        //public async Task<IActionResult> RegistarEspecialidade([FromBody] EspecialidadeDTO request)
+        //{
+        //    try
+        //    {
+        //        var id = await _svc.CreateAsync(request.Nome);
+
+        //        return CreatedAtAction(
+        //            nameof(GetById),
+        //            new { id },
+        //            new EspecialidadeDTO { Id = id, Nome = request.Nome }
+        //        );
+
+        //    }
+        //    catch (ArgumentException ex)
+        //    {
+        //        return BadRequest(ex.Message);
+        //    }
+        //    catch (InvalidOperationException ex)
+        //    {
+        //        return Conflict(ex.Message);
+        //    }
+        //}
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, EspecialidadeDTO dto)
