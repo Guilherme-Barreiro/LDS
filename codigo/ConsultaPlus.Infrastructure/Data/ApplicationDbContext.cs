@@ -7,7 +7,6 @@ namespace ConsultaPlus.Infrastructure.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-<<<<<<< Updated upstream
         // Tabelas
         public virtual DbSet<Paciente> Pacientes { get; set; }
         public virtual DbSet<Medico> Medicos { get; set; }
@@ -19,21 +18,6 @@ namespace ConsultaPlus.Infrastructure.Data
         public virtual DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
         public virtual DbSet<Notificacao> Notificacoes { get; set; }
 
-=======
-        // Cada DbSet está a representar cada tabela da base de dados
-        public DbSet<Paciente> Pacientes { get; set; }
-        public DbSet<Medico> Medicos { get; set; }
-        public DbSet<Consulta> Consultas { get; set; }
-        public DbSet<Especialidade> Especialidades { get; set; }
-        public DbSet<Sala> Salas { get; set; }
-        public DbSet<HorarioTrabalhoMedico> HorariosTrabalhoMedicos { get; set; }
-        public DbSet<HorarioExcecaoMedico> HorariosExcecaoMedicos { get; set; }
-        public DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
-        public DbSet<Notificacao> Notificacoes { get; set; }
-        public DbSet<Admin> Admins { get; set; }
-
-        // O método OnModelCreating é onde configuramos as relações complexas
->>>>>>> Stashed changes
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
