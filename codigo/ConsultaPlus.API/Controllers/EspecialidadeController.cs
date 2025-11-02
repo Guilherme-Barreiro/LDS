@@ -45,16 +45,24 @@ namespace ConsultaPlus.API.Controllers
         public async Task<IActionResult> RegistarEspecialidade([FromBody] EspecialidadeDTO request)
         {
             if (string.IsNullOrWhiteSpace(request.Nome))
-                return BadRequest(new { message = "Nome obrigatorio." });
+                return BadRequest("Nome obrigatorio.");
 
-            var id = await _svc.CreateAsync(request.Nome.Trim());
+            try
+            {
+                var id = await _svc.CreateAsync(request.Nome.Trim());
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id },
-                new EspecialidadeDTO { Id = id, Nome = request.Nome.Trim() }
-            );
+                return CreatedAtAction(
+                    nameof(GetById),
+                    new { id },
+                    new EspecialidadeDTO { Id = id, Nome = request.Nome.Trim() }
+                );
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
+
 
 
         [HttpPut("{id:int}")]
