@@ -49,6 +49,19 @@ namespace ConsultaPlus.Tests.Medicos
         }
 
         [Fact]
+        public async Task GetAll_Vazio_DeveRetornarOk_ListaVazia()
+        {
+            _repo.Setup(r => r.GetAllAsync()).ReturnsAsync(Enumerable.Empty<MedicoModel>());
+
+            var result = await _controller.GetAll();
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var list = Assert.IsAssignableFrom<IEnumerable<MedicoResponseDto>>(ok.Value);
+            Assert.Empty(list);
+            _repo.Verify(r => r.GetAllAsync(), Times.Once);
+        }
+
+        [Fact]
         public async Task GetById_Existente_DeveRetornarOk()
         {
             var m = new MedicoModel
@@ -110,7 +123,6 @@ namespace ConsultaPlus.Tests.Medicos
             var result = await _controller.Create(dto);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            // compara ignorando acentos
             ContainsIgnoringDiacritics(expectedMsg, bad.Value?.ToString() ?? "");
             _repo.Verify(r => r.AddAsync(It.IsAny<MedicoModel>()), Times.Never);
         }
@@ -145,6 +157,7 @@ namespace ConsultaPlus.Tests.Medicos
             Assert.Equal("911", body.Telemovel);
             Assert.Equal("a@a.com", body.Email);
             Assert.Equal("U1", body.NUtente);
+            Assert.Equal(new DateTime(1990, 1, 1), body.DataNascimento);
 
             _repo.Verify(r => r.AddAsync(It.Is<MedicoModel>(m =>
                 m.NomeCompleto == "Doc A" &&
@@ -206,6 +219,42 @@ namespace ConsultaPlus.Tests.Medicos
         }
 
         [Fact]
+        public async Task Update_CamposNulos_NaoAlteramValoresOriginais()
+        {
+            var original = new MedicoModel
+            {
+                Id = 8,
+                NomeCompleto = "Nome Original",
+                Telemovel = "999",
+                Email = "original@ex.com",
+                DataNascimento = new DateTime(1979, 9, 9)
+            };
+
+            _repo.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(original);
+            _repo.Setup(r => r.UpdateAsync(It.IsAny<MedicoModel>())).Returns(Task.CompletedTask);
+
+            // Só altera DataNascimento; strings a null devem manter os originais
+            var dto = new UpdateMedicoDto
+            {
+                NomeCompleto = null,
+                Telemovel = null,
+                Email = null,
+                DataNascimento = new DateTime(2000, 1, 1)
+            };
+
+            var result = await _controller.Update(8, dto);
+
+            Assert.IsType<NoContentResult>(result);
+            _repo.Verify(r => r.UpdateAsync(It.Is<MedicoModel>(m =>
+                m.Id == 8 &&
+                m.NomeCompleto == "Nome Original" &&
+                m.Telemovel == "999" &&
+                m.Email == "original@ex.com" &&
+                m.DataNascimento == new DateTime(2000, 1, 1)
+            )), Times.Once);
+        }
+
+        [Fact]
         public async Task Delete_DeveInvocarRepo_ERetornarNoContent()
         {
             _repo.Setup(r => r.DeleteAsync(5)).Returns(Task.CompletedTask);
@@ -225,7 +274,6 @@ namespace ConsultaPlus.Tests.Medicos
             var result = await _controller.Search(nome!);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            // o controller devolve { message = "..." }
             var prop = bad.Value!.GetType().GetProperty("message");
             Assert.NotNull(prop);
             ContainsIgnoringDiacritics("Parametro 'nome' e obrigatorio", prop!.GetValue(bad.Value)?.ToString() ?? "");
@@ -255,6 +303,19 @@ namespace ConsultaPlus.Tests.Medicos
         }
 
         [Fact]
+        public async Task Search_SemResultados_DeveRetornarOk_ListaVazia()
+        {
+            _repo.Setup(r => r.SearchByNameAsync("zzz")).ReturnsAsync(Enumerable.Empty<MedicoModel>());
+
+            var result = await _controller.Search("zzz");
+
+            var ok = Assert.IsType<OkObjectResult>(result);
+            var list = Assert.IsAssignableFrom<IEnumerable<MedicoResponseDto>>(ok.Value);
+            Assert.Empty(list);
+            _repo.Verify(r => r.SearchByNameAsync("zzz"), Times.Once);
+        }
+
+        [Fact]
         public async Task Search_DeveEncaminharParametroAoRepositorio_SemAlterar()
         {
             _repo.Setup(r => r.SearchByNameAsync(It.IsAny<string>()))
@@ -263,7 +324,7 @@ namespace ConsultaPlus.Tests.Medicos
             var result = await _controller.Search("  Ana  ");
 
             Assert.IsType<OkObjectResult>(result);
-            _repo.Verify(r => r.SearchByNameAsync("  Ana  "), Times.Once); 
+            _repo.Verify(r => r.SearchByNameAsync("  Ana  "), Times.Once);
         }
     }
 }
