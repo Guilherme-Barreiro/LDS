@@ -50,9 +50,10 @@ namespace ConsultaPlus.API.Controllers
 
                 return CreatedAtAction(
                     nameof(GetById),
-                    new { id },
+                    new { Id = id },
                     new EspecialidadeDTO { Id = id, Nome = request.Nome }
                 );
+
             }
             catch (ArgumentException ex)
             {
@@ -63,9 +64,6 @@ namespace ConsultaPlus.API.Controllers
                 return Conflict(ex.Message);
             }
         }
-
-
-
 
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, EspecialidadeDTO dto)
