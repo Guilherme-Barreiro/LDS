@@ -2,27 +2,36 @@
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
-      <DataCollector friendlyName="XPlat Code Coverage">
+      <!-- O nome é sensível: tem de ser "XPlat code coverage" -->
+      <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
+          <!-- formato que o ReportGenerator lê bem -->
           <Format>cobertura</Format>
 
-          <!-- Excluir por ficheiro (paths glob) -->
+          <!-- Excluir por ficheiro (globs no caminho) -->
           <ExcludeByFile>
+            **/Migrations/*.cs;
+            **/*DbContextModelSnapshot.cs;
+            **/*ApplicationDbContextFactory.cs;
+            **/*Program.cs;
             **/ConsultaPlus.API/DTOs/**/*.cs;
-            **/ConsultaPlus.Core/Models/**/*.cs;
-            **/Migrations/**/*.cs;
-            **/Program.cs
+            **/ConsultaPlus.Core/Models/**/*.cs
           </ExcludeByFile>
 
-          <!-- Excluir por assembly/namespace -->
-          <!-- Sintaxe: [Assembly]Namespace.Class -->
+          <!-- Excluir por assembly/tipo/namespace -->
+          <!-- Sintaxe: [Assembly]TipoOuNamespaceComWildcard -->
           <Exclude>
-            [ConsultaPlus.API]ConsultaPlus.API.DTOs.*;
-            [ConsultaPlus.Core]ConsultaPlus.Core.Models.*;
+            [ConsultaPlus.Infrastructure]*Repository*
+            [ConsultaPlus.Infrastructure]*UoW*
+            [ConsultaPlus.API]*Program*
           </Exclude>
 
-          <!-- Opcional: apenas os teus assemblies de app -->
-          <Include>[ConsultaPlus.*]*</Include>
+          <!-- Incluir só os teus assemblies de app -->
+          <Include>
+            [ConsultaPlus.API]*
+            [ConsultaPlus.Infrastructure]*
+            [ConsultaPlus.Core]*
+          </Include>
         </Configuration>
       </DataCollector>
     </DataCollectors>
