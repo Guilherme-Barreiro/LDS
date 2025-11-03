@@ -18,18 +18,23 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpPost("registo-especialidade")]
-        public async Task<IActionResult> RegistarEspecialidade([FromBody] CreateEspecialidadeDTO requestDto)
+        public async Task<IActionResult> Create([FromBody] CreateEspecialidadeDTO requestDto)
         {
             try
             {
-                var novaEspecialidade = new Especialidade { Nome = requestDto.Nome.Trim() };
-                await _especialidadeCRUD.AddAsync(novaEspecialidade);
-                var readDto = new ReadEspecialidadeDTO { Id = novaEspecialidade.Id, Nome = novaEspecialidade.Nome };
-                return CreatedAtAction(nameof(ObterEspecialidade), new { id = readDto.Id }, readDto);
+                var id = await _especialidadeCRUD.AddAsync(requestDto.Nome);
+
+                var readDto = new ReadEspecialidadeDTO
+                {
+                    Id = id,
+                    Nome = requestDto.Nome.Trim()
+                };
+
+                return CreatedAtAction(nameof(GetByName), new { id = id }, readDto);
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(new { message = ex.Message });
+                return Conflict(new { message = ex.Message });
             }
             catch (DbUpdateException)
             {
@@ -42,7 +47,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpDelete("remover-especialidade/{id}")]
-        public async Task<IActionResult> RemoverEspecialidade(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
@@ -60,13 +65,12 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpPut("atualizar-especialidade/{id}")]
-        public async Task<IActionResult> AtualizarEspecialidade(int id, [FromBody] UpdateEspecialidadeDTO requestDto)
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateEspecialidadeDTO requestDto)
         {
             try
             {
-                var especialidade = await _especialidadeCRUD.GetByIdAsync(id);
                 var novoNome = requestDto.Nome.Trim();
-                await _especialidadeCRUD.UpdateAsync(especialidade, novoNome);
+                await _especialidadeCRUD.UpdateAsync(id, novoNome);
                 return NoContent();
             }
             catch (InvalidOperationException ex)
@@ -83,8 +87,8 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpGet("obter-especialidade/{id}")]
-        public async Task<IActionResult> ObterEspecialidade(int id)
+        [HttpGet("obter-especialidade-id/{id}")]
+        public async Task<IActionResult> GetById(int id)
         {
             try
             {
@@ -99,10 +103,26 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
+        [HttpGet("obter-especialidade-nome/{string}")]
+        public async Task<IActionResult> GetByName(string nome)
+        {
+            try
+            {
+                var todas = await _especialidadeCRUD.GetByNameAsync(nome);
+                if (todas == null) return NotFound(new { message = "Especialidades não encontradas." });
+
+                var dtos = todas.Select(e => new ReadEspecialidadeDTO { Id = e.Id, Nome = e.Nome });
+                return Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
 
 
         [HttpGet("obter-todas-especialidades")]
-        public async Task<IActionResult> ObterEspecialidades()
+        public async Task<IActionResult> GetAll()
         {
             try
             {

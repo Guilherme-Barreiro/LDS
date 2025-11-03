@@ -32,36 +32,51 @@ namespace ConsultaPlus.Infrastructure.Repositories
                                  .FirstOrDefaultAsync(e => e.Id == id);
         }
 
-        public async Task AddAsync(Especialidade especialidade)
+        public async Task<IEnumerable<Especialidade>> GetByNameAsync(string name)
         {
+            return await _context.Especialidades
+                .AsNoTracking()
+                .Where(e => e.Nome.ToLower().Contains(name.ToLower()))
+                .ToListAsync();
+        }
+
+        public async Task<int> AddAsync(string name)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Nome inválido.", nameof(name));
+
+            var nomeTrim = name.Trim();
+
             var existe = await _context.Especialidades
-                                      .AsNoTracking()
-                                      .AnyAsync(e => e.Nome.ToLower() == especialidade.Nome.ToLower());
+                .AsNoTracking()
+                .AnyAsync(e => e.Nome.Equals(nomeTrim, StringComparison.OrdinalIgnoreCase));
 
             if (existe)
                 throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
 
-            _context.Especialidades.Add(especialidade);
+            var novaEspecialidade = new Especialidade { Nome = nomeTrim };
+
+            _context.Especialidades.Add(novaEspecialidade);
             await _context.SaveChangesAsync();
+
+            return novaEspecialidade.Id;
         }
 
-        public async Task UpdateAsync(Especialidade especialidade, string newNome)
+        public async Task UpdateAsync(int id, string newNome)
         {
-            if (especialidade == null)
-                throw new ArgumentNullException(nameof(especialidade));
 
             var nome = newNome?.Trim();
             if (string.IsNullOrWhiteSpace(nome))
                 throw new ArgumentException("Nome inválido.", nameof(newNome));
 
-            var existente = await _context.Especialidades.FindAsync(especialidade.Id);
+            var existente = await _context.Especialidades.FindAsync(id);
             if (existente == null)
                 throw new KeyNotFoundException("Especialidade não encontrada.");
 
             var nomeEmUso = await _context.Especialidades
                                          .AsNoTracking()
                                          .AnyAsync(e => e.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase)
-                                                        && e.Id != especialidade.Id);
+                                                        && e.Id != id);
 
             if (nomeEmUso)
                 throw new InvalidOperationException("Já existe outra especialidade com esse nome.");
