@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace ConsultaPlus.Tests.ImtegracaoMedico;
-public class MedicosControllerE2ETests : IClassFixture<ApiFactory>
+public class MedicosControllerTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;
     private readonly HttpClient _client;
@@ -21,7 +21,7 @@ public class MedicosControllerE2ETests : IClassFixture<ApiFactory>
         DateTime? DataCriacao
     );
 
-    public MedicosControllerE2ETests(ApiFactory factory)
+    public MedicosControllerTests(ApiFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();

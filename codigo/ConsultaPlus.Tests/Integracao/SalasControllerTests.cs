@@ -7,14 +7,14 @@ using Xunit;
 
 namespace ConsultaPlus.Tests.IntegracaoSala;
 
-public class SalasControllerE2ETests : IClassFixture<ApiFactory>
+public class SalasControllerTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;
     private readonly HttpClient _client;
 
     public record SalaVm(int Id, string Nome);
 
-    public SalasControllerE2ETests(ApiFactory factory)
+    public SalasControllerTests(ApiFactory factory)
     {
         _factory = factory;
         _client = factory.CreateClient();
