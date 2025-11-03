@@ -13,9 +13,11 @@ public class Medico
 	public string PasswordHash { get; set; }
 	public DateTime DataNascimento { get; set; }
 	public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
-	
-	// Propriedades de Navegação
-	public ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
+    public string? PasswordResetToken { get; set; }
+    public DateTime? ResetTokenExpires { get; set; }
+
+    // Propriedades de Navegação
+    public ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
 	public ICollection<HorarioTrabalhoMedico> HorariosTrabalho { get; set; } = new List<HorarioTrabalhoMedico>();
 	public ICollection<HorarioExcecaoMedico> HorariosExcecao { get; set; } = new List<HorarioExcecaoMedico>();
 	public ICollection<EspecialidadeMedico> EspecialidadesMedico { get; set; } = new List<EspecialidadeMedico>();

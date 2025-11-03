@@ -1,4 +1,6 @@
-﻿using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
@@ -10,8 +12,11 @@ namespace ConsultaPlus.Infrastructure.Repositories
     {
         public MedicoRepository(ApplicationDbContext context) : base(context) { }
 
-        public Task<Medico?> GetByEmailAsync(string email) =>
-            _context.Medicos.AsNoTracking().FirstOrDefaultAsync(m => m.Email == email);
+        public async Task<Medico?> GetByEmailAsync(string email) =>
+            await _context.Medicos.AsNoTracking().FirstOrDefaultAsync(m => m.Email == email);
+
+        public async Task<Medico?> GetByNUtenteAsync(string nUtente) =>
+            await _context.Medicos.AsNoTracking().FirstOrDefaultAsync(m => m.NUtente == nUtente);
 
         public async Task<IEnumerable<Medico>> SearchByNameAsync(string nome)
         {
@@ -26,6 +31,12 @@ namespace ConsultaPlus.Infrastructure.Repositories
                     EF.Functions.Like(m.Email, term))
                 .OrderBy(m => m.NomeCompleto)
                 .ToListAsync();
+        }
+
+        public async Task UpdateAsync(Medico medico)
+        {
+            _context.Medicos.Update(medico);
+            await _context.SaveChangesAsync();
         }
     }
 }
