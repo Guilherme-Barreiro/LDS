@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
@@ -6,7 +5,6 @@
         <Configuration>
           <Format>cobertura</Format>
 
-          <!-- Excluir por ficheiro -->
           <ExcludeByFile>
             **/Migrations/*.cs;
             **/*DbContextModelSnapshot.cs;
@@ -16,14 +14,12 @@
             **/ConsultaPlus.Core/Models/**/*.cs
           </ExcludeByFile>
 
-          <!-- EXCLUIR por assembly + namespace COMPLETO -->
           <Exclude>
             [ConsultaPlus.Infrastructure]ConsultaPlus.Infrastructure.Repositories.*
             [ConsultaPlus.Infrastructure]ConsultaPlus.Infrastructure.UoW.*
             [ConsultaPlus.API]ConsultaPlus.API.Program
           </Exclude>
 
-          <!-- Assemblies a incluir -->
           <Include>
             [ConsultaPlus.API]*
             [ConsultaPlus.Infrastructure]*
