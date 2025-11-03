@@ -5,14 +5,8 @@ namespace ConsultaPlus.Core.Interfaces
 {
     public interface IPacienteRepository
     {
-
         Task<Paciente?> GetByIdAsync(int id);
         Task<Paciente?> GetByNUtenteAsync(string nUtente);
-        Task AddAsync(Paciente paciente);
-        Task UpdateAsync(Paciente paciente);
+        Task AddAsync(Paciente paciente);   
     }
 }
-
-       
-    
-

@@ -1,27 +1,15 @@
-
 ﻿using ConsultaPlus.Core.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-
-using ConsultaPlus.Core.Models;
-
 using System.Threading.Tasks;
 
 namespace ConsultaPlus.Core.Interfaces
 {
-
-
-
-    public interface IMedicoRepository
+    public interface IMedicoRepository : IGenericRepository<Medico>
     {
-        Task<Medico?> GetByNUtenteAsync(string nUtente);
-
-        
         Task<Medico?> GetByEmailAsync(string email);
-        Task UpdateAsync(Medico medico);
-       
+        Task<IEnumerable<Medico>> SearchByNameAsync(string nome);
     }
 }
-
