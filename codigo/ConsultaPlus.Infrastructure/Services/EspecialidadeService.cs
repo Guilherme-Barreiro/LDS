@@ -16,26 +16,29 @@ public class EspecialidadeService : IEspecialidadeCRUD
 
     public Task<Especialidade?> GetByIdAsync(int id) => _especialidadeRepository.GetByIdAsync(id);
 
-    public async Task AddAsync(Especialidade especialidade)
-    {
-        if (string.IsNullOrWhiteSpace(especialidade.Nome))
-            throw new ArgumentException("Nome inválido.", nameof(especialidade.Nome));
+    public Task<IEnumerable<Especialidade>> GetByNameAsync(string name) => _especialidadeRepository.GetByNameAsync(name);
 
-        var nomeTrim = especialidade.Nome.Trim();
+
+    public async Task<int> AddAsync(string name)
+    {
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException("Nome inválido.", nameof(name));
+
+        var nomeTrim = name.Trim();
 
         var todas = await _especialidadeRepository.GetAllAsync();
         if (todas.Any(e => e.Nome.Equals(nomeTrim, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
 
-        await _especialidadeRepository.AddAsync(especialidade);
+        return await _especialidadeRepository.AddAsync(name);
     }
 
-    public async Task UpdateAsync(Especialidade especialidade, string novoNome)
+    public async Task UpdateAsync(int id, string novoNome)
     {
         if (string.IsNullOrWhiteSpace(novoNome))
             throw new ArgumentException("Nome inválido.", nameof(novoNome));
 
-        var esp = await _especialidadeRepository.GetByIdAsync(especialidade.Id);
+        var esp = await _especialidadeRepository.GetByIdAsync(id);
         if (esp == null)
             throw new KeyNotFoundException("Especialidade não encontrada.");
 
@@ -45,7 +48,7 @@ public class EspecialidadeService : IEspecialidadeCRUD
         if (todas.Any(e => e.Nome.Equals(novoTrim, StringComparison.OrdinalIgnoreCase)))
             throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
 
-        await _especialidadeRepository.UpdateAsync(especialidade, novoTrim);
+        await _especialidadeRepository.UpdateAsync(id, novoTrim);
     }
 
     public async Task DeleteAsync(int id)
