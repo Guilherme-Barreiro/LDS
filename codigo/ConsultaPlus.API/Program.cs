@@ -37,7 +37,7 @@ builder.Services.AddScoped<IHorarioTrabalhoMedico, HorarioTrabalhoMedicoService>
 builder.Services.AddScoped<IHorarioExcecaoMedico, HorarioExcecaoMedicoService>();
 builder.Services.AddScoped<ISalasService, SalasService>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-builder.Services.AddScoped<IEspecialidadesService, EspecialidadesService>();
+builder.Services.AddScoped<EspecialidadeService, EspecialidadeService>();
 builder.Services.AddScoped<IMedicoService, MedicoService>();
 builder.Services.AddScoped<IConsultaService, ConsultaService>();
 

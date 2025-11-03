@@ -1,8 +1,8 @@
-using ConsultaPlus.API.DTOs;
+using ConsultaPlus.API.DTOs.Especialidade;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
-using ConsultaPlus.Infrastructure.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConsultaPlus.API.Controllers
 {
@@ -10,87 +10,131 @@ namespace ConsultaPlus.API.Controllers
     [Route("api/[controller]")]
     public class EspecialidadeController : ControllerBase
     {
-        private readonly IEspecialidadesService _svc;
-        public EspecialidadeController(IEspecialidadesService svc) => _svc = svc;
+        private readonly IEspecialidadeCRUD _especialidadeCRUD;
 
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
-            => Ok((await _svc.GetAllAsync()).Select(e => new { e.Id, e.Nome }));
-
-        [HttpGet("{id:int}")]
-        public async Task<IActionResult> GetById(int id)
+        public EspecialidadeController(IEspecialidadeCRUD especialidadeCRUD)
         {
-            var esp = await _svc.GetByIdAsync(id);
-            return esp is null
-                ? NotFound(new { message = $"Especialidade {id} nao encontrada." })
-                : Ok(new EspecialidadeDTO { Id = esp.Id, Nome = esp.Nome });
+            _especialidadeCRUD = especialidadeCRUD;
         }
 
-        [HttpGet("nome/{nome}")]
-        public async Task<IActionResult> GetByNome(string nome)
-        {
-            if (string.IsNullOrWhiteSpace(nome))
-                return BadRequest(new { message = "Nome obrigatorio." });
-
-            var results = (await _svc.SearchAsync(nome))
-                .Select(e => new EspecialidadeDTO { Id = e.Id, Nome = e.Nome })
-                .ToList();
-
-            return results.Count == 0
-                ? NotFound(new { message = $"Nenhuma especialidade com nome contendo '{nome}'." })
-                : Ok(results);
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> RegistarEspecialidade(EspecialidadeDTO requestDto)
+        [HttpPost("registo-especialidade")]
+        public async Task<IActionResult> Create([FromBody] CreateEspecialidadeDTO requestDto)
         {
             try
             {
-                var id = await _svc.CreateAsync(requestDto.Nome);
-                return CreatedAtAction(nameof(GetById), new { id }, new { id, nome = requestDto.Nome.Trim() });
+                var id = await _especialidadeCRUD.AddAsync(requestDto.Nome);
+
+                var readDto = new ReadEspecialidadeDTO
+                {
+                    Id = id,
+                    Nome = requestDto.Nome.Trim()
+                };
+
+                return CreatedAtAction(nameof(GetByName), new { id = id }, readDto);
             }
-            catch (ArgumentException ex) { return BadRequest(ex.Message); }
-            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
-        }
-        //[HttpPost]
-        //public async Task<IActionResult> RegistarEspecialidade([FromBody] EspecialidadeDTO request)
-        //{
-        //    try
-        //    {
-        //        var id = await _svc.CreateAsync(request.Nome);
-
-        //        return CreatedAtAction(
-        //            nameof(GetById),
-        //            new { id },
-        //            new EspecialidadeDTO { Id = id, Nome = request.Nome }
-        //        );
-
-        //    }
-        //    catch (ArgumentException ex)
-        //    {
-        //        return BadRequest(ex.Message);
-        //    }
-        //    catch (InvalidOperationException ex)
-        //    {
-        //        return Conflict(ex.Message);
-        //    }
-        //}
-
-        [HttpPut("{id:int}")]
-        public async Task<IActionResult> Update(int id, EspecialidadeDTO dto)
-        {
-            try { await _svc.UpdateAsync(id, dto.Nome); return NoContent(); }
-            catch (KeyNotFoundException) { return NotFound(); }
-            catch (ArgumentException ex) { return BadRequest(ex.Message); }
-            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "Não foi possível registar a especialidade devido a um conflito na base de dados." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
-        [HttpDelete("{id:int}")]
+        [HttpDelete("remover-especialidade/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
-            try { await _svc.DeleteAsync(id); return NoContent(); }
-            catch (KeyNotFoundException) { return NotFound(); }
-            catch (InvalidOperationException ex) { return Conflict(ex.Message); }
+            try
+            {
+                await _especialidadeCRUD.DeleteAsync(id);
+                return NoContent();
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "Não foi possível remover a especialidade devido a um conflito na base de dados." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
+
+        [HttpPut("atualizar-especialidade/{id}")]
+        public async Task<IActionResult> Update(int id, [FromBody] UpdateEspecialidadeDTO requestDto)
+        {
+            try
+            {
+                var novoNome = requestDto.Nome.Trim();
+                await _especialidadeCRUD.UpdateAsync(id, novoNome);
+                return NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+            catch (DbUpdateException)
+            {
+                return Conflict(new { message = "Não foi possível atualizar a especialidade devido a um conflito na base de dados." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("obter-especialidade-id/{id}")]
+        public async Task<IActionResult> GetById(int id)
+        {
+            try
+            {
+                var ent = await _especialidadeCRUD.GetByIdAsync(id);
+                if (ent == null) return NotFound(new { message = "Especialidade não encontrada." });
+
+                return Ok(new ReadEspecialidadeDTO { Id = ent.Id, Nome = ent.Nome });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet("obter-especialidade-nome/{string}")]
+        public async Task<IActionResult> GetByName(string nome)
+        {
+            try
+            {
+                var todas = await _especialidadeCRUD.GetByNameAsync(nome);
+                if (todas == null) return NotFound(new { message = "Especialidades não encontradas." });
+
+                var dtos = todas.Select(e => new ReadEspecialidadeDTO { Id = e.Id, Nome = e.Nome });
+                return Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+
+        [HttpGet("obter-todas-especialidades")]
+        public async Task<IActionResult> GetAll()
+        {
+            try
+            {
+                var todas = await _especialidadeCRUD.GetAllAsync();
+                var dtos = todas.Select(e => new ReadEspecialidadeDTO { Id = e.Id, Nome = e.Nome });
+                return Ok(dtos);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }

@@ -1,16 +1,12 @@
 using ConsultaPlus.Core.Models;
 
-namespace ConsultaPlus.Core.Interfaces
-{
-    public interface IEspecialidadeCRUD
-    {
-        Task<IEnumerable<Especialidade>> GetAllAsync();
-        Task<Especialidade?> GetByIdAsync(int id);
-        Task AddAsync(Especialidade especialidade);
-        Task UpdateAsync(Especialidade especialidade);
-        Task DeleteAsync(int id);
+public interface IEspecialidadeCRUD
 
-        Task<bool> ExistsByNameAsync(string nome);
-        Task<bool> HasMedicosAsync(int especialidadeId);
-    }
+{
+    Task<IEnumerable<Especialidade>> GetAllAsync();
+    Task<Especialidade?> GetByIdAsync(int id);
+    Task<IEnumerable<Especialidade>> GetByNameAsync(string name);
+    Task<int> AddAsync(string name);
+    Task UpdateAsync(int id, string newNome);
+    Task DeleteAsync(int id);
 }

@@ -1,28 +1,30 @@
-<?xml version="1.0" encoding="utf-8"?>
 <RunSettings>
   <DataCollectionRunSettings>
     <DataCollectors>
-      <DataCollector friendlyName="XPlat Code Coverage">
+      <DataCollector friendlyName="XPlat code coverage">
         <Configuration>
           <Format>cobertura</Format>
 
-          <!-- Excluir por ficheiro (paths glob) -->
           <ExcludeByFile>
+            **/Migrations/*.cs;
+            **/*DbContextModelSnapshot.cs;
+            **/*ApplicationDbContextFactory.cs;
+            **/*Program.cs;
             **/ConsultaPlus.API/DTOs/**/*.cs;
-            **/ConsultaPlus.Core/Models/**/*.cs;
-            **/Migrations/**/*.cs;
-            **/Program.cs
+            **/ConsultaPlus.Core/Models/**/*.cs
           </ExcludeByFile>
 
-          <!-- Excluir por assembly/namespace -->
-          <!-- Sintaxe: [Assembly]Namespace.Class -->
           <Exclude>
-            [ConsultaPlus.API]ConsultaPlus.API.DTOs.*;
-            [ConsultaPlus.Core]ConsultaPlus.Core.Models.*;
+            [ConsultaPlus.Infrastructure]ConsultaPlus.Infrastructure.Repositories.*
+            [ConsultaPlus.Infrastructure]ConsultaPlus.Infrastructure.UoW.*
+            [ConsultaPlus.API]ConsultaPlus.API.Program
           </Exclude>
 
-          <!-- Opcional: apenas os teus assemblies de app -->
-          <Include>[ConsultaPlus.*]*</Include>
+          <Include>
+            [ConsultaPlus.API]*
+            [ConsultaPlus.Infrastructure]*
+            [ConsultaPlus.Core]*
+          </Include>
         </Configuration>
       </DataCollector>
     </DataCollectors>
