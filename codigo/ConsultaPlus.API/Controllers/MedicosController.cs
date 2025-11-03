@@ -32,6 +32,18 @@ namespace ConsultaPlus.API.Controllers
             return Ok(ToResponse(medico));
         }
 
+        // NOVO: GET /api/Medicos/search?nome=ana
+        [HttpGet("search")]
+        public async Task<IActionResult> Search([FromQuery] string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                return BadRequest(new { message = "Parâmetro 'nome' é obrigatório." });
+
+            var medicos = await _repo.SearchByNameAsync(nome);
+            var res = medicos.Select(ToResponse);
+            return Ok(res);
+        }
+
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateMedicoDto dto)
         {
@@ -72,7 +84,7 @@ namespace ConsultaPlus.API.Controllers
             medico.DataNascimento = dto.DataNascimento;
 
             await _repo.UpdateAsync(medico);
-            return NoContent(); 
+            return NoContent();
         }
 
         [HttpDelete("{id:int}")]

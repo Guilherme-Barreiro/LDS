@@ -10,5 +10,6 @@ namespace ConsultaPlus.Core.Interfaces
     public interface IMedicoRepository : IGenericRepository<Medico>
     {
         Task<Medico?> GetByEmailAsync(string email);
+        Task<IEnumerable<Medico>> SearchByNameAsync(string nome);
     }
 }
