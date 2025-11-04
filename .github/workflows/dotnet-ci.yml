@@ -70,15 +70,14 @@ jobs:
       - name: Run INTEGRATION tests with coverage
         working-directory: ./codigo
         run: |
-            dotnet test ./ConsultaPlus.Tests/ConsultaPlus.Tests.csproj \
-            -c Release --no-build \
-            --filter "FullyQualifiedName~Integracao" \
-            /p:CollectCoverage=true \
-            /p:CoverletOutput=TestResults/integration/coverage.cobertura.xml \
-            /p:CoverletOutputFormat=cobertura \
-            /p:Exclude="[ConsultaPlus.Tests]*" \
-            /p:Include="[ConsultaPlus.API]*,[ConsultaPlus.Infrastructure]*,[ConsultaPlus.Core]*"
-
+          dotnet test ./ConsultaPlus.Tests/ConsultaPlus.Tests.csproj \
+          -c Release --no-build \
+          --filter "FullyQualifiedName~Integracao" \
+          /p:CollectCoverage=true \
+          /p:CoverletOutput=TestResults/integration/coverage.cobertura.xml \
+          /p:CoverletOutputFormat=cobertura \
+          /p:Exclude="[ConsultaPlus.Tests]*" \
+          /p:Include="[ConsultaPlus.API]*;[ConsultaPlus.Infrastructure]*;[ConsultaPlus.Core]*"
 
       - name: Generate INTEGRATION coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
