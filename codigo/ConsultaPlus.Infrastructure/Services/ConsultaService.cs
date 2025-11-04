@@ -9,14 +9,14 @@ namespace ConsultaPlus.Infrastructure.Services
         private readonly IMedicoRepository _medicos;
         private readonly IPacienteRepository _pacientes;
         private readonly ISalaRepository _salas;
-        private readonly IEspecialidadeCRUD _especialidades;
+        private readonly IEspecialidadeService _especialidades;
 
         public ConsultaService(
             IConsultaRepository consultas,
             IMedicoRepository medicos,
             IPacienteRepository pacientes,
             ISalaRepository salas,
-            IEspecialidadeCRUD especialidades)
+            IEspecialidadeService especialidades)
         {
             _consultas = consultas;
             _medicos = medicos;

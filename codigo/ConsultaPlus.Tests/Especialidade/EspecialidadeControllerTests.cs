@@ -16,12 +16,12 @@ namespace ConsultaPlus.Tests.Especialidades
 {
     public class EspecialidadeControllerTests
     {
-        private readonly Mock<EspecialidadeService> _svc;
+        private readonly Mock<IEspecialidadeService> _svc;
         private readonly EspecialidadeController _controller;
 
         public EspecialidadeControllerTests()
         {
-            _svc = new Mock<EspecialidadeService>(MockBehavior.Strict);
+            _svc = new Mock<IEspecialidadeService>(MockBehavior.Strict);
             _controller = new EspecialidadeController(_svc.Object);
         }
 
@@ -84,40 +84,40 @@ namespace ConsultaPlus.Tests.Especialidades
         [InlineData("   ")]
         public async Task GetByNome_NomeInvalido_DeveRetornarBadRequest(string? nome)
         {
-            var result = await _controller.GetByName(nome!);
+            var result = await _controller.Search(nome!);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessage(bad.Value);
-            TextAssert.ContainsIgnoringDiacritics("obrigatorio", message);
+            TextAssert.ContainsIgnoringDiacritics("Termo de pesquisa é obrigatório.", message);
 
-            _svc.Verify(s => s.GetByNameAsync(It.IsAny<string>()), Times.Never);
+            _svc.Verify(s => s.SearchAsync(It.IsAny<string>()), Times.Never);
         }
 
         [Fact]
         public async Task GetByNome_SemResultados_DeveRetornarNotFound()
         {
-            _svc.Setup(s => s.GetByNameAsync("derma"))
+            _svc.Setup(s => s.SearchAsync("derma"))
                 .ReturnsAsync(Enumerable.Empty<EspecialidadeModel>());
 
-            var result = await _controller.GetByName("derma");
+            var result = await _controller.Search("derma");
 
             var nf = Assert.IsType<NotFoundObjectResult>(result);
             var msg = GetMessage(nf.Value);
             TextAssert.ContainsIgnoringDiacritics("nenhuma especialidade", msg);
 
-            _svc.Verify(s => s.GetByNameAsync("derma"), Times.Once);
+            _svc.Verify(s => s.SearchAsync("derma"), Times.Once);
         }
 
         [Fact]
         public async Task GetByNome_ComResultados_DeveRetornarOk_ComListaDTO()
         {
-            _svc.Setup(s => s.GetByNameAsync("derma"))
+            _svc.Setup(s => s.SearchAsync("derma"))
                 .ReturnsAsync(new[]
                 {
                     new EspecialidadeModel { Id = 2, Nome = "Dermatologia" }
                 }.AsEnumerable());
 
-            var result = await _controller.GetByName("derma");
+            var result = await _controller.Search("derma");
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var lista = Assert.IsAssignableFrom<IEnumerable<ReadEspecialidadeDTO>>(ok.Value);
@@ -125,7 +125,7 @@ namespace ConsultaPlus.Tests.Especialidades
             Assert.Equal(2, item.Id);
             Assert.Equal("Dermatologia", item.Nome);
 
-            _svc.Verify(s => s.GetByNameAsync("derma"), Times.Once);
+            _svc.Verify(s => s.SearchAsync("derma"), Times.Once);
         }
 
         [Fact]
@@ -137,17 +137,15 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.Create(dto);
 
             var created = Assert.IsType<CreatedAtActionResult>(result);
-            Assert.Equal(nameof(EspecialidadeController.GetByName), created.ActionName);
+            Assert.Equal(nameof(EspecialidadeController.Search), created.ActionName);
 
             Assert.NotNull(created.RouteValues);
-            Assert.Equal(42, created.RouteValues!["id"]);
+            Assert.True(created.RouteValues.ContainsKey("id"));
+            Assert.Equal(42, created.RouteValues["id"]);
 
-            var body = created.Value!;
-            var idProp = body.GetType().GetProperty("id")!;
-            var nomeProp = body.GetType().GetProperty("nome")!;
-
-            Assert.Equal(42, (int)idProp.GetValue(body)!);
-            Assert.Equal("Neurologia", (string)nomeProp.GetValue(body)!);
+            var readDto = Assert.IsType<ReadEspecialidadeDTO>(created.Value);
+            Assert.Equal(42, readDto.Id);
+            Assert.Equal("Neurologia", readDto.Nome);
 
             _svc.Verify(s => s.AddAsync("  Neurologia  "), Times.Once);
         }
@@ -162,7 +160,8 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.Create(dto);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Nome obrigatorio.", bad.Value);
+            var message = GetMessage(bad.Value);
+            Assert.Equal("Nome obrigatorio.", message);
 
             _svc.Verify(s => s.AddAsync("   "), Times.Once);
         }
@@ -177,7 +176,8 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.Create(dto);
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
-            Assert.Equal("Já existe.", conflict.Value);
+            var message = GetMessage(conflict.Value);
+            Assert.Equal("Já existe.", message);
 
             _svc.Verify(s => s.AddAsync("Cardiologia"), Times.Once);
         }
@@ -202,7 +202,7 @@ namespace ConsultaPlus.Tests.Especialidades
 
             var result = await _controller.Update(7, dto);
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NotFoundObjectResult>(result);
             _svc.Verify(s => s.UpdateAsync(7, "X"), Times.Once);
         }
 
@@ -216,7 +216,8 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.Update(7, dto);
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
-            Assert.Equal("Nome obrigatorio.", bad.Value);
+            var message = GetMessage(bad.Value);
+            Assert.Equal("Nome obrigatorio.", message);
 
             _svc.Verify(s => s.UpdateAsync(7, ""), Times.Once);
         }
@@ -231,7 +232,8 @@ namespace ConsultaPlus.Tests.Especialidades
             var result = await _controller.Update(7, dto);
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
-            Assert.Equal("Já existe.", conflict.Value);
+            var message = GetMessage(conflict.Value);
+            Assert.Equal("Já existe.", message);
 
             _svc.Verify(s => s.UpdateAsync(7, "Cardiologia"), Times.Once);
         }
@@ -255,7 +257,7 @@ namespace ConsultaPlus.Tests.Especialidades
 
             var result = await _controller.Delete(9);
 
-            Assert.IsType<NotFoundResult>(result);
+            Assert.IsType<NotFoundObjectResult>(result);
             _svc.Verify(s => s.DeleteAsync(9), Times.Once);
         }
 
@@ -263,12 +265,13 @@ namespace ConsultaPlus.Tests.Especialidades
         public async Task Delete_ComConflito_DeveRetornarConflict()
         {
             _svc.Setup(s => s.DeleteAsync(9))
-                .ThrowsAsync(new InvalidOperationException("Ligada a médicos."));
+                .ThrowsAsync(new InvalidOperationException("Não é possível excluir a especialidade porque existem médicos vinculados."));
 
             var result = await _controller.Delete(9);
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
-            Assert.Equal("Ligada a médicos.", conflict.Value);
+            var message = GetMessage(conflict.Value);
+            Assert.Equal("Não é possível excluir a especialidade porque existem médicos vinculados.", message);
 
             _svc.Verify(s => s.DeleteAsync(9), Times.Once);
         }

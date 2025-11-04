@@ -9,91 +9,55 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConsultaPlus.Infrastructure.Repositories
 {
-    public class EspecialidadeRepository : IEspecialidadeCRUD
+    public class EspecialidadeRepository : GenericRepository<Especialidade>, IEspecialidadeRepository
     {
         private readonly ApplicationDbContext _context;
 
-        public EspecialidadeRepository(ApplicationDbContext context)
+        public EspecialidadeRepository(ApplicationDbContext context) : base(context)
         {
             _context = context;
         }
-
-        public async Task<IEnumerable<Especialidade>> GetAllAsync()
+        public async Task<IEnumerable<Especialidade>> SearchByNameAsync(string nome)
         {
-            return await _context.Especialidades
-                                 .AsNoTracking()
-                                 .OrderBy(e => e.Nome)
-                                 .ToListAsync();
-        }
+            if (string.IsNullOrWhiteSpace(nome))
+                return await GetAllAsync();
 
-        public async Task<Especialidade?> GetByIdAsync(int id)
-        {
-            return await _context.Especialidades
-                                 .FirstOrDefaultAsync(e => e.Id == id);
-        }
-
-        public async Task<IEnumerable<Especialidade>> GetByNameAsync(string name)
-        {
             return await _context.Especialidades
                 .AsNoTracking()
-                .Where(e => e.Nome.ToLower().Contains(name.ToLower()))
+                .Where(e => e.Nome.ToLower().Contains(nome.ToLower()))
+                .OrderBy(e => e.Nome)
                 .ToListAsync();
         }
 
-        public async Task<int> AddAsync(string name)
+        public async Task<bool> IsLinkedToMedic(int especialidadeId)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentException("Nome inválido.", nameof(name));
 
-            var nomeTrim = name.Trim();
+            return await _context.EspecialidadesMedico
+                .AsNoTracking()
+                .AnyAsync(em => em.EspecialidadeId == especialidadeId);
+        }
 
-            var existe = await _context.Especialidades
+        public async Task<bool> ExistsByNameAsync(string nome)
+        {
+            if (string.IsNullOrWhiteSpace(nome))
+                return false;
+
+            var nomeTrim = nome.Trim();
+            return await _context.Especialidades
                 .AsNoTracking()
                 .AnyAsync(e => e.Nome.Equals(nomeTrim, StringComparison.OrdinalIgnoreCase));
-
-            if (existe)
-                throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
-
-            var novaEspecialidade = new Especialidade { Nome = nomeTrim };
-
-            _context.Especialidades.Add(novaEspecialidade);
-            await _context.SaveChangesAsync();
-
-            return novaEspecialidade.Id;
         }
 
-        public async Task UpdateAsync(int id, string newNome)
+        public async Task<bool> ExistsByNameAndNotIdAsync(string nome, int id)
         {
-
-            var nome = newNome?.Trim();
             if (string.IsNullOrWhiteSpace(nome))
-                throw new ArgumentException("Nome inválido.", nameof(newNome));
+                return false;
 
-            var existente = await _context.Especialidades.FindAsync(id);
-            if (existente == null)
-                throw new KeyNotFoundException("Especialidade não encontrada.");
-
-            var nomeEmUso = await _context.Especialidades
-                                         .AsNoTracking()
-                                         .AnyAsync(e => e.Nome.Equals(nome, StringComparison.OrdinalIgnoreCase)
-                                                        && e.Id != id);
-
-            if (nomeEmUso)
-                throw new InvalidOperationException("Já existe outra especialidade com esse nome.");
-
-            existente.Nome = nome;
-
-            await _context.SaveChangesAsync();
-        }
-
-        public async Task DeleteAsync(int id)
-        {
-            var entity = await _context.Especialidades.FindAsync(id);
-            if (entity == null)
-                return;
-
-            _context.Especialidades.Remove(entity);
-            await _context.SaveChangesAsync();
+            var nomeTrim = nome.Trim();
+            return await _context.Especialidades
+                .AsNoTracking()
+                .AnyAsync(e => e.Nome.Equals(nomeTrim, StringComparison.OrdinalIgnoreCase)
+                            && e.Id != id);
         }
     }
 }
