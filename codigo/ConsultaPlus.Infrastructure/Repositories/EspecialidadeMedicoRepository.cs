@@ -19,19 +19,21 @@ namespace ConsultaPlus.Infrastructure.Repositories
 
 		public async Task<IEnumerable<Medico>> GetMedicosByEspecialidadeIdAsync(int especialidadeId)
 		{
-			return await _context.EspecialidadesMedico
-				.Where(em => em.EspecialidadeId == especialidadeId)
-				.Select(em => em.Medico)
-				.ToListAsync();
+            return await _context.EspecialidadesMedico
+                .AsNoTracking()
+                .Where(em => em.EspecialidadeId == especialidadeId)
+                .Select(em => em.Medico)
+                .ToListAsync();
 		}
 
 		public async Task<IEnumerable<Especialidade>> GetEspecialidadesByMedicoIdAsync(int medicoId)
 		{
-			return await _context.EspecialidadesMedico
-				.Where(em => em.MedicoId == medicoId)
-				.Select(em => em.Especialidade)
-				.ToListAsync();
-		}
+            return await _context.EspecialidadesMedico
+                .AsNoTracking()
+                .Where(em => em.MedicoId == medicoId)
+                .Select(em => em.Especialidade)
+                .ToListAsync();
+        }
 
 		public async Task<bool> MedicoExistsAsync(int medicoId)
 		{
@@ -53,5 +55,16 @@ namespace ConsultaPlus.Infrastructure.Repositories
 				.AsNoTracking()
 				.AnyAsync(em => em.MedicoId == medicoId && em.EspecialidadeId == especialidadeId);
 		}
-	}
+
+		public async Task DeleteAsync(int medicoId, int especialidadeId)
+		{
+			var assoc = await _context.EspecialidadesMedico
+				.FirstOrDefaultAsync(em => em.MedicoId == medicoId && em.EspecialidadeId == especialidadeId);
+			if (assoc != null)
+                throw new KeyNotFoundException("Associação não encontrada.");
+           
+			_context.EspecialidadesMedico.Remove(assoc);
+			
+        }
+    }
 }

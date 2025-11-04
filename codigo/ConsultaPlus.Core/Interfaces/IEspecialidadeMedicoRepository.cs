@@ -14,5 +14,6 @@ namespace ConsultaPlus.Core.Interfaces
         Task<bool> ExistsAsync(int medicoId, int especialidadeId);
         Task<bool> EspecialidadeExistsAsync(int especialidadeId);
         Task<bool> MedicoExistsAsync(int medicoId);
+        Task DeleteAsync(int medicoId, int especialidadeId);
     }
 }
