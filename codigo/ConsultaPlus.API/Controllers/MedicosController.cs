@@ -32,8 +32,7 @@ namespace ConsultaPlus.API.Controllers
             return Ok(ToResponse(medico));
         }
 
-        // NOVO: GET /api/Medicos/search?nome=ana
-        [HttpGet("search")]
+        [HttpGet("{nome}")]
         public async Task<IActionResult> Search([FromQuery] string nome)
         {
             if (string.IsNullOrWhiteSpace(nome))
