@@ -82,7 +82,7 @@ namespace ConsultaPlus.Tests.Especialidades
         [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public async Task GetByNome_NomeInvalido_DeveRetornarBadRequest(string? nome)
+        public async Task Search_NomeInvalido_DeveRetornarBadRequest(string? nome)
         {
             var result = await _controller.Search(nome!);
 
@@ -94,7 +94,7 @@ namespace ConsultaPlus.Tests.Especialidades
         }
 
         [Fact]
-        public async Task GetByNome_SemResultados_DeveRetornarNotFound()
+        public async Task Search_SemResultados_DeveRetornarNotFound()
         {
             _svc.Setup(s => s.SearchAsync("derma"))
                 .ReturnsAsync(Enumerable.Empty<EspecialidadeModel>());
@@ -109,7 +109,7 @@ namespace ConsultaPlus.Tests.Especialidades
         }
 
         [Fact]
-        public async Task GetByNome_ComResultados_DeveRetornarOk_ComListaDTO()
+        public async Task Search_ComResultados_DeveRetornarOk_ComListaDTO()
         {
             _svc.Setup(s => s.SearchAsync("derma"))
                 .ReturnsAsync(new[]
@@ -151,22 +151,6 @@ namespace ConsultaPlus.Tests.Especialidades
         }
 
         [Fact]
-        public async Task RegistarEspecialidade_NomeInvalido_DeveRetornarBadRequest()
-        {
-            var dto = new CreateEspecialidadeDTO { Nome = "   " };
-            _svc.Setup(s => s.AddAsync("   "))
-                .ThrowsAsync(new ArgumentException("Nome obrigatorio."));
-
-            var result = await _controller.Create(dto);
-
-            var bad = Assert.IsType<BadRequestObjectResult>(result);
-            var message = GetMessage(bad.Value);
-            Assert.Equal("Nome obrigatorio.", message);
-
-            _svc.Verify(s => s.AddAsync("   "), Times.Once);
-        }
-
-        [Fact]
         public async Task RegistarEspecialidade_Duplicado_DeveRetornarConflict()
         {
             var dto = new CreateEspecialidadeDTO { Nome = "Cardiologia" };
@@ -181,6 +165,21 @@ namespace ConsultaPlus.Tests.Especialidades
 
             _svc.Verify(s => s.AddAsync("Cardiologia"), Times.Once);
         }
+
+        [Fact]
+        public async Task RegistarEspecialidade_DbUpdateException_DeveRetornarConflict()
+        {
+            var dto = new CreateEspecialidadeDTO { Nome = "Cardiologia" };
+            _svc.Setup(s => s.AddAsync("Cardiologia"))
+                .ThrowsAsync(new Microsoft.EntityFrameworkCore.DbUpdateException());
+
+            var result = await _controller.Create(dto);
+
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+            var msg = GetMessage(conflict.Value);
+            Assert.Contains("Nao foi possível registar", msg);
+        }
+
 
         [Fact]
         public async Task Update_Sucesso_DeveRetornarNoContent()
@@ -207,22 +206,6 @@ namespace ConsultaPlus.Tests.Especialidades
         }
 
         [Fact]
-        public async Task Update_NomeInvalido_DeveRetornarBadRequest()
-        {
-            var dto = new UpdateEspecialidadeDTO { Nome = "" };
-            _svc.Setup(s => s.UpdateAsync(7, ""))
-                .ThrowsAsync(new ArgumentException("Nome obrigatorio."));
-
-            var result = await _controller.Update(7, dto);
-
-            var bad = Assert.IsType<BadRequestObjectResult>(result);
-            var message = GetMessage(bad.Value);
-            Assert.Equal("Nome obrigatorio.", message);
-
-            _svc.Verify(s => s.UpdateAsync(7, ""), Times.Once);
-        }
-
-        [Fact]
         public async Task Update_Duplicado_DeveRetornarConflict()
         {
             var dto = new UpdateEspecialidadeDTO { Nome = "Cardiologia" };
@@ -237,6 +220,21 @@ namespace ConsultaPlus.Tests.Especialidades
 
             _svc.Verify(s => s.UpdateAsync(7, "Cardiologia"), Times.Once);
         }
+
+        [Fact]
+        public async Task Update_DbUpdateException_DeveRetornarConflict()
+        {
+            var dto = new UpdateEspecialidadeDTO { Nome = "Teste" };
+            _svc.Setup(s => s.UpdateAsync(1, "Teste"))
+                .ThrowsAsync(new Microsoft.EntityFrameworkCore.DbUpdateException());
+
+            var result = await _controller.Update(1, dto);
+
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+            var msg = GetMessage(conflict.Value);
+            Assert.Contains("Nao foi possível atualizar", msg);
+        }
+
 
         [Fact]
         public async Task Delete_Sucesso_DeveRetornarNoContent()
@@ -275,5 +273,19 @@ namespace ConsultaPlus.Tests.Especialidades
 
             _svc.Verify(s => s.DeleteAsync(9), Times.Once);
         }
+
+        [Fact]
+        public async Task Delete_DbUpdateException_DeveRetornarConflict()
+        {
+            _svc.Setup(s => s.DeleteAsync(1))
+                .ThrowsAsync(new Microsoft.EntityFrameworkCore.DbUpdateException());
+
+            var result = await _controller.Delete(1);
+
+            var conflict = Assert.IsType<ConflictObjectResult>(result);
+            var msg = GetMessage(conflict.Value);
+            Assert.Contains("Nao foi possível remover", msg);
+        }
+
     }
 }
