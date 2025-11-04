@@ -6,11 +6,8 @@
         <Configuration>
           <Format>cobertura</Format>
           <CollectFromChildProcesses>true</CollectFromChildProcesses>
-
           <ExcludeByFile>**/Migrations/*.cs;**/*DbContextModelSnapshot.cs;**/*ApplicationDbContextFactory.cs;**/*Program.cs;**/ConsultaPlus.API/DTOs/**/*.cs;**/ConsultaPlus.Core/Models/**/*.cs</ExcludeByFile>
-
           <Exclude>[ConsultaPlus.Infrastructure]ConsultaPlus.Infrastructure.Repositories.*,[ConsultaPlus.Infrastructure]ConsultaPlus.Infrastructure.UoW.*,[ConsultaPlus.API]ConsultaPlus.API.Program</Exclude>
-
           <Include>[ConsultaPlus.API]*,[ConsultaPlus.Infrastructure]*,[ConsultaPlus.Core]*</Include>
           <SkipAutoProps>true</SkipAutoProps>
         </Configuration>
