@@ -11,5 +11,6 @@ namespace ConsultaPlus.Core.Interfaces
     {
         Task<Medico?> GetByEmailAsync(string email);
         Task<IEnumerable<Medico>> SearchByNameAsync(string nome);
+        Task<bool> ExistsAsync(int medicoId);
     }
 }

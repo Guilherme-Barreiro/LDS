@@ -25,7 +25,7 @@ namespace ConsultaPlus.API.Controllers
             try
             {
                 await _especialidadeMedicoService.AddAsync(requestDto.MedicoId, requestDto.EspecialidadeId);
-                return StatusCode(201, new { message = "Especialidade associada ao médico com sucesso." });
+                return StatusCode(201, new { message = "Especialidade associada ao medico com sucesso." });
             }
             catch (KeyNotFoundException ex)
             {
@@ -37,7 +37,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Erro de base de dados ao associar especialidade ao médico." });
+                return Conflict(new { message = "Erro de base de dados ao associar especialidade ao medico." });
             }
         }
 
@@ -51,7 +51,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Nao foi possível remover a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possivel remover a especialidade devido a um conflito na base de dados." });
             }
             catch (InvalidOperationException ex)
             {
@@ -68,6 +68,12 @@ namespace ConsultaPlus.API.Controllers
         {
 
             var medicos = await _especialidadeMedicoService.GetMedicosByEspecialidadeIdAsync(especialidadeId);
+
+            if (medicos == null || !medicos.Any())
+            {
+                return NotFound(new { message = "Nenhum medico encontrado para essa especialidade." });
+            }
+
             return Ok(medicos);
 
         }
@@ -77,6 +83,12 @@ namespace ConsultaPlus.API.Controllers
         {
 
             var especialidades = await _especialidadeMedicoService.GetEspecialidadesByMedicoIdAsync(medicoId);
+
+            if (especialidades == null || !especialidades.Any())
+            {
+                return NotFound(new { message = "Nenhuma especialidade encontrada para esse medico." });
+            }
+
             return Ok(especialidades);
 
         }

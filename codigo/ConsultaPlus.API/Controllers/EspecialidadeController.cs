@@ -40,6 +40,10 @@ namespace ConsultaPlus.API.Controllers
             {
                 return Conflict(new { message = "Nao foi possível registar a especialidade devido a um conflito na base de dados." });
             }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("remover-especialidade/{id}")]
@@ -84,6 +88,10 @@ namespace ConsultaPlus.API.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
             }
         }
 

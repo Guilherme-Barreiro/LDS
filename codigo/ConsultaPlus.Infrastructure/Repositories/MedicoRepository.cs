@@ -27,5 +27,11 @@ namespace ConsultaPlus.Infrastructure.Repositories
                 .OrderBy(m => m.NomeCompleto)
                 .ToListAsync();
         }
+        public async Task<bool> ExistsAsync(int medicoId)
+        {
+            return await _context.Medicos
+                .AsNoTracking()
+                .AnyAsync(m => m.Id == medicoId);
+        }
     }
 }
