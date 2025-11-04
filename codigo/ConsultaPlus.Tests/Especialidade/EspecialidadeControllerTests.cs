@@ -177,7 +177,7 @@ namespace ConsultaPlus.Tests.Especialidades
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var msg = GetMessage(conflict.Value);
-            Assert.Contains("Nao foi possível registar", msg);
+            Assert.Contains("Nao foi possivel registar", msg);
         }
 
 
@@ -232,7 +232,7 @@ namespace ConsultaPlus.Tests.Especialidades
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var msg = GetMessage(conflict.Value);
-            Assert.Contains("Nao foi possível atualizar", msg);
+            Assert.Contains("Nao foi possivel atualizar", msg);
         }
 
 
@@ -263,13 +263,13 @@ namespace ConsultaPlus.Tests.Especialidades
         public async Task Delete_ComConflito_DeveRetornarConflict()
         {
             _svc.Setup(s => s.DeleteAsync(9))
-                .ThrowsAsync(new InvalidOperationException("Nao e possível excluir a especialidade porque existem medicos vinculados."));
+                .ThrowsAsync(new InvalidOperationException("Nao e possivel excluir a especialidade porque existem medicos vinculados."));
 
             var result = await _controller.Delete(9);
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var message = GetMessage(conflict.Value);
-            Assert.Equal("Nao e possível excluir a especialidade porque existem medicos vinculados.", message);
+            Assert.Equal("Nao e possivel excluir a especialidade porque existem medicos vinculados.", message);
 
             _svc.Verify(s => s.DeleteAsync(9), Times.Once);
         }
@@ -284,7 +284,7 @@ namespace ConsultaPlus.Tests.Especialidades
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var msg = GetMessage(conflict.Value);
-            Assert.Contains("Nao foi possível remover", msg);
+            Assert.Contains("Nao foi possivel remover", msg);
         }
 
     }

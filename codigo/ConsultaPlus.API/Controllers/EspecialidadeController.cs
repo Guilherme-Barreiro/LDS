@@ -38,7 +38,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Nao foi possível registar a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possivel registar a especialidade devido a um conflito na base de dados." });
             }
             catch (ArgumentException ex)
             {
@@ -56,7 +56,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Nao foi possível remover a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possivel remover a especialidade devido a um conflito na base de dados." });
             }
             catch (InvalidOperationException ex)
             {
@@ -79,7 +79,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Nao foi possível atualizar a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possivel atualizar a especialidade devido a um conflito na base de dados." });
             }
             catch (InvalidOperationException ex)
             {
