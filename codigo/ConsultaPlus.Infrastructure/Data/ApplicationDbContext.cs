@@ -17,6 +17,7 @@ namespace ConsultaPlus.Infrastructure.Data
         public virtual DbSet<HorarioExcecaoMedico> HorariosExcecaoMedicos { get; set; }
         public virtual DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
         public virtual DbSet<Notificacao> Notificacoes { get; set; }
+        //public virtual DbSet<SnsPaciente> SnsPacientes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -35,9 +36,16 @@ namespace ConsultaPlus.Infrastructure.Data
                 .WithMany(e => e.EspecialidadesMedico)
                 .HasForeignKey(em => em.EspecialidadeId);
 
-            modelBuilder.Entity<Paciente>()
-                .HasIndex(p => p.NUtente)
-                .IsUnique();
+            modelBuilder.Entity<Paciente>(b =>
+            {
+                b.Property(p => p.NomeCompleto).IsRequired(false);
+                b.Property(p => p.Nif).IsRequired(false);
+                b.Property(p => p.Telemovel).IsRequired(false);
+                b.Property(p => p.Morada).IsRequired(false);
+                b.Property(p => p.Email).IsRequired(false);
+                b.Property(p => p.DataNascimento).IsRequired(false);
+            });
+
 
             modelBuilder.Entity<Medico>()
                 .HasIndex(m => m.NUtente)
@@ -62,6 +70,11 @@ namespace ConsultaPlus.Infrastructure.Data
                 b.HasIndex(n => new { n.PacienteId, n.Lida });
             });
 
+            //modelBuilder.Entity<SnsPaciente>(b =>
+            //{
+            //    b.HasIndex(x => x.Email);
+            //    b.Property(x => x.DataCriacao).HasDefaultValueSql("GETUTCDATE()");
+            //});
         }
     }
 }

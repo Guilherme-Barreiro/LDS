@@ -1,19 +1,24 @@
-﻿using ConsultaPlus.Core.Interfaces;
+﻿using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
+using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
-using System.Threading.Tasks;
 
 namespace ConsultaPlus.Infrastructure.Repositories
 {
     public class PacienteRepository : IPacienteRepository
     {
         private readonly ApplicationDbContext _context;
+        public PacienteRepository(ApplicationDbContext context) => _context = context;
 
-        public PacienteRepository(ApplicationDbContext context)
-        {
-            _context = context;
-        }
+        public async Task<IEnumerable<Paciente>> GetAllAsync() =>
+            await _context.Pacientes.AsNoTracking().OrderBy(p => p.Id).ToListAsync();
+
+        public async Task<Paciente?> GetByIdAsync(int id) =>
+            await _context.Pacientes.AsNoTracking().FirstOrDefaultAsync(p => p.Id == id);
+
+        public async Task<Paciente?> GetByNUtenteAsync(string nUtente) =>
+            await _context.Pacientes.AsNoTracking().FirstOrDefaultAsync(p => p.NUtente == nUtente);
 
         public async Task AddAsync(Paciente paciente)
         {
@@ -21,17 +26,18 @@ namespace ConsultaPlus.Infrastructure.Repositories
             await _context.SaveChangesAsync();
         }
 
-        public async Task<Paciente?> GetByNUtenteAsync(string nUtente)
+        public async Task UpdateAsync(Paciente paciente)
         {
-            return await _context.Pacientes
-                .FirstOrDefaultAsync(p => p.NUtente == nUtente);
+            _context.Pacientes.Update(paciente);
+            await _context.SaveChangesAsync();
         }
 
-        public async Task<Paciente?> GetByIdAsync(int id)
+        public async Task DeleteAsync(int id)
         {
-            return await _context.Pacientes
-                .AsNoTracking()
-                .FirstOrDefaultAsync(p => p.Id == id);
+            var entity = await _context.Pacientes.FirstOrDefaultAsync(p => p.Id == id);
+            if (entity is null) return;
+            _context.Pacientes.Remove(entity);
+            await _context.SaveChangesAsync();
         }
     }
 }
