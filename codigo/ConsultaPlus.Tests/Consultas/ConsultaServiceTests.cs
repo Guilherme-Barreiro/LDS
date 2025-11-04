@@ -18,7 +18,7 @@ namespace ConsultaPlus.Tests.Consultas
         private readonly Mock<IMedicoRepository> _medicos;
         private readonly Mock<IPacienteRepository> _pacientes;
         private readonly Mock<ISalaRepository> _salas;
-        private readonly Mock<IEspecialidadeCRUD> _especialidades;
+        private readonly Mock<IEspecialidadeService> _especialidades;
 
         private readonly ConsultaService _svc;
 
@@ -28,7 +28,7 @@ namespace ConsultaPlus.Tests.Consultas
             _medicos = new Mock<IMedicoRepository>(MockBehavior.Strict);
             _pacientes = new Mock<IPacienteRepository>(MockBehavior.Strict);
             _salas = new Mock<ISalaRepository>(MockBehavior.Strict);
-            _especialidades = new Mock<IEspecialidadeCRUD>(MockBehavior.Strict);
+            _especialidades = new Mock<IEspecialidadeService>(MockBehavior.Strict);
 
             _svc = new ConsultaService(_consultas.Object, _medicos.Object, _pacientes.Object, _salas.Object, _especialidades.Object);
         }

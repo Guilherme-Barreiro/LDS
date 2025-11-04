@@ -1,42 +1,46 @@
+using ConsultaPlus.API.Repositories;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
+using ConsultaPlus.Infrastructure.Repositories;
 using System;
 using System.Threading.Tasks;
 
-public class EspecialidadeService : IEspecialidadeCRUD
+public class EspecialidadeService : IEspecialidadeService
 {
-    private readonly IEspecialidadeCRUD _especialidadeRepository;
+    private readonly IEspecialidadeRepository _especialidadeRepository;
+    private readonly IUnitOfWork _uow;
 
-    public EspecialidadeService(IEspecialidadeCRUD especialidadeRepository)
+    public EspecialidadeService(IEspecialidadeRepository especialidadeRepository, IUnitOfWork uow)
     {
         _especialidadeRepository = especialidadeRepository;
+        _uow = uow;
     }
 
     public Task<IEnumerable<Especialidade>> GetAllAsync() => _especialidadeRepository.GetAllAsync();
 
     public Task<Especialidade?> GetByIdAsync(int id) => _especialidadeRepository.GetByIdAsync(id);
 
-    public Task<IEnumerable<Especialidade>> GetByNameAsync(string name) => _especialidadeRepository.GetByNameAsync(name);
-
-
     public async Task<int> AddAsync(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Nome inválido.", nameof(name));
+            throw new ArgumentException("Nome obrigatório.");
 
         var nomeTrim = name.Trim();
 
-        var todas = await _especialidadeRepository.GetAllAsync();
-        if (todas.Any(e => e.Nome.Equals(nomeTrim, StringComparison.OrdinalIgnoreCase)))
+        if (await _especialidadeRepository.ExistsByNameAsync(nomeTrim))
             throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
 
-        return await _especialidadeRepository.AddAsync(name);
+
+        var esp = new Especialidade { Nome = nomeTrim };
+        await _especialidadeRepository.AddAsync(esp);
+        await _uow.SaveChangesAsync();
+        return esp.Id;
     }
 
     public async Task UpdateAsync(int id, string novoNome)
     {
         if (string.IsNullOrWhiteSpace(novoNome))
-            throw new ArgumentException("Nome inválido.", nameof(novoNome));
+            throw new ArgumentException("Nome obrigatório.");
 
         var esp = await _especialidadeRepository.GetByIdAsync(id);
         if (esp == null)
@@ -44,11 +48,13 @@ public class EspecialidadeService : IEspecialidadeCRUD
 
         var novoTrim = novoNome.Trim();
 
-        var todas = await _especialidadeRepository.GetAllAsync();
-        if (todas.Any(e => e.Nome.Equals(novoTrim, StringComparison.OrdinalIgnoreCase)))
+        if (await _especialidadeRepository.ExistsByNameAndNotIdAsync(novoTrim, id))
             throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
 
-        await _especialidadeRepository.UpdateAsync(id, novoTrim);
+        esp.Nome = novoTrim;
+
+        await _especialidadeRepository.UpdateAsync(esp);
+        await _uow.SaveChangesAsync();
     }
 
     public async Task DeleteAsync(int id)
@@ -56,6 +62,14 @@ public class EspecialidadeService : IEspecialidadeCRUD
         var ent = await _especialidadeRepository.GetByIdAsync(id);
         if (ent == null) throw new KeyNotFoundException("Especialidade não encontrada.");
 
+        if (await _especialidadeRepository.IsLinkedToMedic(id))
+            throw new InvalidOperationException("Não é possível excluir a especialidade porque existem médicos vinculados.");
+
         await _especialidadeRepository.DeleteAsync(id);
+        await _uow.SaveChangesAsync();
+    }
+    public async Task<IEnumerable<Especialidade>> SearchAsync(string termo)
+    {
+        return await _especialidadeRepository.SearchByNameAsync(termo);
     }
 }
