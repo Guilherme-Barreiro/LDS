@@ -1,10 +1,10 @@
-﻿// ConsultaPlus.API/Controllers/ConsultasController.cs
-using System.Linq;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.API.DTOs.Consultas;
+
 
 namespace ConsultaPlus.API.Controllers
 {
@@ -33,6 +33,60 @@ namespace ConsultaPlus.API.Controllers
             var c = await _repo.GetByIdAsync(id);
             if (c is null) return NotFound(new { message = $"Consulta {id} não encontrada." });
             return Ok(ToResponse(c));
+        }
+
+        [HttpGet("medico/{medicoId:int}/consultas")]
+        public async Task<IActionResult> GetByMedico(
+            int medicoId,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null,
+            [FromQuery] bool onlyConfirmed = false,
+            CancellationToken ct = default)
+        {
+            var start = (from ?? DateTime.UtcNow.Date).Date;          
+            var endExclusive = ((to ?? start).Date).AddDays(1);      
+
+            if (endExclusive <= start)
+                return BadRequest("'to' deve ser >= 'from'.");
+
+            var list = await _repo.GetByMedicoRangeAsync(medicoId, start, endExclusive, onlyConfirmed, ct);
+
+            var dtos = list.Select(c => new AgendaItemDto(
+                c.Id,
+                c.DataConsulta,
+                c.DataConsulta.AddMinutes(c.Duracao),
+                c.Estado,
+                c.PacienteId,
+                c.SalaId
+            ));
+
+            return Ok(dtos);
+        }
+
+
+
+        [HttpGet("paciente/{pacienteId:int}/consultas")]
+        public async Task<IActionResult> GetByPaciente(
+            int pacienteId,
+            [FromQuery] int page = 1,
+            [FromQuery] int pageSize = 20,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null,
+            CancellationToken ct = default)
+        {
+            var res = await _repo.GetByPacienteAsync(pacienteId, from, to, page, pageSize, ct);
+
+            var items = res.Items.Select(c => new ConsultaPacienteDto(
+                c.Id,
+                c.DataConsulta,
+                c.DataConsulta.AddMinutes(c.Duracao),
+                c.Estado,
+                c.MedicoId,
+                c.EspecialidadeId,
+                c.SalaId
+            )).ToList();
+
+            return Ok(new PagedListDto<ConsultaPacienteDto>(res.Total, res.Page, res.PageSize, items));
         }
 
         [HttpGet("medico/{medicoId:int}")]
