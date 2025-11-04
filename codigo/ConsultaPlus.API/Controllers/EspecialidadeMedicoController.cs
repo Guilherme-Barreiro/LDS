@@ -2,6 +2,7 @@ using ConsultaPlus.API.DTOs;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConsultaPlus.API.Controllers
 {
@@ -9,16 +10,16 @@ namespace ConsultaPlus.API.Controllers
     [Route("api/[controller]")]
     public class EspecialidadeMedicoController : ControllerBase
     {
-        private readonly IEspecialidadeMedico _especialidadeMedico;
+        private readonly IEspecialidadeMedicoService _especialidadeMedico;
 
-        public EspecialidadeMedicoController(IEspecialidadeMedico especialidadeMedico)
+        public EspecialidadeMedicoController(IEspecialidadeMedicoService especialidadeMedico)
         {
             _especialidadeMedico = especialidadeMedico;
         }
 
 
         [HttpPost("associar-especialidade-medico")]
-        public async Task<IActionResult> AssociarEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
+        public async Task<IActionResult> AddEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
         {
             try
             {
@@ -38,55 +39,53 @@ namespace ConsultaPlus.API.Controllers
                     MedicoId = requestDto.MedicoId,
                     EspecialidadeId = requestDto.EspecialidadeId
                 };
-                await _especialidadeMedico.AddAsync(associacao);
+                await _especialidadeMedico.AddAsync(requestDto.MedicoId, requestDto.EspecialidadeId);
                 return StatusCode(201, "Especialidade associada ao médico com sucesso.");
             }
-            catch (Exception ex)
+            catch (DbUpdateException)
             {
-                return BadRequest(new { message = ex.Message });
+                return Conflict(new { message = "Nao foi possível remover a especialidade devido a um conflito na base de dados." });
             }
         }
 
         [HttpDelete("remover-especialidade-medico")]
-        public async Task<IActionResult> RemoverEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
+        public async Task<IActionResult> DeleteEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
         {
             try
             {
-                await _especialidadeMedico.RemoveAsync(requestDto.MedicoId, requestDto.EspecialidadeId);
+                await _especialidadeMedico.DeleteAsync(requestDto.MedicoId, requestDto.EspecialidadeId);
                 return NoContent();
             }
-            catch (Exception ex)
+            catch (DbUpdateException)
             {
-                return BadRequest(new { message = ex.Message });
+                return Conflict(new { message = "Nao foi possível remover a especialidade devido a um conflito na base de dados." });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(new { message = ex.Message });
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(new { message = ex.Message });
             }
         }
 
         [HttpGet("medicos-por-especialidade/{especialidadeId}")]
         public async Task<IActionResult> GetMedicosByEspecialidadeId(int especialidadeId)
         {
-            try
-            {
-                var medicos = await _especialidadeMedico.GetMedicosByEspecialidadeIdAsync(especialidadeId);
-                return Ok(medicos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            var medicos = await _especialidadeMedico.GetMedicosByEspecialidadeIdAsync(especialidadeId);
+            return Ok(medicos);
+
         }
 
         [HttpGet("especialidades-por-medico/{medicoId}")]
         public async Task<IActionResult> GetEspecialidadesByMedicoId(int medicoId)
         {
-            try
-            {
-                var especialidades = await _especialidadeMedico.GetEspecialidadesByMedicoIdAsync(medicoId);
-                return Ok(especialidades);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+
+            var especialidades = await _especialidadeMedico.GetEspecialidadesByMedicoIdAsync(medicoId);
+            return Ok(especialidades);
+
         }
     }
 }

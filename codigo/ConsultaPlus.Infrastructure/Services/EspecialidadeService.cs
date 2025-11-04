@@ -4,6 +4,7 @@ using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Repositories;
 using System;
 using System.Threading.Tasks;
+
 namespace ConsultaPlus.Infrastructure.Services
 {
     public class EspecialidadeService : IEspecialidadeService

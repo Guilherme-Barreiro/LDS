@@ -8,11 +8,11 @@ using ConsultaPlus.Core.Interfaces;
 
 namespace ConsultaPlus.Infrastructure.Repositories
 {
-	public class EspecialidadeMedicoRepository : IEspecialidadeMedico
+	public class EspecialidadeMedicoRepository : GenericRepository<EspecialidadeMedico>, IEspecialidadeMedicoRepository
 	{
 		private readonly ApplicationDbContext _context;
 
-		public EspecialidadeMedicoRepository(ApplicationDbContext context)
+		public EspecialidadeMedicoRepository(ApplicationDbContext context) : base(context)
 		{
 			_context = context;
 		}
@@ -52,24 +52,6 @@ namespace ConsultaPlus.Infrastructure.Repositories
 			return await _context.EspecialidadesMedico
 				.AsNoTracking()
 				.AnyAsync(em => em.MedicoId == medicoId && em.EspecialidadeId == especialidadeId);
-		}
-
-		public async Task AddAsync(EspecialidadeMedico especialidadeMedico)
-		{
-			_context.EspecialidadesMedico.Add(especialidadeMedico);
-			await _context.SaveChangesAsync();
-		}
-
-		public async Task RemoveAsync(int medicoId, int especialidadeId)
-		{
-			var entity = await _context.EspecialidadesMedico
-				.FirstOrDefaultAsync(em => em.MedicoId == medicoId && em.EspecialidadeId == especialidadeId);
-
-			if (entity != null)
-			{
-				_context.EspecialidadesMedico.Remove(entity);
-				await _context.SaveChangesAsync();
-			}
 		}
 	}
 }
