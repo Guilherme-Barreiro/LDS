@@ -11,37 +11,27 @@ public class ApiFactory : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        // Diz ao host que estamos em "Testing"
         builder.UseEnvironment("Testing");
 
         builder.ConfigureTestServices(services =>
         {
-            // Auth de teste (Admin)
+            var descriptor = services.Single(d => d.ServiceType == typeof(DbContextOptions<ApplicationDbContext>));
+            services.Remove(descriptor);
+
+            var dbName = $"TestingDb-{Guid.NewGuid()}";
+            services.AddDbContext<ApplicationDbContext>(o => o.UseInMemoryDatabase(dbName));
+
             services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = TestAuthHandler.Scheme;
                 o.DefaultChallengeScheme = TestAuthHandler.Scheme;
             }).AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.Scheme, _ => { });
 
-            // Seed mínimo
             using var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
             db.Database.EnsureCreated();
 
-            if (!db.Medicos.Any())
-            {
-                db.Medicos.Add(new Medico
-                {
-                    NomeCompleto = "Dr Teste",
-                    Email = "dr@x.com",
-                    Telemovel = "900000000",
-                    NUtente = "UT-TEST",
-                    PasswordHash = "x",
-                    DataNascimento = DateTime.UtcNow.AddYears(-40)
-                });
-                db.SaveChanges();
-            }
         });
     }
 }
