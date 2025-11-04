@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace ConsultaPlus.Tests.IntegracaoEspecialidade;
+namespace ConsultaPlus.Tests.Integracao.Especialidade;
 
 public class EspecialidadeControllerE2ETests : IClassFixture<ApiFactory>
 {

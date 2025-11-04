@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace ConsultaPlus.Tests.IntegracaoSala;
+namespace ConsultaPlus.Tests.Integracao.Sala;
 
 public class SalasControllerTests : IClassFixture<ApiFactory>
 {

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace ConsultaPlus.Tests.IntegracaoNotificacoes;
+namespace ConsultaPlus.Tests.Integracao.Notificacoes;
 public class NotificacoesControllerTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;

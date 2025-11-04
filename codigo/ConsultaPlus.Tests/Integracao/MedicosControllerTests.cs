@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace ConsultaPlus.Tests.ImtegracaoMedico;
+namespace ConsultaPlus.Tests.Integracao.Medico;
 public class MedicosControllerTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;

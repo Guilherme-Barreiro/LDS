@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace ConsultaPlus.Tests.IntegracaoHorarioMedico;
+namespace ConsultaPlus.Tests.Integracao.HorarioMedico;
 public class AdminHorariosControllerTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;
