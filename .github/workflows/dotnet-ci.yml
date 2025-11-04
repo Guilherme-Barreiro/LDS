@@ -73,11 +73,9 @@ jobs:
           dotnet test ./ConsultaPlus.Tests/ConsultaPlus.Tests.csproj \
           -c Release --no-build \
           --filter "FullyQualifiedName~Integracao" \
-          /p:CollectCoverage=true \
-          /p:CoverletOutput=TestResults/integration/coverage.cobertura.xml \
-          /p:CoverletOutputFormat=cobertura \
-          /p:Exclude="[ConsultaPlus.Tests]*" \
-          /p:Include="[ConsultaPlus.API]*;[ConsultaPlus.Infrastructure]*;[ConsultaPlus.Core]*"
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults/integration \
+          --settings ../coverlet.runsettings
 
       - name: Generate INTEGRATION coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
