@@ -23,7 +23,7 @@ jobs:
         run: dotnet build ConsultaPlus.sln -c Release --no-restore
 
   test:
-    name: Test (.NET 8) + Coverage
+    name: Test (.NET 8) + Coverage (unit & integration)
     needs: build
     runs-on: ubuntu-latest
     steps:
@@ -40,40 +40,66 @@ jobs:
         working-directory: ./codigo
         run: dotnet build ConsultaPlus.sln -c Release --no-restore
 
-      # --- testes + cobertura (gera cobertura.cobertura.xml em TestResults) ---
-      - name: Run tests with coverage (Cobertura)
+    # -------- UNIT --------
+      - name: Run UNIT tests with coverage
         working-directory: ./codigo
         run: |
           dotnet test ./ConsultaPlus.Tests/ConsultaPlus.Tests.csproj \
-            -c Release --no-build \
-            --collect:"XPlat Code Coverage" \
-            --results-directory ./TestResults \
-            --settings ../coverlet.runsettings
-            
-      # --- relatório HTML (igual ao das imagens) ---
-      - name: Generate HTML coverage report
+          -c Release --no-build \
+          --filter "FullyQualifiedName!~Integracao" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults/unit \
+          --settings ../coverlet.runsettings
+
+      - name: Generate UNIT coverage report
         uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
         with:
-          reports: './codigo/TestResults/**/coverage.cobertura.xml'
-          targetdir: 'coverage-report'
+          reports: './codigo/TestResults/unit/**/coverage.cobertura.xml'
+          targetdir: 'coverage-report-unit'
           reporttypes: 'HtmlInline_AzurePipelines;Cobertura'
           classfilters: '-ConsultaPlus.API.DTOs.*;-ConsultaPlus.Core.Models.*;-ConsultaPlus.Infrastructure.Repositories.*;-ConsultaPlus.Infrastructure.UoW.*'
           filefilters: '-*/Migrations/*;-*DbContextModelSnapshot.cs;-*ApplicationDbContextFactory.cs;-*Program.cs'
-          
-      # artefactos: relatório HTML
-      - name: Upload coverage report
+
+      - name: Upload UNIT coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
-          path: coverage-report
+          name: coverage-report-unit
+          path: coverage-report-unit
 
-      # artefactos: resultados .trx
+    # -------- INTEGRAÇÃO --------
+      - name: Run INTEGRATION tests with coverage
+        working-directory: ./codigo
+        run: |
+          dotnet test ./ConsultaPlus.Tests/ConsultaPlus.Tests.csproj \
+          -c Release --no-build \
+          --filter "FullyQualifiedName~Integracao" \
+          --collect:"XPlat Code Coverage" \
+          --results-directory ./TestResults/integration \
+          --settings ../coverlet.runsettings
+
+      - name: Generate INTEGRATION coverage report
+        uses: danielpalme/ReportGenerator-GitHub-Action@5.4.4
+        with:
+          reports: './codigo/TestResults/integration/**/coverage.cobertura.xml'
+          targetdir: 'coverage-report-integration'
+          reporttypes: 'HtmlInline_AzurePipelines;Cobertura'
+          classfilters: '-ConsultaPlus.API.DTOs.*;-ConsultaPlus.Core.Models.*;-ConsultaPlus.Infrastructure.Repositories.*;-ConsultaPlus.Infrastructure.UoW.*'
+          filefilters: '-*/Migrations/*;-*DbContextModelSnapshot.cs;-*ApplicationDbContextFactory.cs;-*Program.cs'
+
+      - name: Upload INTEGRATION coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-integration
+          path: coverage-report-integration
+
+    # (opcional) resultados .trx de ambos
       - name: Upload test results
         if: success() || failure()
         uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: './codigo/**/TestResults/*.trx'
+
 
   publish_container:
     name: Publish Container Image
