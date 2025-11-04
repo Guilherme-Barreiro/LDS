@@ -13,7 +13,7 @@ public class Paciente
     public string? Telemovel { get; set; }
     public string? Morada { get; set; }
     public string? Email { get; set; }
-    public DateTime DataNascimento { get; set; }
+    public DateTime? DataNascimento { get; set; }
     public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 
     public ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();

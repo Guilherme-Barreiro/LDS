@@ -34,4 +34,9 @@
     <ProjectReference Include="..\ConsultaPlus.Infrastructure\ConsultaPlus.Infrastructure.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DTOs\NovaPasta1\" />
+    <Folder Include="DTOs\NovaPasta\" />
+  </ItemGroup>
+
 </Project>

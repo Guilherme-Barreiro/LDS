@@ -1,4 +1,6 @@
-﻿namespace ConsultaPlus.API.DTOs.Notificacoes
+﻿using System;
+
+namespace ConsultaPlus.API.DTOs.Notificacoes
 {
     public class CreateNotificacaoDto
     {
