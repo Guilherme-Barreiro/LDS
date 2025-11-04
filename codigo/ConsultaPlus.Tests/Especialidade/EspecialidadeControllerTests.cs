@@ -88,7 +88,7 @@ namespace ConsultaPlus.Tests.Especialidades
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessage(bad.Value);
-            TextAssert.ContainsIgnoringDiacritics("Termo de pesquisa é obrigatório.", message);
+            TextAssert.ContainsIgnoringDiacritics("Termo de pesquisa e obrigatorio.", message);
 
             _svc.Verify(s => s.SearchAsync(It.IsAny<string>()), Times.Never);
         }
@@ -171,13 +171,13 @@ namespace ConsultaPlus.Tests.Especialidades
         {
             var dto = new CreateEspecialidadeDTO { Nome = "Cardiologia" };
             _svc.Setup(s => s.AddAsync("Cardiologia"))
-                .ThrowsAsync(new InvalidOperationException("Já existe."));
+                .ThrowsAsync(new InvalidOperationException("Ja existe."));
 
             var result = await _controller.Create(dto);
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var message = GetMessage(conflict.Value);
-            Assert.Equal("Já existe.", message);
+            Assert.Equal("Ja existe.", message);
 
             _svc.Verify(s => s.AddAsync("Cardiologia"), Times.Once);
         }
@@ -227,13 +227,13 @@ namespace ConsultaPlus.Tests.Especialidades
         {
             var dto = new UpdateEspecialidadeDTO { Nome = "Cardiologia" };
             _svc.Setup(s => s.UpdateAsync(7, "Cardiologia"))
-                .ThrowsAsync(new InvalidOperationException("Já existe."));
+                .ThrowsAsync(new InvalidOperationException("Ja existe."));
 
             var result = await _controller.Update(7, dto);
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var message = GetMessage(conflict.Value);
-            Assert.Equal("Já existe.", message);
+            Assert.Equal("Ja existe.", message);
 
             _svc.Verify(s => s.UpdateAsync(7, "Cardiologia"), Times.Once);
         }
@@ -265,13 +265,13 @@ namespace ConsultaPlus.Tests.Especialidades
         public async Task Delete_ComConflito_DeveRetornarConflict()
         {
             _svc.Setup(s => s.DeleteAsync(9))
-                .ThrowsAsync(new InvalidOperationException("Não é possível excluir a especialidade porque existem médicos vinculados."));
+                .ThrowsAsync(new InvalidOperationException("Nao e possível excluir a especialidade porque existem medicos vinculados."));
 
             var result = await _controller.Delete(9);
 
             var conflict = Assert.IsType<ConflictObjectResult>(result);
             var message = GetMessage(conflict.Value);
-            Assert.Equal("Não é possível excluir a especialidade porque existem médicos vinculados.", message);
+            Assert.Equal("Nao e possível excluir a especialidade porque existem medicos vinculados.", message);
 
             _svc.Verify(s => s.DeleteAsync(9), Times.Once);
         }

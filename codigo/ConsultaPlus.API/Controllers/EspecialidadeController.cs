@@ -38,7 +38,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Não foi possível registar a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possível registar a especialidade devido a um conflito na base de dados." });
             }
             catch (Exception ex)
             {
@@ -56,7 +56,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Não foi possível remover a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possível remover a especialidade devido a um conflito na base de dados." });
             }
             catch (InvalidOperationException ex)
             {
@@ -83,7 +83,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Não foi possível atualizar a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possível atualizar a especialidade devido a um conflito na base de dados." });
             }
             catch (InvalidOperationException ex)
             {
@@ -105,7 +105,7 @@ namespace ConsultaPlus.API.Controllers
             try
             {
                 var ent = await _especialidadeService.GetByIdAsync(id);
-                if (ent == null) return NotFound(new { message = "Especialidade não encontrada." });
+                if (ent == null) return NotFound(new { message = "Especialidade nao encontrada." });
 
                 return Ok(new ReadEspecialidadeDTO { Id = ent.Id, Nome = ent.Nome });
             }
@@ -122,7 +122,7 @@ namespace ConsultaPlus.API.Controllers
             {
                 if (string.IsNullOrWhiteSpace(termo))
                 {
-                    return BadRequest(new { message = "Termo de pesquisa é obrigatório." });
+                    return BadRequest(new { message = "Termo de pesquisa e obrigatorio." });
                 }
 
                 var resultados = await _especialidadeService.SearchAsync(termo);

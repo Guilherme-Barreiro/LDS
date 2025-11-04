@@ -23,12 +23,12 @@ public class EspecialidadeService : IEspecialidadeService
     public async Task<int> AddAsync(string name)
     {
         if (string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Nome obrigatório.");
+            throw new ArgumentException("Nome obrigatorio.");
 
         var nomeTrim = name.Trim();
 
         if (await _especialidadeRepository.ExistsByNameAsync(nomeTrim))
-            throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
+            throw new InvalidOperationException("Ja existe uma especialidade com esse nome.");
 
 
         var esp = new Especialidade { Nome = nomeTrim };
@@ -40,16 +40,16 @@ public class EspecialidadeService : IEspecialidadeService
     public async Task UpdateAsync(int id, string novoNome)
     {
         if (string.IsNullOrWhiteSpace(novoNome))
-            throw new ArgumentException("Nome obrigatório.");
+            throw new ArgumentException("Nome obrigatorio.");
 
         var esp = await _especialidadeRepository.GetByIdAsync(id);
         if (esp == null)
-            throw new KeyNotFoundException("Especialidade não encontrada.");
+            throw new KeyNotFoundException("Especialidade nao encontrada.");
 
         var novoTrim = novoNome.Trim();
 
         if (await _especialidadeRepository.ExistsByNameAndNotIdAsync(novoTrim, id))
-            throw new InvalidOperationException("Já existe uma especialidade com esse nome.");
+            throw new InvalidOperationException("Ja existe uma especialidade com esse nome.");
 
         esp.Nome = novoTrim;
 
@@ -60,10 +60,10 @@ public class EspecialidadeService : IEspecialidadeService
     public async Task DeleteAsync(int id)
     {
         var ent = await _especialidadeRepository.GetByIdAsync(id);
-        if (ent == null) throw new KeyNotFoundException("Especialidade não encontrada.");
+        if (ent == null) throw new KeyNotFoundException("Especialidade nao encontrada.");
 
         if (await _especialidadeRepository.IsLinkedToMedic(id))
-            throw new InvalidOperationException("Não é possível excluir a especialidade porque existem médicos vinculados.");
+            throw new InvalidOperationException("Nao e possivel excluir a especialidade porque existem medicos vinculados.");
 
         await _especialidadeRepository.DeleteAsync(id);
         await _uow.SaveChangesAsync();
