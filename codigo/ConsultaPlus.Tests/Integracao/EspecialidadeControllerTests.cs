@@ -32,7 +32,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         [Fact]
         public async Task Create_Valido_201_ComBody()
         {
-            var resp = await _client.PostAsJsonAsync("/api/Especialidade/registo-especialidade", new { nome = "Cardiologia" });
+            var resp = await _client.PostAsJsonAsync("/api/Especialidade/registo-especialidade", new { Nome = "Cardiologia" });
             Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
 
             var body = await resp.Content.ReadFromJsonAsync<EspVm>();
@@ -46,14 +46,14 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         public async Task Create_Duplicado_409()
         {
             await CreateEspecialidadeAsync("Oncologia");
-            var resp2 = await _client.PostAsJsonAsync("/api/Especialidade/registo-especialidade", new { nome = "Oncologia" });
+            var resp2 = await _client.PostAsJsonAsync("/api/Especialidade/registo-especialidade", new { Nome = "Oncologia" });
             Assert.Equal(HttpStatusCode.Conflict, resp2.StatusCode);
         }
 
         [Fact]
         public async Task Create_NomeInvalido_400_ou_409()
         {
-            var resp = await _client.PostAsJsonAsync("/api/Especialidade/registo-especialidade", new { nome = "   " });
+            var resp = await _client.PostAsJsonAsync("/api/Especialidade/registo-especialidade", new { Nome = "   " });
             Assert.Contains(resp.StatusCode, new[] { HttpStatusCode.BadRequest, HttpStatusCode.Conflict });
         }
 

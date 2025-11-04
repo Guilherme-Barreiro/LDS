@@ -7,7 +7,6 @@ namespace ConsultaPlus.Infrastructure.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
-        // Tabelas
         public virtual DbSet<Paciente> Pacientes { get; set; }
         public virtual DbSet<Medico> Medicos { get; set; }
         public virtual DbSet<Consulta> Consultas { get; set; }
@@ -17,7 +16,7 @@ namespace ConsultaPlus.Infrastructure.Data
         public virtual DbSet<HorarioExcecaoMedico> HorariosExcecaoMedicos { get; set; }
         public virtual DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
         public virtual DbSet<Notificacao> Notificacoes { get; set; }
-        //public virtual DbSet<SnsPaciente> SnsPacientes { get; set; }
+        public virtual DbSet<SnsPaciente> SnsPacientes { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -70,11 +69,21 @@ namespace ConsultaPlus.Infrastructure.Data
                 b.HasIndex(n => new { n.PacienteId, n.Lida });
             });
 
-            //modelBuilder.Entity<SnsPaciente>(b =>
-            //{
-            //    b.HasIndex(x => x.Email);
-            //    b.Property(x => x.DataCriacao).HasDefaultValueSql("GETUTCDATE()");
-            //});
+            modelBuilder.Entity<SnsPaciente>(b =>
+            {
+                b.Property(x => x.NUtente).IsRequired();
+                b.HasIndex(x => x.NUtente).IsUnique();
+
+                b.Property(x => x.NomeCompleto).IsRequired();
+                b.Property(x => x.Nif).IsRequired();
+                b.Property(x => x.Telemovel).IsRequired();
+                b.Property(x => x.Morada).IsRequired();
+                b.Property(x => x.Email).IsRequired();
+                b.Property(x => x.DataNascimento).IsRequired();
+
+                b.Property(x => x.DataCriacao).HasDefaultValueSql("GETUTCDATE()");
+            });
+
         }
     }
 }

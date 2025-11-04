@@ -8,30 +8,32 @@ using ConsultaPlus.Core.Interfaces;
 
 namespace ConsultaPlus.Infrastructure.Repositories
 {
-	public class EspecialidadeMedicoRepository : IEspecialidadeMedico
+	public class EspecialidadeMedicoRepository : GenericRepository<EspecialidadeMedico>, IEspecialidadeMedicoRepository
 	{
 		private readonly ApplicationDbContext _context;
 
-		public EspecialidadeMedicoRepository(ApplicationDbContext context)
+		public EspecialidadeMedicoRepository(ApplicationDbContext context) : base(context)
 		{
 			_context = context;
 		}
 
 		public async Task<IEnumerable<Medico>> GetMedicosByEspecialidadeIdAsync(int especialidadeId)
 		{
-			return await _context.EspecialidadesMedico
-				.Where(em => em.EspecialidadeId == especialidadeId)
-				.Select(em => em.Medico)
-				.ToListAsync();
+            return await _context.EspecialidadesMedico
+                .AsNoTracking()
+                .Where(em => em.EspecialidadeId == especialidadeId)
+                .Select(em => em.Medico)
+                .ToListAsync();
 		}
 
 		public async Task<IEnumerable<Especialidade>> GetEspecialidadesByMedicoIdAsync(int medicoId)
 		{
-			return await _context.EspecialidadesMedico
-				.Where(em => em.MedicoId == medicoId)
-				.Select(em => em.Especialidade)
-				.ToListAsync();
-		}
+            return await _context.EspecialidadesMedico
+                .AsNoTracking()
+                .Where(em => em.MedicoId == medicoId)
+                .Select(em => em.Especialidade)
+                .ToListAsync();
+        }
 
 		public async Task<bool> MedicoExistsAsync(int medicoId)
 		{
@@ -54,22 +56,15 @@ namespace ConsultaPlus.Infrastructure.Repositories
 				.AnyAsync(em => em.MedicoId == medicoId && em.EspecialidadeId == especialidadeId);
 		}
 
-		public async Task AddAsync(EspecialidadeMedico especialidadeMedico)
+		public async Task DeleteAsync(int medicoId, int especialidadeId)
 		{
-			_context.EspecialidadesMedico.Add(especialidadeMedico);
-			await _context.SaveChangesAsync();
-		}
-
-		public async Task RemoveAsync(int medicoId, int especialidadeId)
-		{
-			var entity = await _context.EspecialidadesMedico
+			var assoc = await _context.EspecialidadesMedico
 				.FirstOrDefaultAsync(em => em.MedicoId == medicoId && em.EspecialidadeId == especialidadeId);
-
-			if (entity != null)
-			{
-				_context.EspecialidadesMedico.Remove(entity);
-				await _context.SaveChangesAsync();
-			}
-		}
-	}
+			if (assoc != null)
+                throw new KeyNotFoundException("Associação não encontrada.");
+           
+			_context.EspecialidadesMedico.Remove(assoc);
+			
+        }
+    }
 }

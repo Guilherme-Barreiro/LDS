@@ -38,9 +38,9 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Nao foi possível registar a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possivel registar a especialidade devido a um conflito na base de dados." });
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -56,7 +56,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Nao foi possível remover a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possivel remover a especialidade devido a um conflito na base de dados." });
             }
             catch (InvalidOperationException ex)
             {
@@ -65,10 +65,6 @@ namespace ConsultaPlus.API.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(new { message = ex.Message });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
             }
         }
 
@@ -83,7 +79,7 @@ namespace ConsultaPlus.API.Controllers
             }
             catch (DbUpdateException)
             {
-                return Conflict(new { message = "Nao foi possível atualizar a especialidade devido a um conflito na base de dados." });
+                return Conflict(new { message = "Nao foi possivel atualizar a especialidade devido a um conflito na base de dados." });
             }
             catch (InvalidOperationException ex)
             {
@@ -93,7 +89,7 @@ namespace ConsultaPlus.API.Controllers
             {
                 return NotFound(new { message = ex.Message });
             }
-            catch (Exception ex)
+            catch (ArgumentException ex)
             {
                 return BadRequest(new { message = ex.Message });
             }
@@ -102,17 +98,11 @@ namespace ConsultaPlus.API.Controllers
         [HttpGet("obter-especialidade-id/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
-            try
-            {
-                var ent = await _especialidadeService.GetByIdAsync(id);
-                if (ent == null) return NotFound(new { message = "Especialidade nao encontrada." });
+            var ent = await _especialidadeService.GetByIdAsync(id);
+            if (ent == null) return NotFound(new { message = "Especialidade nao encontrada." });
 
-                return Ok(new ReadEspecialidadeDTO { Id = ent.Id, Nome = ent.Nome });
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            return Ok(new ReadEspecialidadeDTO { Id = ent.Id, Nome = ent.Nome });
+            
         }
 
         [HttpGet("pesquisar-especialidade")]
@@ -136,26 +126,15 @@ namespace ConsultaPlus.API.Controllers
             {
                 return Conflict(new { message = ex.Message });
             }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
         }
 
 
         [HttpGet("obter-todas-especialidades")]
         public async Task<IActionResult> GetAll()
         {
-            try
-            {
-                var todas = await _especialidadeService.GetAllAsync();
-                var dtos = todas.Select(e => new ReadEspecialidadeDTO { Id = e.Id, Nome = e.Nome });
-                return Ok(dtos);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            var todas = await _especialidadeService.GetAllAsync();
+            var dtos = todas.Select(e => new ReadEspecialidadeDTO { Id = e.Id, Nome = e.Nome });
+            return Ok(dtos);
         }
 
     }
