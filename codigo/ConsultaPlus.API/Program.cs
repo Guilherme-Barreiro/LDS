@@ -29,7 +29,7 @@ builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
 builder.Services.AddScoped<ISalaRepository, SalaRepository>();
 builder.Services.AddScoped<IConsultaRepository, ConsultaRepository>();
 builder.Services.AddScoped<IPacienteRepository, PacienteRepository>();
-builder.Services.AddScoped<IEspecialidadeCRUD, EspecialidadeRepository>();
+builder.Services.AddScoped<IEspecialidadeRepository, EspecialidadeRepository>();
 builder.Services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
@@ -37,7 +37,7 @@ builder.Services.AddScoped<IHorarioTrabalhoMedico, HorarioTrabalhoMedicoService>
 builder.Services.AddScoped<IHorarioExcecaoMedico, HorarioExcecaoMedicoService>();
 builder.Services.AddScoped<ISalasService, SalasService>();
 builder.Services.AddScoped<IUnitOfWork, EfUnitOfWork>();
-builder.Services.AddScoped<EspecialidadeService, EspecialidadeService>();
+builder.Services.AddScoped<IEspecialidadeService, EspecialidadeService>();
 builder.Services.AddScoped<IMedicoService, MedicoService>();
 builder.Services.AddScoped<IConsultaService, ConsultaService>();
 
