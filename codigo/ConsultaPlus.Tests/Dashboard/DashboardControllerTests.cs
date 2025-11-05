@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
-namespace ConsultaPlus.Tests.Unit.Controllers
+namespace ConsultaPlus.Tests.Dashboard
 {
     public class DashboardControllerTests
     {
