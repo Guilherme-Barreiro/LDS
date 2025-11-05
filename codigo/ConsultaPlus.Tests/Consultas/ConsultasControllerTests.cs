@@ -162,8 +162,7 @@ namespace ConsultaPlus.Tests.Consultas
                 SalaId = 1000,
                 EspecialidadeId = 200,
                 DataConsulta = dt,
-                Duracao = 30,
-                Estado = "Marcada"
+                Duracao = 30
             };
 
             _repo.Setup(r => r.AddAsync(It.IsAny<Consulta>()))
@@ -183,7 +182,7 @@ namespace ConsultaPlus.Tests.Consultas
             Assert.Equal(200, body.EspecialidadeId);
             Assert.Equal(dt, body.DataConsulta);
             Assert.Equal(30, body.Duracao);
-            Assert.Equal("Marcada", body.Estado);
+            Assert.Equal("Confirmada", body.Estado);
 
             _repo.Verify(r => r.AddAsync(It.Is<Consulta>(c =>
                 c.PacienteId == 10 &&
@@ -192,7 +191,7 @@ namespace ConsultaPlus.Tests.Consultas
                 c.EspecialidadeId == 200 &&
                 c.DataConsulta == dt &&
                 c.Duracao == 30 &&
-                c.Estado == "Marcada"
+                c.Estado == "Confirmada"
             )), Times.Once);
         }
 

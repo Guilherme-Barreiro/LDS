@@ -166,7 +166,7 @@ namespace ConsultaPlus.Tests.Consultas
                 EspecialidadeId = 4,
                 DataConsulta = dt,
                 Duracao = 30,
-                Estado = "Marcada"
+                Estado = "Confirmada"
             };
 
             _pacientes.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Paciente { Id = 1 });
@@ -185,7 +185,7 @@ namespace ConsultaPlus.Tests.Consultas
             _consultas.Verify(r => r.AddAsync(It.Is<Consulta>(c =>
                 c.PacienteId == 1 && c.MedicoId == 2 && c.SalaId == 3 &&
                 c.EspecialidadeId == 4 && c.DataConsulta == dt &&
-                c.Duracao == 30 && c.Estado == "Marcada"
+                c.Duracao == 30 && c.Estado == "Confirmada"
             )), Times.Once);
         }
 
