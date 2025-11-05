@@ -53,7 +53,7 @@ namespace ConsultaPlus.Infrastructure.Services
                 throw new ArgumentException($"SalaId {nova.SalaId} não existe.");
             if (await _especialidades.GetByIdAsync(nova.EspecialidadeId) is null)
                 throw new ArgumentException($"EspecialidadeId {nova.EspecialidadeId} não existe.");
-
+            nova.Estado = "Confirmada";
             await _consultas.AddAsync(nova);
             return nova;
         }

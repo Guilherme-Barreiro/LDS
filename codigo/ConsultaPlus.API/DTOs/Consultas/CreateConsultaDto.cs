@@ -8,6 +8,5 @@
         public int EspecialidadeId { get; set; }
         public DateTime DataConsulta { get; set; }
         public int Duracao { get; set; }
-        public string Estado { get; set; } = "Marcada";
     }
 }
