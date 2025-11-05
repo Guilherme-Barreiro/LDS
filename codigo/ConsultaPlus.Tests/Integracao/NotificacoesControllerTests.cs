@@ -64,7 +64,6 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         Assert.Equal(7, body.MedicoId);
         Assert.Null(body.PacienteId);
 
-        // Location deve resolver para 200
         var get = await _client.GetAsync(resp.Headers.Location);
         Assert.Equal(HttpStatusCode.OK, get.StatusCode);
     }
@@ -105,14 +104,11 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Get_Filter_Medico_UnreadOnly_200()
     {
-        // medico 1: 2 notif (1 lida, 1 não lida)
         var n1 = await CreateAsync("M1", "A", medicoId: 1);
         var n2 = await CreateAsync("M1", "B", medicoId: 1);
-        // marca a n1 como lida
         var patch = await _client.PatchAsync($"/api/Notificacoes/{n1}/ler?Lida=true", null);
         Assert.Equal(HttpStatusCode.NoContent, patch.StatusCode);
 
-        // medico 2: ruído
         await CreateAsync("M2", "C", medicoId: 2);
 
         var resp = await _client.GetAsync("/api/Notificacoes?medicoId=1&unreadOnly=true");
@@ -131,7 +127,7 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
     {
         var a = await CreateAsync("P1", "X", pacienteId: 5);
         var b = await CreateAsync("P1", "Y", pacienteId: 5);
-        await CreateAsync("P2", "Z", pacienteId: 6); // ruído
+        await CreateAsync("P2", "Z", pacienteId: 6); 
 
         var resp = await _client.GetAsync("/api/Notificacoes?pacienteId=5");
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -177,7 +173,6 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         Assert.Equal("Nova descricao", dto.Descricao);
         Assert.True(dto.Lida);
 
-        // confirma via GET
         var get = await _client.GetAsync($"/api/Notificacoes/{id}");
         var after = await get.Content.ReadFromJsonAsync<NotificacaoVm>();
         Assert.NotNull(after);
@@ -203,13 +198,11 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         var ok = await _client.PatchAsync($"/api/Notificacoes/{id}/ler?Lida=true", null);
         Assert.Equal(HttpStatusCode.NoContent, ok.StatusCode);
 
-        // verificação
         var get = await _client.GetAsync($"/api/Notificacoes/{id}");
         var dto = await get.Content.ReadFromJsonAsync<NotificacaoVm>();
         Assert.NotNull(dto);
         Assert.True(dto!.Lida);
 
-        // inexistente
         var nf = await _client.PatchAsync("/api/Notificacoes/999999/ler?Lida=false", null);
         Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
     }
@@ -222,11 +215,9 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         var del = await _client.DeleteAsync($"/api/Notificacoes/{id}");
         Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);
 
-        // confirma que saiu
         var nf = await _client.GetAsync($"/api/Notificacoes/{id}");
         Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
 
-        // opcional: confirmar no DB
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         Assert.False(await db.Notificacoes.AnyAsync(n => n.Id == id));

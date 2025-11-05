@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ConsultaPlus.Tests.Integracao.Consultas
 {
-    [Collection("Integration")] // usa a mesma collection da tua ApiFactory
+    [Collection("Integration")] 
     public class ConsultasControllerIT : IClassFixture<ApiFactory>
     {
         private readonly ApiFactory _factory;
@@ -24,8 +24,6 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             _client = factory.CreateClient();
         }
 
-        // ----------------- helpers -----------------
-
         private sealed record Ids(int PacienteId, int MedicoId, int SalaId, int EspecialidadeId);
 
         private async Task<Ids> SeedBaseAsync()
@@ -33,7 +31,6 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             using var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // limpar para isolar
             db.Consultas.RemoveRange(db.Consultas);
             db.Medicos.RemoveRange(db.Medicos);
             db.Pacientes.RemoveRange(db.Pacientes);
@@ -45,7 +42,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             {   
                 NomeCompleto = "Dr IT",
                 Email = "dr@it",
-                Telemovel = "900000000",              // obrigatório
+                Telemovel = "900000000",  
                 NUtente = Guid.NewGuid().ToString("N")[..12],
                 PasswordHash = "x",
                 DataNascimento = DateTime.UtcNow.AddYears(-40)
@@ -91,8 +88,6 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             return dto!;
         }
 
-        // ----------------- testes -----------------
-
         [Fact]
         public async Task Post__201_ComBody_EstadoConfirmada()
         {
@@ -108,7 +103,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             Assert.Equal(ids.EspecialidadeId, created.EspecialidadeId);
             Assert.Equal(inicio, created.DataConsulta);
             Assert.Equal(30, created.Duracao);
-            Assert.Equal("Confirmada", created.Estado);   // regra do controller
+            Assert.Equal("Confirmada", created.Estado);  
         }
 
         [Fact]
@@ -145,10 +140,8 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         {
             var ids = await SeedBaseAsync();
 
-            // cria para medico A (ids.MedicoId)
             await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1), 30);
 
-            // cria para outro médico
             using (var scope = _factory.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
@@ -190,11 +183,9 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         {
             var ids = await SeedBaseAsync();
 
-            // cria 2 para o mesmo paciente
             await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1), 30);
             await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(2), 30);
 
-            // cria 1 para outro paciente
             using (var scope = _factory.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

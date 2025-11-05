@@ -25,9 +25,6 @@ namespace ConsultaPlus.Tests.Salas
             _svc = new SalasService(_repo.Object, _uow.Object);
         }
 
-        // -------------------------
-        // GetAll / GetById / Search
-        // -------------------------
         [Fact]
         public async Task GetAllAsync_DeveDevolverListaDoRepositorio()
         {
@@ -71,9 +68,6 @@ namespace ConsultaPlus.Tests.Salas
             _repo.Verify(r => r.SearchByNameAsync("abc"), Times.Once);
         }
 
-        // ---------------
-        // CreateAsync
-        // ---------------
         [Theory]
         [InlineData(null)]
         [InlineData("")]
@@ -109,7 +103,7 @@ namespace ConsultaPlus.Tests.Salas
             _repo.Setup(r => r.ExistsByNameAsync("Sala Nova")).ReturnsAsync(false);
 
             _repo.Setup(r => r.AddAsync(It.IsAny<SalaModel>()))
-                 .Callback<SalaModel>(s => s.Id = 123)  // simula PK gerada
+                 .Callback<SalaModel>(s => s.Id = 123) 
                  .Returns(Task.CompletedTask);
 
             _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -124,9 +118,6 @@ namespace ConsultaPlus.Tests.Salas
             _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
-        // ---------------
-        // DeleteAsync
-        // ---------------
         [Fact]
         public async Task DeleteAsync_Inexistente_DeveLancarKeyNotFoundException()
         {

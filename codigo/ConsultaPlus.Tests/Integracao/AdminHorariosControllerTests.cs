@@ -304,7 +304,7 @@ public class AdminHorariosControllerTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Get_Horarios_SemRegistos_200_Vazio()
     {
-        var medicoId = await CreateMedicoNovoAsync(); // médico sem horários
+        var medicoId = await CreateMedicoNovoAsync();
 
         var resp = await _client.GetAsync($"/api/admin/medicos/{medicoId}/horario");
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);

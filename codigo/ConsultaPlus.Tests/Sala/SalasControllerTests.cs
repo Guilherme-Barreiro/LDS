@@ -8,7 +8,7 @@ using Xunit;
 using ConsultaPlus.API.Controllers;
 using ConsultaPlus.API.DTOs.Salas;
 using ConsultaPlus.Core.Models;
-using ConsultaPlus.Core.Interfaces; // onde vive o ISalasService
+using ConsultaPlus.Core.Interfaces;
 
 namespace ConsultaPlus.Tests.Controllers
 {
@@ -135,7 +135,7 @@ namespace ConsultaPlus.Tests.Controllers
             Assert.Equal(42, created.RouteValues!["id"]);
             var body = Assert.IsType<SalaResponseDto>(created.Value);
             Assert.Equal(42, body.Id);
-            Assert.Equal("Nova", body.Nome); // Trim aplicado no controller
+            Assert.Equal("Nova", body.Nome);
 
             _svc.Verify(s => s.CreateAsync("  Nova  "), Times.Once);
         }

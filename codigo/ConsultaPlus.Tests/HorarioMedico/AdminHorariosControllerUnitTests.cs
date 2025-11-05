@@ -26,9 +26,6 @@ namespace ConsultaPlus.Tests.HorarioMedico
             return new AdminHorariosController(hMock.Object, eMock.Object, db);
         }
 
-        // --------------------------------------------------------------------
-        //     >>>>>>  OS TEUS TESTES ORIGINAIS (mantidos)  <<<<<<
-        // --------------------------------------------------------------------
         [Fact]
         public async Task GetHorarios_FiltraPorMedico_Ordena_RetornaDois()
         {
@@ -192,11 +189,6 @@ namespace ConsultaPlus.Tests.HorarioMedico
             Assert.False(db.HorariosExcecaoMedicos.Any(e => e.Id == 10));
         }
 
-        // --------------------------------------------------------------------
-        //     >>>>>>  NOVOS TESTES (ramos de erro/validação)  <<<<<<
-        // --------------------------------------------------------------------
-
-        // --------- DefinirHorario (POST /horario)
         [Fact]
         public async Task DefinirHorario_Sucesso_204()
         {
@@ -274,7 +266,6 @@ namespace ConsultaPlus.Tests.HorarioMedico
             h.VerifyAll();
         }
 
-        // --------- AtualizarHorario (PUT /horario/{id}) — erros
         [Fact]
         public async Task AtualizarHorario_ModelStateInvalido_400()
         {
@@ -347,7 +338,6 @@ namespace ConsultaPlus.Tests.HorarioMedico
             h.VerifyAll();
         }
 
-        // --------- RegistarExcecao (POST /excecoes)
         [Fact]
         public async Task RegistarExcecao_Sucesso_204()
         {
@@ -425,7 +415,6 @@ namespace ConsultaPlus.Tests.HorarioMedico
             e.VerifyAll();
         }
 
-        // --------- GetHorario / GetExcecao (NotFound/Ok)
         [Fact]
         public async Task GetHorario_NotFound_404()
         {
@@ -481,7 +470,6 @@ namespace ConsultaPlus.Tests.HorarioMedico
             Assert.NotNull(ok.Value);
         }
 
-        // --------- AtualizarExcecao (PUT /excecoes/{id})
         [Fact]
         public async Task AtualizarExcecao_ModelStateInvalido_400()
         {
@@ -566,7 +554,6 @@ namespace ConsultaPlus.Tests.HorarioMedico
             Assert.Equal("novo", (string?)dto.Motivo);
         }
 
-        // --------- RemoverHorario (DELETE /horario/{id})
         [Fact]
         public async Task RemoverHorario_NotFound_404()
         {

@@ -60,7 +60,7 @@ namespace ConsultaPlus.Infrastructure.Repositories
 		{
 			var assoc = await _context.EspecialidadesMedico
 				.FirstOrDefaultAsync(em => em.MedicoId == medicoId && em.EspecialidadeId == especialidadeId);
-			if (assoc != null)
+			if (assoc == null)
                 throw new KeyNotFoundException("Associação não encontrada.");
            
 			_context.EspecialidadesMedico.Remove(assoc);

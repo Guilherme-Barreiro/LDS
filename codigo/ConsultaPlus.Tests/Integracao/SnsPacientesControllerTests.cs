@@ -15,7 +15,6 @@ namespace ConsultaPlus.Tests.Integracao.SNS
 
         public SnsPacientesControllerTests(ApiFactory factory) => _factory = factory;
 
-        // DTOs p/ (de)serialização
         public record CreateDto(string NUtente, string NomeCompleto, string Nif, string Telemovel, string Morada, string Email, DateTime DataNascimento);
         public record UpdateDto(string NomeCompleto, string Nif, string Telemovel, string Morada, string Email, DateTime DataNascimento);
         public record RespDto(int Id, string NUtente, string NomeCompleto, string Nif, string Telemovel, string Morada, string Email, DateTime DataNascimento, DateTime DataCriacao);
@@ -39,22 +38,18 @@ namespace ConsultaPlus.Tests.Integracao.SNS
             DateTime? nasc = null
         ) => new(nome, nif, tel, morada, email, nasc ?? new DateTime(1991, 5, 10));
 
-        // Utilitário: cria cliente e devolve db limpa por teste
         private (HttpClient client, ApplicationDbContext db) CreateClientAndDb()
         {
-            var client = _factory.CreateClient(); // já autenticado pelo TestAuthHandler
+            var client = _factory.CreateClient();
             var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // Limpeza completa para isolamento
             db.SnsPacientes.RemoveRange(db.SnsPacientes);
             db.Pacientes.RemoveRange(db.Pacientes);
             db.SaveChanges();
 
             return (client, db);
         }
-
-        // ============ TESTES ============
 
         [Fact]
         public async Task Create_201_PersisteEDevolveLocation()
@@ -156,7 +151,6 @@ namespace ConsultaPlus.Tests.Integracao.SNS
             db.SnsPacientes.Add(e);
             await db.SaveChangesAsync();
 
-            // usar string não numérica para não coincidir com {id:int}
             var res = await client.GetAsync($"{BaseUrl}/{e.NUtente}");
 
             res.EnsureSuccessStatusCode();
@@ -253,7 +247,6 @@ namespace ConsultaPlus.Tests.Integracao.SNS
         public async Task Importar_404_QuandoSnsNaoExiste()
         {
             var (client, db) = CreateClientAndDb();
-            // Existe paciente mas não existe SNS
             db.Pacientes.Add(new Paciente { NUtente = "UT-IMP-1", NomeCompleto = "P", Email = "p@x.com", PasswordHash = "test" });
             await db.SaveChangesAsync();
 
@@ -266,7 +259,6 @@ namespace ConsultaPlus.Tests.Integracao.SNS
         public async Task Importar_404_QuandoPacienteNaoExiste()
         {
             var (client, db) = CreateClientAndDb();
-            // Existe SNS mas não existe Paciente
             db.SnsPacientes.Add(new SnsPaciente
             {
                 NUtente = "UT-IMP-2",

@@ -26,7 +26,6 @@ namespace ConsultaPlus.Tests.SNS
             pacSeed ??= Array.Empty<Paciente>();
 
             var dbMock = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
-            // DbSets com LINQ async prontos (AnyAsync, FirstOrDefaultAsync, ToListAsync, etc.)
             dbMock.Setup(x => x.SnsPacientes).ReturnsDbSet(snsSeed);
             dbMock.Setup(x => x.Pacientes).ReturnsDbSet(pacSeed);
             // SaveChangesAsync default
@@ -34,16 +33,12 @@ namespace ConsultaPlus.Tests.SNS
             return dbMock;
         }
 
-        // ============================= CREATE =============================
-
         [Fact]
         public async Task Create_TodosCamposValidos_201_ComTrim()
         {
-            // Arrange
-            var db = MakeDb(); // sem registos
+            var db = MakeDb(); 
             var added = new List<SnsPaciente>();
 
-            // Intercepta Add para simular PK/Identity
             db.Setup(x => x.SnsPacientes.Add(It.IsAny<SnsPaciente>()))
               .Callback((SnsPaciente e) =>
               {
@@ -63,11 +58,9 @@ namespace ConsultaPlus.Tests.SNS
                 Email = " joao@x.com ",
                 DataNascimento = new DateTime(1990, 1, 1)
             };
-
-            // Act
+ 
             var res = await sut.Create(dto, CancellationToken.None);
-
-            // Assert
+   
             var created = Assert.IsType<CreatedAtActionResult>(res);
             Assert.Equal(nameof(SnsPacientesController.GetById), created.ActionName);
             Assert.Equal(123, (int)created.RouteValues!["id"]!);
@@ -142,7 +135,6 @@ namespace ConsultaPlus.Tests.SNS
             Assert.Contains("Já existe", msg);
         }
 
-        // =================== GET ALL / BY ID / BY NUTENTE ===================
 
         [Fact]
         public async Task GetAll_200_ComLista()
@@ -171,7 +163,6 @@ namespace ConsultaPlus.Tests.SNS
             };
             var db = MakeDb(snsSeed: seed);
 
-            // `FindAsync` precisa de setup explícito porque o controller usa FindAsync
             db.Setup(x => x.SnsPacientes.FindAsync(new object[] { 10 }, It.IsAny<CancellationToken>()))
               .ReturnsAsync(seed.First());
 
@@ -222,8 +213,6 @@ namespace ConsultaPlus.Tests.SNS
             var res = await sut.GetByNUtente("NAO", CancellationToken.None);
             Assert.IsType<NotFoundResult>(res);
         }
-
-        // =============================== UPDATE ===============================
 
         [Fact]
         public async Task Update_Valido_204_AtualizaCampos()
@@ -317,8 +306,6 @@ namespace ConsultaPlus.Tests.SNS
             Assert.IsType<NotFoundResult>(res);
         }
 
-        // =============================== DELETE ===============================
-
         [Fact]
         public async Task Delete_Existente_204_E_Depois_404()
         {
@@ -327,7 +314,6 @@ namespace ConsultaPlus.Tests.SNS
             db.Setup(x => x.SnsPacientes.FindAsync(new object[] { 2 }, It.IsAny<CancellationToken>()))
               .ReturnsAsync(ent);
 
-            // rastrear removidos
             var removed = new List<SnsPaciente>();
             db.Setup(x => x.SnsPacientes.Remove(It.IsAny<SnsPaciente>()))
               .Callback((SnsPaciente e) => removed.Add(e));
@@ -357,8 +343,6 @@ namespace ConsultaPlus.Tests.SNS
             var res = await sut.Delete(999, CancellationToken.None);
             Assert.IsType<NotFoundResult>(res);
         }
-
-        // =============================== IMPORTAR ===============================
 
         [Fact]
         public async Task Importar_BadRequest_QuandoNUtenteVazio()
@@ -396,7 +380,7 @@ namespace ConsultaPlus.Tests.SNS
                     Email = "novo@x", DataNascimento = new DateTime(1988, 8, 8)
                 }
             };
-            var db = MakeDb(snsSeed: sns); // sem paciente
+            var db = MakeDb(snsSeed: sns);
             var sut = new SnsPacientesController(db.Object);
 
             var res = await sut.ImportarParaPaciente("U1", CancellationToken.None);

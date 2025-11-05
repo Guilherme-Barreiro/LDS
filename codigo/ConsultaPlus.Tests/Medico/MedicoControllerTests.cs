@@ -233,7 +233,6 @@ namespace ConsultaPlus.Tests.Medicos
             _repo.Setup(r => r.GetByIdAsync(8)).ReturnsAsync(original);
             _repo.Setup(r => r.UpdateAsync(It.IsAny<MedicoModel>())).Returns(Task.CompletedTask);
 
-            // Só altera DataNascimento; strings a null devem manter os originais
             var dto = new UpdateMedicoDto
             {
                 NomeCompleto = null,

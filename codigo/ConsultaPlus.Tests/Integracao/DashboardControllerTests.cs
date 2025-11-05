@@ -12,7 +12,6 @@ using ConsultaPlus.API.DTOs.Consultas;
 
 namespace ConsultaPlus.Tests.Integracao.Dashboard
 {
-    // Evita interferências entre testes (partilham a mesma app)
     [CollectionDefinition("Integration", DisableParallelization = true)]
     public class IntegrationCollection : ICollectionFixture<ApiFactory> { }
 
@@ -28,14 +27,11 @@ namespace ConsultaPlus.Tests.Integracao.Dashboard
             _client = factory.CreateClient();
         }
 
-        // ---------- helpers ----------
-
         private async Task<(int MedicoId, int PacienteId)> SeedBasicoAsync()
         {
             using var scope = _factory.Services.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // limpar tudo o que interessa (para isolar testes)
             db.Consultas.RemoveRange(db.Consultas);
             db.Medicos.RemoveRange(db.Medicos);
             db.Pacientes.RemoveRange(db.Pacientes);
@@ -54,7 +50,6 @@ namespace ConsultaPlus.Tests.Integracao.Dashboard
             db.Salas.Add(sala);
             await db.SaveChangesAsync();
 
-            // 2 consultas no dia 2025-11-04 e 1 fora do dia
             db.Consultas.AddRange(
                 new Consulta
                 {
@@ -76,7 +71,7 @@ namespace ConsultaPlus.Tests.Integracao.Dashboard
                     Duracao = 60,
                     Estado = "Pendente"
                 },
-                new Consulta // fora do intervalo 04..04
+                new Consulta 
                 {
                     PacienteId = pac.Id,
                     MedicoId = med.Id,
@@ -92,14 +87,11 @@ namespace ConsultaPlus.Tests.Integracao.Dashboard
             return (med.Id, pac.Id);
         }
 
-        // ---------- testes ----------
-
         [Fact]
         public async Task AgendaMedico__Devolve_DiaInteiro_Usando_ToExclusivo()
         {
             var (medicoId, _) = await SeedBasicoAsync();
 
-            // 'to=2025-11-04' => controller converte para exclusivo 2025-11-05
             var resp = await _client.GetAsync($"/api/Dashboard/medico/{medicoId}/consultas?from=2025-11-04&to=2025-11-04&onlyConfirmed=false");
 
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);

@@ -8,7 +8,7 @@ using Xunit;
 using ConsultaPlus.Infrastructure.Services;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
-using static ConsultaPlus.Tests.TextAssert; // se tiveres o helper de acentos
+using static ConsultaPlus.Tests.TextAssert;
 
 namespace ConsultaPlus.Tests.Consultas
 {

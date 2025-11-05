@@ -74,7 +74,6 @@ public class MedicosControllerTests : IClassFixture<ApiFactory>
         Assert.Equal("a@a.com", dto.Email);
         Assert.Equal("911", dto.Telemovel);
 
-        // Location deve resolver para 200
         var get = await _client.GetAsync(resp.Headers.Location);
         Assert.Equal(HttpStatusCode.OK, get.StatusCode);
     }
@@ -84,7 +83,7 @@ public class MedicosControllerTests : IClassFixture<ApiFactory>
     {
         var resp = await _client.PostAsJsonAsync("/api/Medicos", new
         {
-            NomeCompleto = "", // falta
+            NomeCompleto = "", 
             NUtente = "U1",
             Email = "a@a.com",
             Telemovel = "911",
@@ -202,11 +201,9 @@ public class MedicosControllerTests : IClassFixture<ApiFactory>
         var del = await _client.DeleteAsync($"/api/Medicos/{id}");
         Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);
 
-        // O controller não verifica existência; se o repo não lançar, deve continuar a 204
         var again = await _client.DeleteAsync($"/api/Medicos/{id}");
         Assert.Equal(HttpStatusCode.NoContent, again.StatusCode);
 
-        // confirma que está removido do DB
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         Assert.False(await db.Medicos.AnyAsync(m => m.Id == id));

@@ -11,7 +11,7 @@ using ConsultaPlus.API.DTOs.Notificacoes;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 
-using static ConsultaPlus.Tests.TextAssert; // se tiveres o helper de ignorar acentos
+using static ConsultaPlus.Tests.TextAssert;
 
 namespace ConsultaPlus.Tests.Notificacoes
 {
@@ -26,9 +26,6 @@ namespace ConsultaPlus.Tests.Notificacoes
             _controller = new NotificacoesController(_repo.Object);
         }
 
-        // ---------------------------
-        // GET /api/Notificacoes
-        // ---------------------------
         [Fact]
         public async Task Get_SemFiltros_DeveChamarGetAll_EMapear()
         {
@@ -98,9 +95,6 @@ namespace ConsultaPlus.Tests.Notificacoes
             _repo.Verify(r => r.GetByMedicoAsync(It.IsAny<int>(), It.IsAny<bool>()), Times.Never);
         }
 
-        // ---------------------------
-        // GET /api/Notificacoes/{id}
-        // ---------------------------
         [Fact]
         public async Task GetById_Existente_DeveRetornarOk_ComDto()
         {
@@ -132,9 +126,6 @@ namespace ConsultaPlus.Tests.Notificacoes
             _repo.Verify(r => r.GetByIdAsync(999), Times.Once);
         }
 
-        // ---------------------------
-        // POST /api/Notificacoes
-        // ---------------------------
         [Theory]
         [InlineData(null, "desc", "Categoria e Descricao sao obrigatorias")]
         [InlineData("   ", "desc", "Categoria e Descricao sao obrigatorias")]
@@ -149,7 +140,6 @@ namespace ConsultaPlus.Tests.Notificacoes
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             var prop = bad.Value!.GetType().GetProperty("message");
             Assert.NotNull(prop);
-            // comparação ignorando acentos
             ContainsIgnoringDiacritics(expectedMsgPart, prop!.GetValue(bad.Value)?.ToString() ?? "");
             _repo.Verify(r => r.AddAsync(It.IsAny<Notificacao>()), Times.Never);
         }
@@ -190,9 +180,6 @@ namespace ConsultaPlus.Tests.Notificacoes
             )), Times.Once);
         }
 
-        // ---------------------------
-        // PUT /api/Notificacoes/{id}
-        // ---------------------------
         [Fact]
         public async Task Update_Inexistente_DeveRetornarNotFound()
         {
@@ -267,9 +254,9 @@ namespace ConsultaPlus.Tests.Notificacoes
 
             var dto = new UpdateNotificacaoDto
             {
-                Categoria = "   ",   // whitespace -> não altera
-                Descricao = null,    // null -> não altera
-                Lida = null          // não altera
+                Categoria = "   ",  
+                Descricao = null,    
+                Lida = null         
             };
 
             var result = await _controller.Update(11, dto);
@@ -289,9 +276,6 @@ namespace ConsultaPlus.Tests.Notificacoes
             )), Times.Once);
         }
 
-        // ---------------------------
-        // PATCH /api/Notificacoes/{id}/ler
-        // ---------------------------
         [Fact]
         public async Task MarcarComoLida_DefaultTrue_Sucesso_DeveRetornarNoContent()
         {
@@ -314,9 +298,6 @@ namespace ConsultaPlus.Tests.Notificacoes
             _repo.Verify(r => r.MarcarComoLidaAsync(6, false), Times.Once);
         }
 
-        // ---------------------------
-        // DELETE /api/Notificacoes/{id}
-        // ---------------------------
         [Fact]
         public async Task Delete_DeveChamarRepositorio_ERetornarNoContent()
         {

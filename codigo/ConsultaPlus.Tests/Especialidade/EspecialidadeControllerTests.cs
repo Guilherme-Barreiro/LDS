@@ -25,7 +25,6 @@ namespace ConsultaPlus.Tests.Especialidades
             _controller = new EspecialidadeController(_svc.Object);
         }
 
-        // Helper: extrai o campo "message" de um anonymous object
         private static string GetMessage(object? value)
             => value?.GetType().GetProperty("message")?.GetValue(value)?.ToString() ?? string.Empty;
 

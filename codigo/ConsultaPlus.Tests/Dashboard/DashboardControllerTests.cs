@@ -35,20 +35,17 @@ namespace ConsultaPlus.Tests.Dashboard
                 Duracao = duracaoMin,
                 Estado = estado,
                 EspecialidadeId = especialidadeId,
-                SalaId = salaId ?? 0 // se for realmente nullable no teu modelo, ajusta
+                SalaId = salaId ?? 0 
             };
 
         private DashboardController CreateController() => new(_repo.Object);
 
-        // ========== MÉDICO /AGENDA ==========
-
         [Fact]
         public async Task GetAgendaMedico_ReturnsOk_AndMapsDtos()
         {
-            // Arrange
             var medicoId = 7;
             var from = new DateTime(2025, 11, 04);
-            var to = new DateTime(2025, 11, 04); // controller irá transformar para endExclusive = 2025-11-05
+            var to = new DateTime(2025, 11, 04); 
             var endExclusiveEsperado = new DateTime(2025, 11, 05);
 
             var consultas = new List<Consulta>
@@ -60,17 +57,15 @@ namespace ConsultaPlus.Tests.Dashboard
             _repo.Setup(r => r.GetByMedicoRangeAsync(
                     medicoId,
                     It.Is<DateTime>(d => d == from),
-                    It.Is<DateTime>(d => d == endExclusiveEsperado), // exclusivo
+                    It.Is<DateTime>(d => d == endExclusiveEsperado),
                     It.IsAny<bool>(),
                     It.IsAny<CancellationToken>()))
                  .ReturnsAsync(consultas);
 
             var sut = CreateController();
 
-            // Act
             var result = await sut.GetAgendaMedico(medicoId, from, to, onlyConfirmed: false, ct: default);
 
-            // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var items = Assert.IsAssignableFrom<IEnumerable<AgendaItemDto>>(ok.Value);
             var list = items.ToList();
@@ -89,16 +84,13 @@ namespace ConsultaPlus.Tests.Dashboard
         [Fact]
         public async Task GetAgendaMedico_BadRequest_When_ToEarlierThanFrom()
         {
-            // Arrange
             var sut = CreateController();
             var medicoId = 7;
             var from = new DateTime(2025, 11, 05);
-            var to = new DateTime(2025, 11, 04); // to < from
+            var to = new DateTime(2025, 11, 04); 
 
-            // Act
             var result = await sut.GetAgendaMedico(medicoId, from, to, onlyConfirmed: false, ct: default);
 
-            // Assert
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             var msg = Assert.IsType<string>(bad.Value);
             Assert.Contains("'to' deve ser >=", msg, StringComparison.OrdinalIgnoreCase);
@@ -109,10 +101,8 @@ namespace ConsultaPlus.Tests.Dashboard
         [Fact]
         public async Task GetAgendaMedico_Defaults_WhenNullParams()
         {
-            // Arrange
             var medicoId = 10;
 
-            // vamos capturar os valores que o controller envia ao repo
             DateTime capturedFrom = default, capturedToExclusive = default;
 
             _repo.Setup(r => r.GetByMedicoRangeAsync(
@@ -130,24 +120,18 @@ namespace ConsultaPlus.Tests.Dashboard
 
             var sut = CreateController();
 
-            // Act
             var result = await sut.GetAgendaMedico(medicoId, from: null, to: null, onlyConfirmed: false, ct: default);
 
-            // Assert
             Assert.IsType<OkObjectResult>(result);
 
-            // Os defaults: start = UtcToday, endExclusive = start.AddDays(28).AddDays(1)
             var todayUtc = DateTime.UtcNow.Date;
             Assert.Equal(todayUtc, capturedFrom);
-            Assert.Equal(todayUtc.AddDays(29), capturedToExclusive); // 28 + 1 (exclusivo)
+            Assert.Equal(todayUtc.AddDays(29), capturedToExclusive);
         }
-
-        // ========== PACIENTE / HISTÓRICO ==========
 
         [Fact]
         public async Task GetHistoricoPaciente_ReturnsPaged_AndMapsDtos()
         {
-            // Arrange
             var pacienteId = 12;
             var page = 1;
             var pageSize = 2;
@@ -171,10 +155,8 @@ namespace ConsultaPlus.Tests.Dashboard
 
             var sut = CreateController();
 
-            // Act
             var result = await sut.GetHistoricoPaciente(pacienteId, page, pageSize, from: null, to: null, ct: default);
 
-            // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var dto = Assert.IsType<PagedListDto<ConsultaPacienteDto>>(ok.Value);
 
@@ -198,7 +180,6 @@ namespace ConsultaPlus.Tests.Dashboard
         [Fact]
         public async Task GetHistoricoPaciente_PassesFiltersAndPaging()
         {
-            // Arrange
             var pacienteId = 99;
             var from = new DateTime(2025, 11, 01);
             var to = new DateTime(2025, 11, 30);
@@ -218,10 +199,8 @@ namespace ConsultaPlus.Tests.Dashboard
 
             var sut = CreateController();
 
-            // Act
             var result = await sut.GetHistoricoPaciente(pacienteId, page, pageSize, from, to, default);
 
-            // Assert
             var ok = Assert.IsType<OkObjectResult>(result);
             var dto = Assert.IsType<PagedListDto<ConsultaPacienteDto>>(ok.Value);
             Assert.Equal(0, dto.Total);

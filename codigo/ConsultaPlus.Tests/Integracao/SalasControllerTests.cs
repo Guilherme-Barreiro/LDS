@@ -39,7 +39,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         throw new Exception($"Falha a criar sala '{nome}': {resp.StatusCode}");
     }
 
-    // POST /api/Salas => 201 + body + Location
     [Fact]
     public async Task Create_Valido_201_ComBodyELocation()
     {
@@ -53,12 +52,10 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.True(body!.Id > 0);
         Assert.Equal("Sala Azul", body.Nome);
 
-        // Location deverá apontar para GET by id
         var get = await _client.GetAsync(resp.Headers.Location);
         Assert.Equal(HttpStatusCode.OK, get.StatusCode);
     }
 
-    // GET /api/Salas/{id} existente
     [Fact]
     public async Task GetById_Existente_200()
     {
@@ -73,7 +70,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.Equal("Sala Verde", dto.Nome);
     }
 
-    // GET /api/Salas/{id} 404
     [Fact]
     public async Task GetById_Inexistente_404()
     {
@@ -81,7 +77,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
     }
 
-    // GET /api/Salas (lista)
     [Fact]
     public async Task GetAll_200_ComLista()
     {
@@ -98,7 +93,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.Contains(list, s => s.Nome == "Sala B");
     }
 
-    // GET /api/Salas/search?nome=... -> 400 se faltar nome
     [Fact]
     public async Task Search_SemNome_400()
     {
@@ -106,7 +100,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
-    // GET /api/Salas/search?nome=... -> 200 com resultados
     [Fact]
     public async Task Search_ComNome_200_ComResultados()
     {
@@ -123,7 +116,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.All(list!, s => Assert.Contains("Laboratório", s.Nome));
     }
 
-    // POST /api/Salas -> 409 em duplicado (depende do service lançar InvalidOperationException)
     [Fact]
     public async Task Create_Duplicado_409()
     {
@@ -133,7 +125,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.Conflict, resp2.StatusCode);
     }
 
-    // POST /api/Salas -> 400 (ArgumentException) quando nome inválido
     [Fact]
     public async Task Create_NomeInvalido_400()
     {
@@ -141,7 +132,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
     }
 
-    // DELETE /api/Salas/{id} -> 204 e depois 404
     [Fact]
     public async Task Delete_204_E_Depois_404()
     {
@@ -153,7 +143,6 @@ public class SalasControllerTests : IClassFixture<ApiFactory>
         var again = await _client.DeleteAsync($"/api/Salas/{id}");
         Assert.Equal(HttpStatusCode.NotFound, again.StatusCode);
 
-        // confirma que saiu mesmo do DB
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         Assert.False(await db.Salas.AnyAsync(s => s.Id == id));

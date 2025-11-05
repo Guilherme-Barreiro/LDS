@@ -11,7 +11,6 @@ namespace ConsultaPlus.Tests
             var normExpected = Normalize(expected);
             var normActual = Normalize(actual);
 
-            // Delega no Assert do xUnit — sem depender de Xunit.Sdk.*
             Assert.Contains(normExpected, normActual);
         }
 
