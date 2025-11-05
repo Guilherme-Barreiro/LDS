@@ -42,10 +42,10 @@ namespace ConsultaPlus.Infrastructure.Repositories
             if (string.IsNullOrWhiteSpace(nome))
                 return false;
 
-            var nomeTrim = nome.Trim();
+            var nomeTrim = nome.Trim().ToLower();
             return await _context.Especialidades
                 .AsNoTracking()
-                .AnyAsync(e => e.Nome.Equals(nomeTrim, StringComparison.OrdinalIgnoreCase));
+                .AnyAsync(e => e.Nome.ToLower() == nomeTrim);
         }
 
         public async Task<bool> ExistsByNameAndNotIdAsync(string nome, int id)
