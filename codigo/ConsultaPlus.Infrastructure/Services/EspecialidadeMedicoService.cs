@@ -32,13 +32,13 @@ namespace ConsultaPlus.Infrastructure.Services
         public async Task AddAsync(int medicoId, int especialidadeId)
         {
             if (!await _medicoRepository.ExistsAsync(medicoId))
-                throw new KeyNotFoundException("Médico não encontrado.");
+                throw new KeyNotFoundException("Medico nao encontrado.");
 
             if (await _especialidadeRepository.GetByIdAsync(especialidadeId) == null)
-                throw new KeyNotFoundException("Especialidade não encontrada.");
+                throw new KeyNotFoundException("Especialidade nao encontrada.");
 
             if (await _especialidadeMedicoRepository.ExistsAsync(medicoId, especialidadeId))
-                throw new InvalidOperationException("Associação já existe.");
+                throw new InvalidOperationException("Associacao ja existe.");
 
             var assoc = new EspecialidadeMedico { MedicoId = medicoId, EspecialidadeId = especialidadeId };
             await _especialidadeMedicoRepository.AddAsync(assoc);
@@ -48,7 +48,7 @@ namespace ConsultaPlus.Infrastructure.Services
         public async Task DeleteAsync(int medicoId, int especialidadeId)
         {
             if (!await _especialidadeMedicoRepository.ExistsAsync(medicoId, especialidadeId))
-                throw new KeyNotFoundException("Associação não encontrada.");
+                throw new KeyNotFoundException("Associacao nao encontrada.");
             await _especialidadeMedicoRepository.DeleteAsync(medicoId, especialidadeId);
             await _uow.SaveChangesAsync();
         }
