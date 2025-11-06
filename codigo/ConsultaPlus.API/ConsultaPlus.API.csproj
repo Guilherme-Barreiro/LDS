@@ -15,17 +15,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="DTOs\NovaPasta1\**" />
-    <Compile Remove="DTOs\NovaPasta\**" />
-    <Content Remove="DTOs\NovaPasta1\**" />
-    <Content Remove="DTOs\NovaPasta\**" />
-    <EmbeddedResource Remove="DTOs\NovaPasta1\**" />
-    <EmbeddedResource Remove="DTOs\NovaPasta\**" />
-    <None Remove="DTOs\NovaPasta1\**" />
-    <None Remove="DTOs\NovaPasta\**" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.10" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.0" />

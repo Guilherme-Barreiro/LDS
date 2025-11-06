@@ -33,6 +33,7 @@ builder.Services.AddScoped<IEspecialidadeRepository, EspecialidadeRepository>();
 builder.Services.AddScoped<IEspecialidadeMedicoRepository, EspecialidadeMedicoRepository>();
 builder.Services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
 builder.Services.AddScoped<ISnsPacienteRepository, SnsPacienteRepository>();
+builder.Services.AddScoped<IRelatorioRepository, RelatorioRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorarioTrabalhoMedico, HorarioTrabalhoMedicoService>();
@@ -43,6 +44,7 @@ builder.Services.AddScoped<IEspecialidadeService, EspecialidadeService>();
 builder.Services.AddScoped<IEspecialidadeMedicoService, EspecialidadeMedicoService>();
 builder.Services.AddScoped<IMedicoService, MedicoService>();
 builder.Services.AddScoped<IConsultaService, ConsultaService>();
+builder.Services.AddScoped<IRelatorioService, RelatorioService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
