@@ -209,19 +209,10 @@ namespace ConsultaPlus.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetExcecoes(
             int medicoId,
-            [FromQuery] DateOnly? data,
             CancellationToken ct)
         {
-            var query = _db.HorariosExcecaoMedicos
-                .Where(e => e.MedicoId == medicoId);
-
-            if (data.HasValue)
-            {
-                var d = data.Value.ToDateTime(TimeOnly.MinValue).Date;
-                query = query.Where(e => e.Data == d);
-            }
-
-            var lista = await query
+            var lista = await _db.HorariosExcecaoMedicos
+                .Where(e => e.MedicoId == medicoId)
                 .OrderBy(e => e.Data)
                 .ThenBy(e => e.HoraInicio)
                 .Select(e => new ExcecaoDto
@@ -238,6 +229,7 @@ namespace ConsultaPlus.API.Controllers
 
             return Ok(lista);
         }
+
 
         // DELETE /api/admin/medicos/{medicoId}/horario/{horarioId}
         [HttpDelete("horario/{horarioId:int}")]

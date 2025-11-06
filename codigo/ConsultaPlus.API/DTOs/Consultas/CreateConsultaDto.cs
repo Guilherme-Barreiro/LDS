@@ -7,6 +7,5 @@
         public int SalaId { get; set; }
         public int EspecialidadeId { get; set; }
         public DateTime DataConsulta { get; set; }
-        public int Duracao { get; set; }
     }
 }

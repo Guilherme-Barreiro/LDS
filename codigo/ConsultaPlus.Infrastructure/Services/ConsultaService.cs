@@ -45,15 +45,39 @@ namespace ConsultaPlus.Infrastructure.Services
 
         public async Task<Consulta> CreateAsync(Consulta nova, CancellationToken ct = default)
         {
+            // Validações de FK
             if (await _pacientes.GetByIdAsync(nova.PacienteId) is null)
                 throw new ArgumentException($"PacienteId {nova.PacienteId} não existe.");
             if (await _medicos.GetByIdAsync(nova.MedicoId) is null)
                 throw new ArgumentException($"MedicoId {nova.MedicoId} não existe.");
-            if (await _salas.GetByIdAsync(nova.SalaId) is null)
-                throw new ArgumentException($"SalaId {nova.SalaId} não existe.");
             if (await _especialidades.GetByIdAsync(nova.EspecialidadeId) is null)
                 throw new ArgumentException($"EspecialidadeId {nova.EspecialidadeId} não existe.");
+
+            // 1) Forçar duração = 30 min
+            nova.Duracao = 30;
+
+            var inicio = nova.DataConsulta;
+            var fim = inicio.AddMinutes(30);
+
+            // 2) Escolher automaticamente uma sala livre
+            var salas = await _salas.GetAllAsync();
+            var todasConsultas = await _consultas.GetAllAsync();
+
+            bool Overlap(DateTime aIni, DateTime aFim, DateTime bIni, DateTime bFim)
+                => aIni < bFim && bIni < aFim; // intervalo semiaberto
+
+            var salaLivre = salas.FirstOrDefault(s =>
+                !todasConsultas.Any(c =>
+                    c.SalaId == s.Id &&
+                    c.Estado == "Confirmada" &&
+                    Overlap(c.DataConsulta, c.DataConsulta.AddMinutes(c.Duracao), inicio, fim)));
+
+            if (salaLivre is null)
+                throw new InvalidOperationException("Não há nenhuma sala livre para esse horário.");
+
+            nova.SalaId = salaLivre.Id;
             nova.Estado = "Confirmada";
+
             await _consultas.AddAsync(nova);
             return nova;
         }

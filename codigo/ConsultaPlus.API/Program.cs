@@ -45,8 +45,9 @@ builder.Services.AddScoped<IEspecialidadeMedicoService, EspecialidadeMedicoServi
 builder.Services.AddScoped<IMedicoService, MedicoService>();
 builder.Services.AddScoped<IConsultaService, ConsultaService>();
 builder.Services.AddScoped<IRelatorioService, RelatorioService>();
-
+builder.Services.AddScoped<IDisponibilidadeService, DisponibilidadeService>();
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.SwaggerDoc("v1", new Microsoft.OpenApi.Models.OpenApiInfo

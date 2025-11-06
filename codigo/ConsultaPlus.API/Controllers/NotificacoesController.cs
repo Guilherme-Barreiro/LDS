@@ -67,7 +67,6 @@ namespace ConsultaPlus.API.Controllers
 
             if (!string.IsNullOrWhiteSpace(dto.Categoria)) n.Categoria = dto.Categoria.Trim();
             if (!string.IsNullOrWhiteSpace(dto.Descricao)) n.Descricao = dto.Descricao.Trim();
-            if (dto.Lida.HasValue) n.Lida = dto.Lida.Value;
 
             await _repo.UpdateAsync(n);
             return Ok(ToDto(n));

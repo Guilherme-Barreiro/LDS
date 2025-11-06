@@ -62,7 +62,7 @@ namespace ConsultaPlus.API.Controllers
                 SalaId = dto.SalaId,
                 EspecialidadeId = dto.EspecialidadeId,
                 DataConsulta = dto.DataConsulta,
-                Duracao = dto.Duracao,
+                Duracao = 30,
                 Estado = "Confirmada"
             };
 

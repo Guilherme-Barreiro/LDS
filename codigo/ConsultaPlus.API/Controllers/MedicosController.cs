@@ -1,4 +1,6 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using ConsultaPlus.Core.Interfaces;
@@ -12,9 +14,15 @@ namespace ConsultaPlus.API.Controllers
     public class MedicosController : ControllerBase
     {
         private readonly IMedicoRepository _repo;
+        private readonly IDisponibilidadeService _agenda;
 
-        public MedicosController(IMedicoRepository repo) => _repo = repo;
+        public MedicosController(IMedicoRepository repo, IDisponibilidadeService agenda)
+        {
+            _repo = repo;
+            _agenda = agenda;
+        }
 
+        // GET /api/Medicos
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -23,16 +31,17 @@ namespace ConsultaPlus.API.Controllers
             return Ok(res);
         }
 
+        // GET /api/Medicos/{id}
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
             var medico = await _repo.GetByIdAsync(id);
             if (medico is null) return NotFound();
-
             return Ok(ToResponse(medico));
         }
 
-        [HttpGet("{nome}")]
+        // GET /api/Medicos/search?nome=...
+        [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string nome)
         {
             if (string.IsNullOrWhiteSpace(nome))
@@ -43,6 +52,7 @@ namespace ConsultaPlus.API.Controllers
             return Ok(res);
         }
 
+        // POST /api/Medicos
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateMedicoDto dto)
         {
@@ -71,6 +81,7 @@ namespace ConsultaPlus.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = medico.Id }, res);
         }
 
+        // PUT /api/Medicos/{id}
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateMedicoDto dto)
         {
@@ -86,6 +97,7 @@ namespace ConsultaPlus.API.Controllers
             return NoContent();
         }
 
+        // DELETE /api/Medicos/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -93,6 +105,55 @@ namespace ConsultaPlus.API.Controllers
             return NoContent();
         }
 
+        // ===================== NOVOS ENDPOINTS =====================
+
+        // GET /api/Medicos/{medicoId}/disponibilidade?from=...&to=...
+        // Devolve slots de 30 min [Start, End] no intervalo fornecido (UTC).
+        [HttpGet("{medicoId:int}/disponibilidade")]
+        public async Task<IActionResult> GetDisponibilidade(
+            int medicoId,
+            [FromQuery] DateTime? from = null,
+            [FromQuery] DateTime? to = null,
+            CancellationToken ct = default)
+        {
+            var start = from ?? DateTime.UtcNow;
+            var end = to ?? start.AddDays(14);
+            if (end <= start)
+                return BadRequest(new { message = "'to' deve ser maior que 'from'." });
+
+            var slots = await _agenda.GetSlotsLivresAsync(medicoId, start, end, ct);
+
+            var res = slots.Select(s => new DisponibilidadeSlotDto
+            {
+                Start = s,
+                End = s.AddMinutes(30)
+            });
+
+            return Ok(res);
+        }
+
+        // GET /api/Medicos/{medicoId}/proximos-slots?count=10
+        // Devolve os próximos N inícios de slots de 30 min (UTC).
+        [HttpGet("{medicoId:int}/proximos-slots")]
+        public async Task<IActionResult> GetProximosSlots(
+            int medicoId,
+            [FromQuery] int count = 10,
+            CancellationToken ct = default)
+        {
+            if (count <= 0) count = 10;
+
+            var slots = await _agenda.GetProximosSlotsAsync(medicoId, count, ct);
+
+            var res = slots.Select(s => new DisponibilidadeSlotDto
+            {
+                Start = s,
+                End = s.AddMinutes(30)
+            });
+
+            return Ok(res);
+        }
+
+        // =================== mapeador privado ======================
         private static MedicoResponseDto ToResponse(Medico m) => new()
         {
             Id = m.Id,
