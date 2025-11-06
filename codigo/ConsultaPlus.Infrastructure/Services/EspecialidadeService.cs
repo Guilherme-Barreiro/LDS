@@ -48,6 +48,9 @@ namespace ConsultaPlus.Infrastructure.Services
             if (esp == null)
                 throw new KeyNotFoundException("Especialidade nao encontrada.");
 
+            if (await _especialidadeRepository.IsLinkedToMedic(id))
+                throw new InvalidOperationException("Nao e possivel excluir a especialidade porque existem medicos vinculados.");
+
             var novoTrim = novoNome.Trim();
 
             if (await _especialidadeRepository.ExistsByNameAndNotIdAsync(novoTrim, id))

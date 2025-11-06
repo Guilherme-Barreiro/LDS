@@ -56,8 +56,7 @@ namespace ConsultaPlus.Infrastructure.Repositories
             var nomeTrim = nome.Trim();
             return await _context.Especialidades
                 .AsNoTracking()
-                .AnyAsync(e => e.Nome.Equals(nomeTrim, StringComparison.OrdinalIgnoreCase)
-                            && e.Id != id);
+                .AnyAsync(e => e.Nome.ToLower() == nomeTrim && e.Id != id);
         }
     }
 }
