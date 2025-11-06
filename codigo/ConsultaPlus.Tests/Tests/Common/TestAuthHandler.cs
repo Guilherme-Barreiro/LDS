@@ -13,8 +13,10 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
         var claims = new[] {
-            new Claim(ClaimTypes.NameIdentifier, "test-admin"),
-            new Claim(ClaimTypes.Role, "Admin")
+            new Claim(ClaimTypes.NameIdentifier, "test-user"),
+            new Claim(ClaimTypes.Role, "Admin"),
+            new Claim(ClaimTypes.Role, "Medico"),
+            new Claim(ClaimTypes.Role, "Paciente"),
         };
         var id = new ClaimsIdentity(claims, Scheme);
         var principal = new ClaimsPrincipal(id);
