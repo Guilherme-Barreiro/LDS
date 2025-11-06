@@ -178,12 +178,14 @@ namespace ConsultaPlus.Tests.Especialidades
         public async Task UpdateAsync_NomeDuplicado_DeveLancarInvalidOperationException()
         {
             _repo.Setup(r => r.GetByIdAsync(5)).ReturnsAsync(new EspecialidadeModel { Id = 5, Nome = "Geriatria" });
+            _repo.Setup(r => r.IsLinkedToMedic(5)).ReturnsAsync(false);
             _repo.Setup(r => r.ExistsByNameAndNotIdAsync("Cardiologia", 5)).ReturnsAsync(true);
 
             var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => _svc.UpdateAsync(5, "Cardiologia"));
             Assert.Equal("Ja existe uma especialidade com esse nome.", ex.Message);
 
             _repo.Verify(r => r.GetByIdAsync(5), Times.Once);
+            _repo.Verify(r => r.IsLinkedToMedic(5), Times.Once);
             _repo.Verify(r => r.ExistsByNameAndNotIdAsync("Cardiologia", 5), Times.Once);
             _repo.Verify(r => r.UpdateAsync(It.IsAny<EspecialidadeModel>()), Times.Never);
             _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
@@ -194,6 +196,7 @@ namespace ConsultaPlus.Tests.Especialidades
         {
             var original = new EspecialidadeModel { Id = 9, Nome = "Oncologia" };
             _repo.Setup(r => r.GetByIdAsync(9)).ReturnsAsync(original);
+            _repo.Setup(r => r.IsLinkedToMedic(9)).ReturnsAsync(false);
             _repo.Setup(r => r.ExistsByNameAndNotIdAsync("Oncologia Clínica", 9)).ReturnsAsync(false);
             _repo.Setup(r => r.UpdateAsync(It.IsAny<EspecialidadeModel>())).Returns(Task.CompletedTask);
             _uow.Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
@@ -204,6 +207,7 @@ namespace ConsultaPlus.Tests.Especialidades
                 e.Id == 9 && e.Nome == "Oncologia Clínica"
             )), Times.Once);
 
+            _repo.Verify(r => r.IsLinkedToMedic(9), Times.Once);
             _uow.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
         }
 
