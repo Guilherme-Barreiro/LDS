@@ -34,13 +34,12 @@ namespace ConsultaPlus.Tests.Consultas
             _especialidades = new Mock<IEspecialidadeService>(MockBehavior.Strict);
             _dbContext = TestDb.Create();
 
+            _dbContext.Salas.Add(new Sala { Id = 3, Nome = "S1" });
+            _dbContext.SaveChanges();
+
             _svc = new ConsultaService(
-                _consultas.Object,
-                _medicos.Object,
-                _pacientes.Object,
-                _salas.Object,
-                _especialidades.Object,
-                _dbContext);
+                _consultas.Object, _medicos.Object, _pacientes.Object,
+                _salas.Object, _especialidades.Object, _dbContext);
         }
 
         [Fact]
@@ -77,15 +76,15 @@ namespace ConsultaPlus.Tests.Consultas
                 new Consulta { Id = 1, MedicoId = 5 },
                 new Consulta { Id = 2, MedicoId = 5 },
                 new Consulta { Id = 3, MedicoId = 9 },
-            };
-            _consultas.Setup(r => r.GetByMedicoIdAsync(5, It.IsAny<CancellationToken>()))
-              .ReturnsAsync(list.Where(c => c.MedicoId == 5).AsEnumerable());
+            }.AsEnumerable();
+
+            _consultas.Setup(r => r.GetAllAsync()).ReturnsAsync(list);
 
             var res = await _svc.GetByMedicoAsync(5);
 
             Assert.Equal(2, res.Count());
             Assert.All(res, x => Assert.Equal(5, x.MedicoId));
-            _consultas.Verify(r => r.GetByMedicoIdAsync(5, It.IsAny<CancellationToken>()), Times.Once);
+            _consultas.Verify(r => r.GetAllAsync(), Times.Once);
         }
 
         [Fact]
@@ -96,15 +95,15 @@ namespace ConsultaPlus.Tests.Consultas
                 new Consulta { Id = 1, PacienteId = 10 },
                 new Consulta { Id = 2, PacienteId = 10 },
                 new Consulta { Id = 3, PacienteId = 99 },
-            };
-            _consultas.Setup(r => r.GetByPacienteIdAsync(10, It.IsAny<CancellationToken>()))
-              .ReturnsAsync(list.Where(c => c.PacienteId == 10).AsEnumerable());
+            }.AsEnumerable();
+
+            _consultas.Setup(r => r.GetAllAsync()).ReturnsAsync(list);
 
             var res = await _svc.GetByPacienteAsync(10);
 
             Assert.Equal(2, res.Count());
             Assert.All(res, x => Assert.Equal(10, x.PacienteId));
-            _consultas.Verify(r => r.GetByPacienteIdAsync(10, It.IsAny<CancellationToken>()), Times.Once);
+            _consultas.Verify(r => r.GetAllAsync(), Times.Once);
         }
 
         [Fact]
@@ -170,8 +169,8 @@ namespace ConsultaPlus.Tests.Consultas
             _salas.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(new Sala { Id = 3, Nome = "S1" });
             _especialidades.Setup(r => r.GetByIdAsync(4)).ReturnsAsync(new Especialidade { Id = 4, Nome = "Cardio" });
             _consultas.Setup(r => r.AddAsync(It.IsAny<Consulta>()))
-                          .Callback<Consulta>(c => c.Id = 99)
-                          .Returns(Task.CompletedTask);
+                            .Callback<Consulta>(c => c.Id = 99)
+                            .Returns(Task.CompletedTask);
 
             static string DiaSemanaPt(DateTime d) => d.DayOfWeek switch
             {

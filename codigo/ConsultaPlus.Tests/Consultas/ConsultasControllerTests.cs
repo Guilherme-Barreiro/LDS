@@ -24,8 +24,12 @@ namespace ConsultaPlus.Tests.Consultas
         {
             _svc = new Mock<IConsultaService>(MockBehavior.Strict);
             _dbContext = TestDb.Create();
-            _controller = new ConsultasController(_svc.Object,_dbContext);
+            _dbContext.Salas.Add(new Sala { Id = 1000, Nome = "S1" });
+            _dbContext.SaveChanges();
+
+            _controller = new ConsultasController(_svc.Object, _dbContext);
         }
+
 
         [Fact]
         public async Task GetAll_DeveRetornarOk_ComListaMapeada()
@@ -187,11 +191,11 @@ namespace ConsultaPlus.Tests.Consultas
             };
 
             _svc.Setup(r => r.CreateAsync(It.IsAny<Consulta>(), It.IsAny<CancellationToken>()))
-                 .ReturnsAsync(consultaCriada);
+                .ReturnsAsync(consultaCriada);
 
             var result = await _controller.Create(dto);
 
-            var created = Assert.IsType<ObjectResult>(result);
+            var created = Assert.IsType<CreatedAtActionResult>(result);
             Assert.Equal(201, created.StatusCode);
 
             var body = Assert.IsType<ConsultaResponseDto>(created.Value);
@@ -209,9 +213,9 @@ namespace ConsultaPlus.Tests.Consultas
                 c.MedicoId == 100 &&
                 c.EspecialidadeId == 200 &&
                 c.DataConsulta == dt &&
-                c.SalaId == 0 && 
-                c.Duracao == 0 && 
-                c.Estado == null
+                c.SalaId == 1000 &&
+                c.Duracao == 30 &&
+                c.Estado == "Confirmada"
             ), It.IsAny<CancellationToken>()), Times.Once);
         }
 
