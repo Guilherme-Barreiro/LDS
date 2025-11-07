@@ -1,6 +1,5 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -8,16 +7,17 @@ using Xunit;
 
 namespace ConsultaPlus.Tests.Integracao.EspecialidadeMedico
 {
-    public class EspecialidadeMedicoControllerIT : IClassFixture<ApiFactory>
+    public class EspecialidadeMedicoController : IClassFixture<ApiFactory>
     {
         private readonly ApiFactory _factory;
         private readonly HttpClient _client;
 
-        public EspecialidadeMedicoControllerIT(ApiFactory factory)
+        public EspecialidadeMedicoController(ApiFactory factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
         }
+
         public record MedicoVm(int Id, string NomeCompleto, string Email, string Telemovel, string NUtente);
         public record EspecialidadeVm(int Id, string Nome);
 
@@ -64,14 +64,13 @@ namespace ConsultaPlus.Tests.Integracao.EspecialidadeMedico
 
         private record AssocDto(int MedicoId, int EspecialidadeId);
 
-        private async Task<HttpResponseMessage> AssocAsync(int medicoId, int especialidadeId)
-            => await _client.PostAsJsonAsync("/api/EspecialidadeMedico/add",
-                                             new AssocDto(medicoId, especialidadeId));
+        private Task<HttpResponseMessage> AssocAsync(int medicoId, int especialidadeId)
+            => _client.PostAsJsonAsync("/api/EspecialidadeMedico",
+                                       new AssocDto(medicoId, especialidadeId));
 
         private async Task<HttpResponseMessage> UnassocAsync(int medicoId, int especialidadeId)
         {
-            var req = new HttpRequestMessage(HttpMethod.Delete,
-                "/api/EspecialidadeMedico/delete")
+            var req = new HttpRequestMessage(HttpMethod.Delete, "/api/EspecialidadeMedico")
             {
                 Content = JsonContent.Create(new AssocDto(medicoId, especialidadeId))
             };
@@ -155,7 +154,7 @@ namespace ConsultaPlus.Tests.Integracao.EspecialidadeMedico
             Assert.Equal(HttpStatusCode.Created, (await AssocAsync(m1, espe)).StatusCode);
             Assert.Equal(HttpStatusCode.Created, (await AssocAsync(m2, espe)).StatusCode);
 
-            var ok = await _client.GetAsync($"/api/EspecialidadeMedico/medicos-por-especialidade/{espe}");
+            var ok = await _client.GetAsync($"/api/EspecialidadeMedico/especialidade/{espe}");
             Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
 
             var medicos = await ok.Content.ReadFromJsonAsync<List<MedicoVm>>();
@@ -163,7 +162,7 @@ namespace ConsultaPlus.Tests.Integracao.EspecialidadeMedico
             Assert.Contains(medicos!, x => x.NomeCompleto == "Dr 1");
             Assert.Contains(medicos!, x => x.NomeCompleto == "Dr 2");
 
-            var nf = await _client.GetAsync($"/api/EspecialidadeMedico/medicos-por-especialidade/{outra}");
+            var nf = await _client.GetAsync($"/api/EspecialidadeMedico/especialidade/{outra}");
             Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
         }
 
@@ -179,7 +178,7 @@ namespace ConsultaPlus.Tests.Integracao.EspecialidadeMedico
             Assert.Equal(HttpStatusCode.Created, (await AssocAsync(mid, e1)).StatusCode);
             Assert.Equal(HttpStatusCode.Created, (await AssocAsync(mid, e2)).StatusCode);
 
-            var ok = await _client.GetAsync($"/api/EspecialidadeMedico/especialidades-por-medico/{mid}");
+            var ok = await _client.GetAsync($"/api/EspecialidadeMedico/medico/{mid}");
             Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
 
             var especialidades = await ok.Content.ReadFromJsonAsync<List<EspecialidadeVm>>();
@@ -187,7 +186,7 @@ namespace ConsultaPlus.Tests.Integracao.EspecialidadeMedico
             Assert.Contains(especialidades!, x => x.Nome == "Onco");
             Assert.Contains(especialidades!, x => x.Nome == "Pedia");
 
-            var nf = await _client.GetAsync($"/api/EspecialidadeMedico/especialidades-por-medico/{outroMed}");
+            var nf = await _client.GetAsync($"/api/EspecialidadeMedico/medico/{outroMed}");
             Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
         }
     }

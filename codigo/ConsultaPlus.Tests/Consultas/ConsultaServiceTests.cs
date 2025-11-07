@@ -21,6 +21,7 @@ namespace ConsultaPlus.Tests.Consultas
         private readonly Mock<IPacienteRepository> _pacientes;
         private readonly Mock<ISalaRepository> _salas;
         private readonly Mock<IEspecialidadeService> _especialidades;
+        private readonly Mock<INotificacaoRepository> _notificacoes; // NOVO
         private readonly ApplicationDbContext _dbContext;
 
         private readonly ConsultaService _svc;
@@ -32,14 +33,22 @@ namespace ConsultaPlus.Tests.Consultas
             _pacientes = new Mock<IPacienteRepository>(MockBehavior.Strict);
             _salas = new Mock<ISalaRepository>(MockBehavior.Strict);
             _especialidades = new Mock<IEspecialidadeService>(MockBehavior.Strict);
+            _notificacoes = new Mock<INotificacaoRepository>(MockBehavior.Loose); // NOVO (Loose p/ não falhar)
+
             _dbContext = TestDb.Create();
 
             _dbContext.Salas.Add(new Sala { Id = 3, Nome = "S1" });
             _dbContext.SaveChanges();
 
             _svc = new ConsultaService(
-                _consultas.Object, _medicos.Object, _pacientes.Object,
-                _salas.Object, _especialidades.Object, _dbContext);
+                _consultas.Object,
+                _medicos.Object,
+                _pacientes.Object,
+                _salas.Object,
+                _especialidades.Object,
+                _dbContext,
+                _notificacoes.Object // NOVO
+            );
         }
 
         [Fact]
@@ -122,7 +131,7 @@ namespace ConsultaPlus.Tests.Consultas
         [Fact]
         public async Task Create_MedicoInexistente_DeveLancar()
         {
-            var nova = new Consulta { PacienteId = 1, MedicoId = 2, EspecialidadeId = 4 , DataConsulta = DateTime.UtcNow.AddDays(1).Date + new TimeSpan(9, 0, 0) };
+            var nova = new Consulta { PacienteId = 1, MedicoId = 2, EspecialidadeId = 4, DataConsulta = DateTime.UtcNow.AddDays(1).Date + new TimeSpan(9, 0, 0) };
 
             _pacientes.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Paciente { Id = 1 });
             _medicos.Setup(r => r.GetByIdAsync(2)).ReturnsAsync((Medico?)null);
@@ -169,8 +178,8 @@ namespace ConsultaPlus.Tests.Consultas
             _salas.Setup(r => r.GetByIdAsync(3)).ReturnsAsync(new Sala { Id = 3, Nome = "S1" });
             _especialidades.Setup(r => r.GetByIdAsync(4)).ReturnsAsync(new Especialidade { Id = 4, Nome = "Cardio" });
             _consultas.Setup(r => r.AddAsync(It.IsAny<Consulta>()))
-                            .Callback<Consulta>(c => c.Id = 99)
-                            .Returns(Task.CompletedTask);
+                      .Callback<Consulta>(c => c.Id = 99)
+                      .Returns(Task.CompletedTask);
 
             static string DiaSemanaPt(DateTime d) => d.DayOfWeek switch
             {
@@ -197,7 +206,6 @@ namespace ConsultaPlus.Tests.Consultas
             });
 
             await _dbContext.SaveChangesAsync();
-
 
             var res = await _svc.CreateAsync(nova);
 

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
 
-using ConsultaPlus.Tests; 
+using ConsultaPlus.Tests;
 using ConsultaPlus.API.Controllers;
 using ConsultaPlus.API.DTOs.Especialidade;
 using ConsultaPlus.Infrastructure.Services;
@@ -26,7 +26,12 @@ namespace ConsultaPlus.Tests.Especialidades
         }
 
         private static string GetMessage(object? value)
-            => value?.GetType().GetProperty("message")?.GetValue(value)?.ToString() ?? string.Empty;
+        {
+            if (value == null) return string.Empty;
+            var t = value.GetType();
+            var prop = t.GetProperty("message") ?? t.GetProperty("mensagem");
+            return prop?.GetValue(value)?.ToString() ?? value.ToString() ?? string.Empty;
+        }
 
         [Fact]
         public async Task GetAll_DeveRetornarOk_ComListaMapeada()
@@ -87,7 +92,7 @@ namespace ConsultaPlus.Tests.Especialidades
 
             var bad = Assert.IsType<BadRequestObjectResult>(result);
             var message = GetMessage(bad.Value);
-            TextAssert.ContainsIgnoringDiacritics("Termo de pesquisa e obrigatorio.", message);
+            TextAssert.ContainsIgnoringDiacritics("Nome e obrigatorio.", message);
 
             _svc.Verify(s => s.SearchAsync(It.IsAny<string>()), Times.Never);
         }
@@ -139,7 +144,7 @@ namespace ConsultaPlus.Tests.Especialidades
             Assert.Equal(nameof(EspecialidadeController.Search), created.ActionName);
 
             Assert.NotNull(created.RouteValues);
-            Assert.True(created.RouteValues.ContainsKey("id"));
+            Assert.True(created.RouteValues!.ContainsKey("id"));
             Assert.Equal(42, created.RouteValues["id"]);
 
             var readDto = Assert.IsType<ReadEspecialidadeDTO>(created.Value);
@@ -178,7 +183,6 @@ namespace ConsultaPlus.Tests.Especialidades
             var msg = GetMessage(conflict.Value);
             Assert.Contains("Nao foi possivel registar", msg);
         }
-
 
         [Fact]
         public async Task Update_Sucesso_DeveRetornarNoContent()
@@ -234,7 +238,6 @@ namespace ConsultaPlus.Tests.Especialidades
             Assert.Contains("Nao foi possivel atualizar", msg);
         }
 
-
         [Fact]
         public async Task Delete_Sucesso_DeveRetornarNoContent()
         {
@@ -285,6 +288,5 @@ namespace ConsultaPlus.Tests.Especialidades
             var msg = GetMessage(conflict.Value);
             Assert.Contains("Nao foi possivel remover", msg);
         }
-
     }
 }

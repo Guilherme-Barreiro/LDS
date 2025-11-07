@@ -1,9 +1,9 @@
 ﻿using System.Net;
 using System.Net.Http.Json;
-using ConsultaPlus.Infrastructure.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore;
 using Xunit;
+using ConsultaPlus.Infrastructure.Data;
 
 namespace ConsultaPlus.Tests.Integracao.Especialidade
 {
@@ -22,7 +22,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
 
         private async Task<int> CreateEspecialidadeAsync(string nome)
         {
-            var resp = await _client.PostAsJsonAsync("/api/Especialidade/add", new { nome });
+            var resp = await _client.PostAsJsonAsync("/api/Especialidade", new { nome });
             Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
             var dto = await resp.Content.ReadFromJsonAsync<EspVm>();
             Assert.NotNull(dto);
@@ -32,28 +32,27 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         [Fact]
         public async Task Create_Valido_201_ComBody()
         {
-            var resp = await _client.PostAsJsonAsync("/api/Especialidade/add", new { Nome = "Cardiologia" });
+            var resp = await _client.PostAsJsonAsync("/api/Especialidade", new { Nome = "Cardiologia" });
             Assert.Equal(HttpStatusCode.Created, resp.StatusCode);
 
             var body = await resp.Content.ReadFromJsonAsync<EspVm>();
             Assert.NotNull(body);
             Assert.True(body!.Id > 0);
             Assert.Equal("Cardiologia", body.Nome);
-
         }
 
         [Fact]
         public async Task Create_Duplicado_409()
         {
             await CreateEspecialidadeAsync("Oncologia");
-            var resp2 = await _client.PostAsJsonAsync("/api/Especialidade/add", new { Nome = "Oncologia" });
+            var resp2 = await _client.PostAsJsonAsync("/api/Especialidade", new { Nome = "Oncologia" });
             Assert.Equal(HttpStatusCode.Conflict, resp2.StatusCode);
         }
 
         [Fact]
         public async Task Create_NomeInvalido_400_ou_409()
         {
-            var resp = await _client.PostAsJsonAsync("/api/Especialidade/add", new { Nome = "   " });
+            var resp = await _client.PostAsJsonAsync("/api/Especialidade", new { Nome = "   " });
             Assert.Contains(resp.StatusCode, new[] { HttpStatusCode.BadRequest, HttpStatusCode.Conflict });
         }
 
@@ -62,7 +61,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         {
             var id = await CreateEspecialidadeAsync("Dermatologia");
 
-            var resp = await _client.GetAsync($"/api/Especialidade/get-id/{id}");
+            var resp = await _client.GetAsync($"/api/Especialidade/{id}");
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
 
             var dto = await resp.Content.ReadFromJsonAsync<EspVm>();
@@ -74,7 +73,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         [Fact]
         public async Task GetById_Inexistente_404()
         {
-            var resp = await _client.GetAsync("/api/Especialidade/get-id/999999");
+            var resp = await _client.GetAsync("/api/Especialidade/999999");
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
@@ -84,7 +83,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
             await CreateEspecialidadeAsync("Neurocirurgia");
             await CreateEspecialidadeAsync("Neurologia");
 
-            var resp = await _client.GetAsync("/api/Especialidade/search?termo=Neuro");
+            var resp = await _client.GetAsync("/api/Especialidade/search?nome=Neuro");
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
 
             var list = await resp.Content.ReadFromJsonAsync<List<EspVm>>();
@@ -96,7 +95,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         [Fact]
         public async Task Search_SemResultados_404()
         {
-            var resp = await _client.GetAsync("/api/Especialidade/search?termo=ZZZInexistente");
+            var resp = await _client.GetAsync("/api/Especialidade/search?nome=ZZZInexistente");
             Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
         }
 
@@ -106,7 +105,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
             await CreateEspecialidadeAsync("Ortopedia");
             await CreateEspecialidadeAsync("Pediatria");
 
-            var resp = await _client.GetAsync("/api/Especialidade/get-all");
+            var resp = await _client.GetAsync("/api/Especialidade");
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
 
             var list = await resp.Content.ReadFromJsonAsync<List<EspVm>>();
@@ -121,11 +120,11 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         {
             var id = await CreateEspecialidadeAsync("Gastrenterologia");
 
-            var resp = await _client.PutAsJsonAsync($"/api/Especialidade/update/{id}",
+            var resp = await _client.PutAsJsonAsync($"/api/Especialidade/{id}",
                 new { nome = "Gastroenterologia" });
             Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
 
-            var get = await _client.GetAsync($"/api/Especialidade/get-id/{id}");
+            var get = await _client.GetAsync($"/api/Especialidade/{id}");
             var dto = await get.Content.ReadFromJsonAsync<EspVm>();
             Assert.NotNull(dto);
             Assert.Equal("Gastroenterologia", dto!.Nome);
@@ -136,7 +135,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         {
             var id = await CreateEspecialidadeAsync("Reumatologia");
 
-            var resp = await _client.PutAsJsonAsync($"/api/Especialidade/update/{id}",
+            var resp = await _client.PutAsJsonAsync($"/api/Especialidade/{id}",
                 new { nome = "   " });
             Assert.Contains(resp.StatusCode, new[] { HttpStatusCode.BadRequest, HttpStatusCode.Conflict });
         }
@@ -147,7 +146,7 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
             var id1 = await CreateEspecialidadeAsync("Hematologia");
             var id2 = await CreateEspecialidadeAsync("Urologia");
 
-            var resp = await _client.PutAsJsonAsync($"/api/Especialidade/update/{id2}",
+            var resp = await _client.PutAsJsonAsync($"/api/Especialidade/{id2}",
                 new { nome = "Hematologia" });
             Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
         }
@@ -157,10 +156,10 @@ namespace ConsultaPlus.Tests.Integracao.Especialidade
         {
             var id = await CreateEspecialidadeAsync("Otorrinolaringologia");
 
-            var del = await _client.DeleteAsync($"/api/Especialidade/delete/{id}");
+            var del = await _client.DeleteAsync($"/api/Especialidade/{id}");
             Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);
 
-            var again = await _client.DeleteAsync($"/api/Especialidade/delete/{id}");
+            var again = await _client.DeleteAsync($"/api/Especialidade/{id}");
             Assert.Equal(HttpStatusCode.NotFound, again.StatusCode);
 
             using var scope = _factory.Services.CreateScope();
