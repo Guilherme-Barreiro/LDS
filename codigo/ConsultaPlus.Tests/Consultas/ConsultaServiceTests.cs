@@ -21,7 +21,7 @@ namespace ConsultaPlus.Tests.Consultas
         private readonly Mock<IPacienteRepository> _pacientes;
         private readonly Mock<ISalaRepository> _salas;
         private readonly Mock<IEspecialidadeService> _especialidades;
-        private readonly Mock<INotificacaoRepository> _notificacoes; // NOVO
+        private readonly Mock<INotificacaoRepository> _notificacoes; 
         private readonly ApplicationDbContext _dbContext;
 
         private readonly ConsultaService _svc;
@@ -33,7 +33,7 @@ namespace ConsultaPlus.Tests.Consultas
             _pacientes = new Mock<IPacienteRepository>(MockBehavior.Strict);
             _salas = new Mock<ISalaRepository>(MockBehavior.Strict);
             _especialidades = new Mock<IEspecialidadeService>(MockBehavior.Strict);
-            _notificacoes = new Mock<INotificacaoRepository>(MockBehavior.Loose); // NOVO (Loose p/ não falhar)
+            _notificacoes = new Mock<INotificacaoRepository>(MockBehavior.Loose); 
 
             _dbContext = TestDb.Create();
 
@@ -47,7 +47,7 @@ namespace ConsultaPlus.Tests.Consultas
                 _salas.Object,
                 _especialidades.Object,
                 _dbContext,
-                _notificacoes.Object // NOVO
+                _notificacoes.Object 
             );
         }
 

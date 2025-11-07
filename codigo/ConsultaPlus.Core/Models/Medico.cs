@@ -14,7 +14,6 @@ public class Medico
 	public DateTime DataNascimento { get; set; }
 	public DateTime DataCriacao { get; set; } = DateTime.UtcNow;
 	
-	// Propriedades de Navegação
 	public ICollection<Consulta> Consultas { get; set; } = new List<Consulta>();
 	public ICollection<HorarioTrabalhoMedico> HorariosTrabalho { get; set; } = new List<HorarioTrabalhoMedico>();
 	public ICollection<HorarioExcecaoMedico> HorariosExcecao { get; set; } = new List<HorarioExcecaoMedico>();

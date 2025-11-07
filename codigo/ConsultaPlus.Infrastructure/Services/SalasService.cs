@@ -26,7 +26,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (string.IsNullOrWhiteSpace(n))
                 throw new ArgumentException("Nome da sala é obrigatório.");
 
-            // Regra: nome único (case-insensitive)
             if (await _repo.ExistsByNameAsync(n))
                 throw new InvalidOperationException("Já existe uma sala com esse nome.");
 
@@ -42,7 +41,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (sala is null)
                 throw new KeyNotFoundException("Sala não existe.");
 
-            // Regra: não apagar se tiver consultas futuras
             if (await _repo.HasFutureConsultasAsync(id, DateTime.UtcNow))
                 throw new InvalidOperationException("Não é possível remover: a sala tem consultas futuras.");
 

@@ -250,7 +250,7 @@ namespace ConsultaPlus.Tests.Relatorios
             {
                 DataInicio = new DateTime(2024, 1, 1),
                 DataFim = new DateTime(2024, 12, 31)
-                // MedicoId is null
+               
             };
 
             var expectedResult = new List<ConsultasPorPeriodo>
@@ -292,7 +292,6 @@ namespace ConsultaPlus.Tests.Relatorios
         {
             var requestDTO = new TaxaNaoComparecimentoRequestDTO
             {
-                // All parameters are null/optional
             };
 
             var expectedResult = new TaxaNaoComparecimento

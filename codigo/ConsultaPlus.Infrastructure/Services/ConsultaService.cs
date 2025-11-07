@@ -53,7 +53,6 @@ namespace ConsultaPlus.Infrastructure.Services
 
         public async Task<Consulta> CreateAsync(Consulta nova, CancellationToken ct = default)
         {
-            // normalizar data para UTC nao deixar marcar consultas no passado
             var dataUtc = nova.DataConsulta.Kind == DateTimeKind.Unspecified
                 ? DateTime.SpecifyKind(nova.DataConsulta, DateTimeKind.Utc)
                 : nova.DataConsulta.ToUniversalTime();
@@ -61,7 +60,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (dataUtc < DateTime.UtcNow)
                 throw new ArgumentException("Nao e possivel marcar consultas no passado.");
 
-            // consultas apenas podem der de meia em meia hora
             if (dataUtc.Second != 0 || (dataUtc.Minute % 30) != 0)
                 throw new ArgumentException("A consulta deve comecar em intervalos de 30 minutos (hh:00 ou hh:30).");
 
@@ -70,7 +68,6 @@ namespace ConsultaPlus.Infrastructure.Services
 
             nova.DataConsulta = start;
 
-            // garantir que fk existem
             if (await _pacientes.GetByIdAsync(nova.PacienteId) is null)
                 throw new ArgumentException($"PacienteId {nova.PacienteId} nao existe.");
 
@@ -80,7 +77,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (await _especialidades.GetByIdAsync(nova.EspecialidadeId) is null)
                 throw new ArgumentException($"EspecialidadeId {nova.EspecialidadeId} nao existe.");
 
-            // mdico tem a especialidade pedida
             var medicoTemEspecialidade = await _db.EspecialidadesMedico
                 .AsNoTracking()
                 .AnyAsync(em => em.MedicoId == nova.MedicoId &&
@@ -89,7 +85,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (!medicoTemEspecialidade)
                 throw new ArgumentException("O medico nao possui a especialidade selecionada.");
 
-            // dentro do horario de trabalho (com exceções)
             static string DiaSemanaPt(DateTime d) => d.DayOfWeek switch
             {
                 DayOfWeek.Monday => "Seg",
@@ -118,7 +113,6 @@ namespace ConsultaPlus.Infrastructure.Services
                 start.TimeOfDay >= h.HoraInicio &&
                 end.TimeOfDay <= h.HoraFim);
 
-            // permitir janelas extra (IsReducao == false)
             bool dentroExcecaoExtra = excecoesDia.Any(x =>
                 !x.IsReducao &&
                 !(end.TimeOfDay <= x.HoraInicio || start.TimeOfDay >= x.HoraFim));
@@ -128,7 +122,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (!dentroHorarioFinal)
                 throw new ArgumentException("Fora do horário de trabalho do médico.");
 
-            // bloquear apenas reduções (IsReducao == true)
             var bloqueadoPorExcecao = excecoesDia.Any(x =>
                 x.IsReducao &&
                 !(end.TimeOfDay <= x.HoraInicio || start.TimeOfDay >= x.HoraFim));
@@ -136,7 +129,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (bloqueadoPorExcecao)
                 throw new ArgumentException("Indisponivel devido a excecao na agenda do medico.");
 
-            // sem sobreposicoa com consultas do msemo medico (ignorar canceladas)
             var overlap = await _db.Consultas
                 .AsNoTracking()
                 .AnyAsync(c => c.MedicoId == nova.MedicoId &&
@@ -147,7 +139,6 @@ namespace ConsultaPlus.Infrastructure.Services
             if (overlap)
                 throw new ArgumentException("O medico ja tem uma consulta nesse horario.");
 
-            // escolher automaticamente uma sala livre (ignorar canceladas)
             var salaLivreId = await _db.Salas
                 .Where(s => !_db.Consultas.Any(c =>
                     c.SalaId == s.Id &&
@@ -163,7 +154,6 @@ namespace ConsultaPlus.Infrastructure.Services
 
             nova.SalaId = salaLivreId;
 
-            // Duracao fixa e estado 
             nova.Duracao = 30;
             nova.Estado = "Confirmada";
 
@@ -179,7 +169,7 @@ namespace ConsultaPlus.Infrastructure.Services
             if (c.PacienteId != pacienteId)
                 throw new ArgumentException("Consulta nao pertence a este paciente.");
 
-            if (c.Estado == "Cancelada") return true; // idempotente
+            if (c.Estado == "Cancelada") return true; 
 
             c.Estado = "Cancelada";
             await _consultas.UpdateAsync(c);
@@ -207,7 +197,7 @@ namespace ConsultaPlus.Infrastructure.Services
             if (c.MedicoId != medicoId)
                 throw new ArgumentException("Consulta nao pertence a este medico.");
 
-            if (c.Estado == "Cancelada") return true; // idempotente
+            if (c.Estado == "Cancelada") return true; 
 
             c.Estado = "Cancelada";
             await _consultas.UpdateAsync(c);

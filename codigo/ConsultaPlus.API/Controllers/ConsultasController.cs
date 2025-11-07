@@ -86,7 +86,6 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        // api/consultas/{id}/cancelar/paciente
         [HttpPost("{id:int}/cancelar/paciente")]
         public async Task<IActionResult> CancelarPorPaciente(int id, [FromQuery] int pacienteId)
         {
@@ -101,7 +100,6 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        // api/consultas/{id}/cancelar/medico
         [HttpPost("{id:int}/cancelar/medico")]
         public async Task<IActionResult> CancelarPorMedico(int id, [FromQuery] int medicoId)
         {
@@ -116,7 +114,6 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        // api/consultas/{id}/atraso/medico?medicoId=3002
         [HttpPost("{id:int}/atraso/medico")]
         public async Task<IActionResult> AtrasoMedico(int id, [FromQuery] int medicoId)
         {
@@ -131,7 +128,6 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        // api/consultas/{id}/atraso/paciente?pacienteId=2
         [HttpPost("{id:int}/atraso/paciente")]
         public async Task<IActionResult> AtrasoPaciente(int id, [FromQuery] int pacienteId)
         {

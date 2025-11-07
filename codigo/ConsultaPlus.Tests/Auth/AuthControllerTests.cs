@@ -110,7 +110,7 @@ namespace ConsultaPlus.Tests.Auth
             Assert.NotNull(res);
             Assert.Equal(200, res!.StatusCode);
             var json = System.Text.Json.JsonSerializer.Serialize(res.Value);
-            Assert.Contains("\"resetToken\":\"\"", json); // confirma vazio
+            Assert.Contains("\"resetToken\":\"\"", json); 
         }
 
         [Fact]

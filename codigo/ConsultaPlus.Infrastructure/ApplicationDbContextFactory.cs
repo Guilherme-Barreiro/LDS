@@ -10,8 +10,6 @@ namespace ConsultaPlus.Infrastructure
         {
             var optionsBuilder = new DbContextOptionsBuilder<ApplicationDbContext>();
 
-            // A "Opção Nuclear": Colamos a connection string diretamente aqui.
-            // O código já não precisa de procurar pelo appsettings.json.
             var connectionString = "Server=localhost,1433;Database=ConsultaPlusDB;User Id=sa;Password=Teste1234.;TrustServerCertificate=True";
 
             optionsBuilder.UseSqlServer(connectionString);

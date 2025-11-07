@@ -12,7 +12,7 @@ namespace ConsultaPlus.Infrastructure.Services
     public class DisponibilidadeService : IDisponibilidadeService
     {
         private readonly ApplicationDbContext _db;
-        private const int SLOT_MINUTES = 30; // duração fixa
+        private const int SLOT_MINUTES = 30; 
 
         public DisponibilidadeService(ApplicationDbContext db)
         {

@@ -115,7 +115,6 @@ public class SnsPacientesController : ControllerBase
         DataCriacao = e.DataCriacao
     };
 
-    // POST /api/SnsPacientes/importar/{nUtente}
     [HttpPost("importar/{nUtente}")]
     public async Task<IActionResult> ImportarParaPaciente(string nUtente, CancellationToken ct)
     {
@@ -124,21 +123,18 @@ public class SnsPacientesController : ControllerBase
 
         var n = nUtente.Trim();
 
-        // 1) Buscar no SNS
         var sns = await _db.SnsPacientes.AsNoTracking()
             .FirstOrDefaultAsync(x => x.NUtente == n, ct);
 
         if (sns is null)
             return NotFound(new { message = $"Registo SNS com NUtente '{n}' não encontrado." });
 
-        // 2) Buscar paciente
         var paciente = await _db.Pacientes
             .FirstOrDefaultAsync(p => p.NUtente == n, ct);
 
         if (paciente is null)
             return NotFound(new { message = $"Paciente com NUtente '{n}' não encontrado." });
 
-        // 3) Copiar dados do SNS -> Paciente (exceto PasswordHash e NUtente)
         paciente.NomeCompleto = sns.NomeCompleto;
         paciente.Nif = sns.Nif;
         paciente.Telemovel = sns.Telemovel;
@@ -148,7 +144,6 @@ public class SnsPacientesController : ControllerBase
 
         await _db.SaveChangesAsync(ct);
 
-        // 4) Devolver o paciente atualizado (sem password)
         return Ok(new
         {
             message = "Dados importados com sucesso.",

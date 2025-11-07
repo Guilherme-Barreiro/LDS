@@ -22,7 +22,6 @@ namespace ConsultaPlus.API.Controllers
             _agenda = agenda;
         }
 
-        // GET /api/Medicos
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
@@ -31,7 +30,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(res);
         }
 
-        // GET /api/Medicos/{id}
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -40,7 +38,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(ToResponse(medico));
         }
 
-        // GET /api/Medicos/search?nome=...
         [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string nome)
         {
@@ -52,7 +49,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(res);
         }
 
-        // POST /api/Medicos
         [HttpPost]
         //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateMedicoDto dto)
@@ -82,7 +78,6 @@ namespace ConsultaPlus.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = createdMedico.Id }, res);
         }
 
-        // PUT /api/Medicos/{id}
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateMedicoDto dto)
         {
@@ -98,7 +93,6 @@ namespace ConsultaPlus.API.Controllers
             return NoContent();
         }
 
-        // DELETE /api/Medicos/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
@@ -106,10 +100,6 @@ namespace ConsultaPlus.API.Controllers
             return NoContent();
         }
 
-        // ===================== NOVOS ENDPOINTS =====================
-
-        // GET /api/Medicos/{medicoId}/disponibilidade?from=...&to=...
-        // Devolve slots de 30 min [Start, End] no intervalo fornecido (UTC).
         [HttpGet("{medicoId:int}/disponibilidade")]
         public async Task<IActionResult> GetDisponibilidade(
             int medicoId,
@@ -133,8 +123,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(res);
         }
 
-        // GET /api/Medicos/{medicoId}/proximos-slots?count=10
-        // Devolve os próximos N inícios de slots de 30 min (UTC).
         [HttpGet("{medicoId:int}/proximos-slots")]
         public async Task<IActionResult> GetProximosSlots(
             int medicoId,
@@ -154,7 +142,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(res);
         }
 
-        // =================== mapeador privado ======================
         private static MedicoResponseDto ToResponse(Medico m) => new()
         {
             Id = m.Id,

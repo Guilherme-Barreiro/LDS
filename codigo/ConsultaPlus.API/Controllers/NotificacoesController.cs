@@ -14,7 +14,6 @@ namespace ConsultaPlus.API.Controllers
 
         public NotificacoesController(INotificacaoRepository repo) => _repo = repo;
 
-        // GET /api/Notificacoes?medicoId=&pacienteId=&unreadOnly=
         [HttpGet]
         public async Task<IActionResult> Get([FromQuery] int? medicoId, [FromQuery] int? pacienteId, [FromQuery] bool unreadOnly = false)
         {
@@ -31,7 +30,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(res);
         }
 
-        // GET /api/Notificacoes/{id}
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
@@ -39,7 +37,6 @@ namespace ConsultaPlus.API.Controllers
             return n is null ? NotFound() : Ok(ToDto(n));
         }
 
-        // POST /api/Notificacoes
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateNotificacaoDto dto)
         {
@@ -58,7 +55,6 @@ namespace ConsultaPlus.API.Controllers
             return CreatedAtAction(nameof(GetById), new { id = n.Id }, ToDto(n));
         }
 
-        // PUT /api/Notificacoes/{id}
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateNotificacaoDto dto)
         {
@@ -72,7 +68,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(ToDto(n));
         }
 
-        // PATCH /api/Notificacoes/{id}/ler?Lida=true|false
         [HttpPatch("{id:int}/ler")]
         public async Task<IActionResult> MarcarComoLida(int id, [FromQuery] bool Lida = true)
         {
@@ -80,7 +75,6 @@ namespace ConsultaPlus.API.Controllers
             return ok ? NoContent() : NotFound();
         }
 
-        // DELETE /api/Notificacoes/{id}
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
