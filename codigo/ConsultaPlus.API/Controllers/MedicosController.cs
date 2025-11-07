@@ -54,6 +54,7 @@ namespace ConsultaPlus.API.Controllers
 
         // POST /api/Medicos
         [HttpPost]
+        //[Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateMedicoDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.NomeCompleto))

@@ -46,7 +46,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpGet("paciente/{pacienteId:int}/consultas")]
-        //[Authorize(Roles = "Paciente,Admin")]
+        [Authorize(Roles = "Paciente,Admin")]
         public async Task<IActionResult> GetHistoricoPaciente(
             int pacienteId,
             [FromQuery] int page = 1,

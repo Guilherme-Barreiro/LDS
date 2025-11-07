@@ -17,6 +17,8 @@ namespace ConsultaPlus.Infrastructure.Data
         public virtual DbSet<EspecialidadeMedico> EspecialidadesMedico { get; set; }
         public virtual DbSet<Notificacao> Notificacoes { get; set; }
         public virtual DbSet<SnsPaciente> SnsPacientes { get; set; }
+        public virtual DbSet<Admin> Admins { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -83,6 +85,11 @@ namespace ConsultaPlus.Infrastructure.Data
 
                 b.Property(x => x.DataCriacao).HasDefaultValueSql("GETUTCDATE()");
             });
+
+            modelBuilder.Entity<Admin>()
+                .HasIndex(a => a.Username)
+                .IsUnique();
+
 
         }
     }
