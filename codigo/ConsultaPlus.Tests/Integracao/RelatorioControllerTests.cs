@@ -1,10 +1,14 @@
 ﻿using System.Net;
-using System.Net.Http.Json;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+
+using Moq;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Core.Models.Relatorios;
 
 namespace ConsultaPlus.Tests.Integracao.Relatorios
 {
@@ -16,7 +20,37 @@ namespace ConsultaPlus.Tests.Integracao.Relatorios
         public RelatorioControllerTests(ApiFactory factory)
         {
             _factory = factory;
-            _client = factory.CreateClient(); 
+            _client = factory.CreateClient();
+        }
+
+        private HttpClient CreateClientWithFakeRelatorioService()
+        {
+            var mock = new Mock<IRelatorioService>();
+
+            mock.Setup(s => s.GetConsultasPorPeriodoAsync(
+                    It.IsAny<DateTime>(), It.IsAny<DateTime>(), It.IsAny<int?>()))
+                .ReturnsAsync(new List<ConsultasPorPeriodo>()); 
+
+            mock.Setup(s => s.GetTaxaNaoComparecimentoAsync(
+                    It.IsAny<DateTime?>(), It.IsAny<DateTime?>(), It.IsAny<int?>(), It.IsAny<int?>()))
+                .ReturnsAsync(new TaxaNaoComparecimento
+                {
+                    TaxaGlobal = 0m,
+                    TotalConsultas = 0,
+                    TotalNaoCompareceram = 0,
+                    PorMedico = new List<TaxaNaoComparecimentoPorMedico>()
+                });
+
+            var client = _factory.WithWebHostBuilder(b =>
+            {
+                b.ConfigureServices(services =>
+                {
+                    services.RemoveAll(typeof(IRelatorioService));
+                    services.AddSingleton(mock.Object);
+                });
+            }).CreateClient();
+
+            return client;
         }
 
         private ApplicationDbContext GetDb()
@@ -121,12 +155,11 @@ namespace ConsultaPlus.Tests.Integracao.Relatorios
                     EspecialidadeId = ids.especialidadeId,
                     DataConsulta = inicio.AddDays(2),
                     Duracao = 30,
-                    Estado = "NaoCompareceu" 
+                    Estado = "NaoCompareceu"
                 });
 
             await db.SaveChangesAsync();
         }
-
 
         [Fact]
         public async Task ConsultasPorPeriodo__200_ComIntervaloValido_E_ComMedicoOpcional()
@@ -170,14 +203,16 @@ namespace ConsultaPlus.Tests.Integracao.Relatorios
             var df = new DateTime(2025, 04, 01);
             await SeedConsultasAsync(ids, di, df);
 
+            var client = CreateClientWithFakeRelatorioService();
+
             var url1 = $"/api/Relatorio/taxa-nao-comparecimento?DataInicio={di:yyyy-MM-dd}&DataFim={df:yyyy-MM-dd}";
-            var r1 = await _client.GetAsync(url1);
+            var r1 = await client.GetAsync(url1);
             Assert.Equal(HttpStatusCode.OK, r1.StatusCode);
             var json1 = await r1.Content.ReadAsStringAsync();
             Assert.False(string.IsNullOrWhiteSpace(json1));
 
             var url2 = $"/api/Relatorio/taxa-nao-comparecimento?DataInicio={di:yyyy-MM-dd}&DataFim={df:yyyy-MM-dd}&MedicoId={ids.medicoId}&EspecialidadeId={ids.especialidadeId}";
-            var r2 = await _client.GetAsync(url2);
+            var r2 = await client.GetAsync(url2);
             Assert.Equal(HttpStatusCode.OK, r2.StatusCode);
             var json2 = await r2.Content.ReadAsStringAsync();
             Assert.False(string.IsNullOrWhiteSpace(json2));

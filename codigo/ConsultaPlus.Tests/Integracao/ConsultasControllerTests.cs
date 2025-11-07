@@ -5,20 +5,21 @@ using System.Threading.Tasks;
 using Xunit;
 
 using ConsultaPlus.Infrastructure.Data;
-using ConsultaPlus.Core.Models;
+using ConsultaPlus.Core.Models;                 
 using ConsultaPlus.API.DTOs.Consultas;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
+using System;
 
 namespace ConsultaPlus.Tests.Integracao.Consultas
 {
-    [Collection("Integration")] 
-    public class ConsultasControllerIT : IClassFixture<ApiFactory>
+    [Collection("Integration")]
+    public class ConsultasControllerTests : IClassFixture<ApiFactory>
     {
         private readonly ApiFactory _factory;
         private readonly HttpClient _client;
 
-        public ConsultasControllerIT(ApiFactory factory)
+        public ConsultasControllerTests(ApiFactory factory)
         {
             _factory = factory;
             _client = factory.CreateClient();
@@ -32,22 +33,25 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
             db.Consultas.RemoveRange(db.Consultas);
+            db.HorariosExcecaoMedicos.RemoveRange(db.HorariosExcecaoMedicos);
+            db.HorariosTrabalhoMedicos.RemoveRange(db.HorariosTrabalhoMedicos);
+            db.EspecialidadesMedico.RemoveRange(db.EspecialidadesMedico);
             db.Medicos.RemoveRange(db.Medicos);
             db.Pacientes.RemoveRange(db.Pacientes);
             db.Salas.RemoveRange(db.Salas);
             db.Especialidades.RemoveRange(db.Especialidades);
             await db.SaveChangesAsync();
 
-            var med = new ConsultaPlus.Core.Models.Medico
-            {   
+            var med = new Core.Models.Medico
+            {
                 NomeCompleto = "Dr IT",
                 Email = "dr@it",
-                Telemovel = "900000000",  
+                Telemovel = "900000000",
                 NUtente = Guid.NewGuid().ToString("N")[..12],
                 PasswordHash = "x",
                 DataNascimento = DateTime.UtcNow.AddYears(-40)
             };
-            var pac = new Paciente
+            var pac = new Core.Models.Paciente
             {
                 NomeCompleto = "Pac IT",
                 Email = "pac@it",
@@ -56,8 +60,8 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
                 PasswordHash = "x",
                 DataNascimento = DateTime.UtcNow.AddYears(-20)
             };
-            var esp = new ConsultaPlus.Core.Models.Especialidade { Nome = "Cardio" };
-            var sala = new ConsultaPlus.Core.Models.Sala { Nome = "Sala 1" };
+            var esp = new Core.Models.Especialidade { Nome = "Cardio" };
+            var sala = new Core.Models.Sala { Nome = "Sala 1" };
 
             db.Medicos.Add(med);
             db.Pacientes.Add(pac);
@@ -65,7 +69,29 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             db.Salas.Add(sala);
             await db.SaveChangesAsync();
 
+            db.EspecialidadesMedico.Add(new Core.Models.EspecialidadeMedico { MedicoId = med.Id, EspecialidadeId = esp.Id });
+
+            var dias = new[] { "Seg", "Ter", "Qua", "Qui", "Sex", "Sab", "Dom" };
+            foreach (var d in dias)
+            {
+                db.HorariosTrabalhoMedicos.Add(new Core.Models.HorarioTrabalhoMedico
+                {
+                    MedicoId = med.Id,
+                    DiaSemana = d,
+                    HoraInicio = TimeSpan.FromHours(8),
+                    HoraFim = TimeSpan.FromHours(18)
+                });
+            }
+
+            await db.SaveChangesAsync();
+
             return new Ids(pac.Id, med.Id, sala.Id, esp.Id);
+        }
+
+        private static DateTime Slot(DateTime utc, int hour, int minute = 0)
+        {
+            var d = utc.Date.AddHours(hour).AddMinutes(minute);
+            return DateTime.SpecifyKind(d, DateTimeKind.Utc);
         }
 
         private async Task<ConsultaResponseDto> PostConsultaAsync(Ids ids, DateTime inicioUtc)
@@ -102,7 +128,6 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
 
             var resp = await _client.PostAsJsonAsync("/api/Consultas", body);
 
-            // DEBUG: Capture a mensagem de erro se não for Created
             if (resp.StatusCode != HttpStatusCode.Created)
             {
                 var errorContent = await resp.Content.ReadAsStringAsync();
@@ -112,7 +137,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             var dto = await resp.Content.ReadFromJsonAsync<ConsultaResponseDto>();
             Assert.NotNull(dto);
 
-            Assert.True(dto.Id > 0);
+            Assert.True(dto!.Id > 0);
             Assert.Equal(ids.PacienteId, dto.PacienteId);
             Assert.Equal(ids.MedicoId, dto.MedicoId);
             Assert.Equal(ids.SalaId, dto.SalaId);
@@ -120,24 +145,13 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             Assert.Equal(inicio, dto.DataConsulta);
             Assert.Equal(30, dto.Duracao);
             Assert.Equal("Confirmada", dto.Estado);
-
-            /*var created = await PostConsultaAsync(ids, inicio);
-
-            Assert.True(created.Id > 0);
-            Assert.Equal(ids.PacienteId, created.PacienteId);
-            Assert.Equal(ids.MedicoId, created.MedicoId);
-            Assert.Equal(ids.SalaId, created.SalaId);
-            Assert.Equal(ids.EspecialidadeId, created.EspecialidadeId);
-            Assert.Equal(inicio, created.DataConsulta);
-            Assert.Equal(30, created.Duracao);
-            Assert.Equal("Confirmada", created.Estado);*/  
         }
 
         [Fact]
         public async Task GetById__200_AposCriar()
         {
             var ids = await SeedBaseAsync();
-            var created = await PostConsultaAsync(ids, DateTime.UtcNow);
+            var created = await PostConsultaAsync(ids, Slot(DateTime.UtcNow.AddDays(1), 10));
 
             var resp = await _client.GetAsync($"/api/Consultas/{created.Id}");
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -151,8 +165,8 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         public async Task GetAll__200_ContemRegistos()
         {
             var ids = await SeedBaseAsync();
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(2));
+            await PostConsultaAsync(ids, Slot(DateTime.UtcNow.AddDays(1), 11));
+            await PostConsultaAsync(ids, Slot(DateTime.UtcNow.AddDays(1), 12));
 
             var resp = await _client.GetAsync("/api/Consultas");
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -167,12 +181,12 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         {
             var ids = await SeedBaseAsync();
 
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
+            await PostConsultaAsync(ids, Slot(DateTime.UtcNow.AddDays(1), 11));
 
             using (var scope = _factory.Services.CreateScope())
             {
                 var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-                var outro = new ConsultaPlus.Core.Models.Medico
+                var outro = new Core.Models.Medico
                 {
                     NomeCompleto = "Dr B",
                     Email = "b@x",
@@ -190,7 +204,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
                     MedicoId = outro.Id,
                     SalaId = ids.SalaId,
                     EspecialidadeId = ids.EspecialidadeId,
-                    DataConsulta = DateTime.UtcNow.AddHours(2),
+                    DataConsulta = Slot(DateTime.UtcNow.AddDays(1), 12),
                     Duracao = 30,
                     Estado = "Confirmada"
                 });
@@ -210,8 +224,8 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         {
             var ids = await SeedBaseAsync();
 
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(2));
+            await PostConsultaAsync(ids, Slot(DateTime.UtcNow.AddDays(1), 11));
+            await PostConsultaAsync(ids, Slot(DateTime.UtcNow.AddDays(1), 12));
 
             using (var scope = _factory.Services.CreateScope())
             {
@@ -234,7 +248,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
                     MedicoId = ids.MedicoId,
                     SalaId = ids.SalaId,
                     EspecialidadeId = ids.EspecialidadeId,
-                    DataConsulta = DateTime.UtcNow.AddHours(3),
+                    DataConsulta = Slot(DateTime.UtcNow.AddDays(1), 13),
                     Duracao = 30,
                     Estado = "Confirmada"
                 });
@@ -253,7 +267,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         public async Task Delete__204_E_AposIsso_GetById_404()
         {
             var ids = await SeedBaseAsync();
-            var created = await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
+            var created = await PostConsultaAsync(ids, Slot(DateTime.UtcNow.AddDays(1), 11));
 
             var del = await _client.DeleteAsync($"/api/Consultas/{created.Id}");
             Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);

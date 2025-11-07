@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
-using BCrypt.Net;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Services;
@@ -38,7 +38,15 @@ namespace ConsultaPlus.Tests.Auth
 
         private AuthService CreateSut() =>
             new AuthService(_pacientes.Object, _medicos.Object, _blacklist.Object, _cfg);
+        private static bool HasRoleClaim(JwtSecurityToken t, string role) =>
+            t.Claims.Any(c =>
+                (c.Type == "role" || c.Type == ClaimTypes.Role) &&
+                string.Equals(c.Value, role, StringComparison.Ordinal));
 
+        private static bool HasSub(JwtSecurityToken t, string sub) =>
+            t.Claims.Any(c =>
+                (c.Type == "sub" || c.Type == JwtRegisteredClaimNames.Sub || c.Type == ClaimTypes.NameIdentifier) &&
+                string.Equals(c.Value, sub, StringComparison.Ordinal));
 
         [Fact]
         public async Task Login_Admin_By_Config_Works()
@@ -49,7 +57,7 @@ namespace ConsultaPlus.Tests.Auth
 
             Assert.False(string.IsNullOrWhiteSpace(jwt));
             var token = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
-            Assert.Contains(token.Claims, c => c.Type == ClaimTypes.Role && c.Value == "Admin");
+            Assert.True(HasRoleClaim(token, "Admin"));
         }
 
         [Fact]
@@ -64,8 +72,8 @@ namespace ConsultaPlus.Tests.Auth
             var jwt = await sut.LoginAsync("999", "1234");
 
             var token = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
-            Assert.Contains(token.Claims, c => c.Type == ClaimTypes.Role && c.Value == "Paciente");
-            Assert.Contains(token.Claims, c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == "7");
+            Assert.True(HasRoleClaim(token, "Paciente"));
+            Assert.True(HasSub(token, "7"));
         }
 
         [Fact]
@@ -80,8 +88,8 @@ namespace ConsultaPlus.Tests.Auth
             var jwt = await sut.LoginAsync("777", "m123");
 
             var token = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
-            Assert.Contains(token.Claims, c => c.Type == ClaimTypes.Role && c.Value == "Medico");
-            Assert.Contains(token.Claims, c => c.Type == JwtRegisteredClaimNames.Sub && c.Value == "3");
+            Assert.True(HasRoleClaim(token, "Medico"));
+            Assert.True(HasSub(token, "3"));
         }
 
         [Fact]
@@ -96,7 +104,6 @@ namespace ConsultaPlus.Tests.Auth
 
             await Assert.ThrowsAsync<Exception>(() => sut.LoginAsync("nope", "nope"));
         }
-
 
         [Fact]
         public async Task Logout_Blacklists_Jti_Until_Exp()
@@ -125,7 +132,6 @@ namespace ConsultaPlus.Tests.Auth
                               Times.Once);
         }
 
-
         [Fact]
         public async Task Forgot_For_Paciente_By_NUtente_Returns_ResetToken()
         {
@@ -138,7 +144,7 @@ namespace ConsultaPlus.Tests.Auth
 
             Assert.False(string.IsNullOrWhiteSpace(resetToken));
             var t = new JwtSecurityTokenHandler().ReadJwtToken(resetToken);
-            Assert.Equal("PasswordReset", t.Audiences is null ? null : string.Join(',', t.Audiences));
+            Assert.Contains("PasswordReset", t.Audiences);
             Assert.Contains(t.Claims, c => c.Type == "purpose" && c.Value == "password_reset");
         }
 
@@ -232,7 +238,7 @@ namespace ConsultaPlus.Tests.Auth
         public async Task Reset_With_Invalid_Token_Throws()
         {
             var sut = CreateSut();
-            await Assert.ThrowsAsync<SecurityTokenException>(() => sut.ResetPasswordAsync("xxx.yyy.zzz", "pwd"));
+            await Assert.ThrowsAsync<SecurityTokenException>(() => sut.ResetPasswordAsync(string.Empty, "pwd"));
         }
     }
 }

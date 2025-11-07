@@ -4,8 +4,10 @@ using ConsultaPlus.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using ConsultaPlus.Core.Models;
 
 namespace ConsultaPlus.Tests.Integracao.Notificacoes;
+
 public class NotificacoesControllerTests : IClassFixture<ApiFactory>
 {
     private readonly ApiFactory _factory;
@@ -27,6 +29,46 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         _client = factory.CreateClient();
     }
 
+    private ApplicationDbContext GetDb()
+    {
+        var scope = _factory.Services.CreateScope();
+        return scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    }
+
+    private async Task<int> SeedMedicoAsync(string nome = "Dr Seed", string email = "dr@ex.com", string tel = "900000000")
+    {
+        using var db = GetDb();
+        var m = new Core.Models.Medico
+        {
+            NomeCompleto = nome,
+            Email = email,
+            Telemovel = tel,
+            NUtente = Guid.NewGuid().ToString("N")[..10],
+            PasswordHash = "x",
+            DataNascimento = DateTime.UtcNow.AddYears(-40)
+        };
+        db.Medicos.Add(m);
+        await db.SaveChangesAsync();
+        return m.Id;
+    }
+
+    private async Task<int> SeedPacienteAsync(string nome = "Pac Seed", string email = "pac@ex.com", string tel = "911111111")
+    {
+        using var db = GetDb();
+        var p = new Paciente
+        {
+            NomeCompleto = nome,
+            Email = email,
+            Telemovel = tel,
+            NUtente = Guid.NewGuid().ToString("N")[..10],
+            PasswordHash = "x",
+            DataNascimento = DateTime.UtcNow.AddYears(-20)
+        };
+        db.Pacientes.Add(p);
+        await db.SaveChangesAsync();
+        return p.Id;
+    }
+
     private async Task<int> CreateAsync(string categoria, string descricao, int? medicoId = null, int? pacienteId = null)
     {
         var resp = await _client.PostAsJsonAsync("/api/Notificacoes", new
@@ -45,11 +87,13 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Create_Valida_201_ComBody()
     {
+        var medId = await SeedMedicoAsync("Dr Alvo", "alvo@ex.com", "933");
+
         var resp = await _client.PostAsJsonAsync("/api/Notificacoes", new
         {
             categoria = "  Sistema ",
             descricao = "  Atualização disponível  ",
-            medicoId = 7,
+            medicoId = medId,
             pacienteId = (int?)null
         });
 
@@ -61,7 +105,7 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         Assert.True(body!.Id > 0);
         Assert.Equal("Sistema", body.Categoria);
         Assert.Equal("Atualização disponível", body.Descricao);
-        Assert.Equal(7, body.MedicoId);
+        Assert.Equal(medId, body.MedicoId);
         Assert.Null(body.PacienteId);
 
         var get = await _client.GetAsync(resp.Headers.Location);
@@ -90,7 +134,8 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
     public async Task GetAll_200_ComLista()
     {
         var id1 = await CreateAsync("Sistema", "A");
-        var id2 = await CreateAsync("Alertas", "B", medicoId: 10);
+        var medId = await SeedMedicoAsync("Dr B", "b@ex.com", "901");
+        var id2 = await CreateAsync("Alertas", "B", medicoId: medId);
 
         var resp = await _client.GetAsync("/api/Notificacoes");
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -104,14 +149,17 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
     [Fact]
     public async Task Get_Filter_Medico_UnreadOnly_200()
     {
-        var n1 = await CreateAsync("M1", "A", medicoId: 1);
-        var n2 = await CreateAsync("M1", "B", medicoId: 1);
+        var med1 = await SeedMedicoAsync("Dr 1", "m1@ex.com", "911");
+        var med2 = await SeedMedicoAsync("Dr 2", "m2@ex.com", "912");
+
+        var n1 = await CreateAsync("M1", "A", medicoId: med1);
+        var n2 = await CreateAsync("M1", "B", medicoId: med1);
         var patch = await _client.PatchAsync($"/api/Notificacoes/{n1}/ler?Lida=true", null);
         Assert.Equal(HttpStatusCode.NoContent, patch.StatusCode);
 
-        await CreateAsync("M2", "C", medicoId: 2);
+        await CreateAsync("M2", "C", medicoId: med2);
 
-        var resp = await _client.GetAsync("/api/Notificacoes?medicoId=1&unreadOnly=true");
+        var resp = await _client.GetAsync($"/api/Notificacoes?medicoId={med1}&unreadOnly=true");
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
 
         var list = await resp.Content.ReadFromJsonAsync<List<NotificacaoVm>>();
@@ -119,24 +167,27 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         Assert.Single(list!);
         Assert.Equal(n2, list![0].Id);
         Assert.False(list[0].Lida);
-        Assert.Equal(1, list[0].MedicoId);
+        Assert.Equal(med1, list[0].MedicoId);
     }
 
     [Fact]
     public async Task Get_Filter_Paciente_200()
     {
-        var a = await CreateAsync("P1", "X", pacienteId: 5);
-        var b = await CreateAsync("P1", "Y", pacienteId: 5);
-        await CreateAsync("P2", "Z", pacienteId: 6); 
+        var pac5 = await SeedPacienteAsync("Pac 5", "p5@ex.com", "920");
+        var pac6 = await SeedPacienteAsync("Pac 6", "p6@ex.com", "921");
 
-        var resp = await _client.GetAsync("/api/Notificacoes?pacienteId=5");
+        var a = await CreateAsync("P1", "X", pacienteId: pac5);
+        var b = await CreateAsync("P1", "Y", pacienteId: pac5);
+        await CreateAsync("P2", "Z", pacienteId: pac6);
+
+        var resp = await _client.GetAsync($"/api/Notificacoes?pacienteId={pac5}");
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
 
         var list = await resp.Content.ReadFromJsonAsync<List<NotificacaoVm>>();
         Assert.NotNull(list);
         var ids = list!.Select(x => x.Id).ToHashSet();
         Assert.True(ids.Contains(a) && ids.Contains(b));
-        Assert.All(list!, x => Assert.Equal(5, x.PacienteId));
+        Assert.All(list!, x => Assert.Equal(pac5, x.PacienteId));
     }
 
     [Fact]
