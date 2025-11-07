@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.API.DTOs.Medicos;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ConsultaPlus.API.Controllers
 {
@@ -50,7 +51,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpPost]
-        //[Authorize(Roles = "Admin")]
+        [Authorize(Roles = "Admin")]
         public async Task<IActionResult> Create([FromBody] CreateMedicoDto dto)
         {
             if (string.IsNullOrWhiteSpace(dto.NomeCompleto))
