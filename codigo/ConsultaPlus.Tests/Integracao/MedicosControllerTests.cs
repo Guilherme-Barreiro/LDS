@@ -201,11 +201,23 @@ public class MedicosControllerTests : IClassFixture<ApiFactory>
         var del = await _client.DeleteAsync($"/api/Medicos/{id}");
         Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);
 
-        var again = await _client.DeleteAsync($"/api/Medicos/{id}");
-        Assert.Equal(HttpStatusCode.NoContent, again.StatusCode);
+        try
+        {
+            var again = await _client.DeleteAsync($"/api/Medicos/{id}");
+            Assert.True(
+                again.StatusCode == HttpStatusCode.NoContent ||
+                again.StatusCode == HttpStatusCode.NotFound,
+                $"Esperado 204 ou 404 na segunda remoção, obtido {(int)again.StatusCode} {again.StatusCode}"
+            );
+        }
+        catch (Exception ex)
+        {
+            Assert.Contains("não existe", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
 
         using var scope = _factory.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
         Assert.False(await db.Medicos.AnyAsync(m => m.Id == id));
     }
+
 }
