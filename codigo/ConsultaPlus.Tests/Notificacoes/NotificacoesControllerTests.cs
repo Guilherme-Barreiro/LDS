@@ -213,8 +213,7 @@ namespace ConsultaPlus.Tests.Notificacoes
             var dto = new UpdateNotificacaoDto
             {
                 Categoria = "  Nova Cat ",
-                Descricao = "  Nova Desc ",
-                Lida = true
+                Descricao = "  Nova Desc "
             };
 
             var result = await _controller.Update(9, dto);
@@ -255,8 +254,7 @@ namespace ConsultaPlus.Tests.Notificacoes
             var dto = new UpdateNotificacaoDto
             {
                 Categoria = "   ",  
-                Descricao = null,    
-                Lida = null         
+                Descricao = null    
             };
 
             var result = await _controller.Update(11, dto);

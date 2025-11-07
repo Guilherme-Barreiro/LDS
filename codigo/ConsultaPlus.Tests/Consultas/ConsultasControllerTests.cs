@@ -15,13 +15,13 @@ namespace ConsultaPlus.Tests.Consultas
 {
     public class ConsultasControllerTests
     {
-        private readonly Mock<IConsultaRepository> _repo;
+        private readonly Mock<IConsultaService> _svc;
         private readonly ConsultasController _controller;
 
         public ConsultasControllerTests()
         {
-            _repo = new Mock<IConsultaRepository>(MockBehavior.Strict);
-            _controller = new ConsultasController(_repo.Object);
+            _svc = new Mock<IConsultaService>(MockBehavior.Strict);
+            _controller = new ConsultasController(_svc.Object);
         }
 
         [Fact]
@@ -35,7 +35,7 @@ namespace ConsultaPlus.Tests.Consultas
                 new Consulta { Id = 1, PacienteId = 10, MedicoId = 100, SalaId = 1000, EspecialidadeId = 200, DataConsulta = dt1, Duracao = 30, Estado = "Marcada" },
                 new Consulta { Id = 2, PacienteId = 11, MedicoId = 101, SalaId = 1001, EspecialidadeId = 201, DataConsulta = dt2, Duracao = 45, Estado = "Concluida" },
             };
-            _repo.Setup(r => r.GetAllAsync()).ReturnsAsync(data.AsEnumerable());
+            _svc.Setup(r => r.GetAllAsync(default)).ReturnsAsync(data.AsEnumerable());
 
             var result = await _controller.GetAll();
 
@@ -55,7 +55,7 @@ namespace ConsultaPlus.Tests.Consultas
                 c.DataConsulta == dt2 &&
                 c.Duracao == 45 && c.Estado == "Concluida");
 
-            _repo.Verify(r => r.GetAllAsync(), Times.Once);
+            _svc.Verify(r => r.GetAllAsync(default), Times.Once);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace ConsultaPlus.Tests.Consultas
                 Duracao = 20,
                 Estado = "Marcada"
             };
-            _repo.Setup(r => r.GetByIdAsync(7)).ReturnsAsync(c);
+            _svc.Setup(r => r.GetByIdAsync(7, default)).ReturnsAsync(c);
 
             var result = await _controller.GetById(7);
 
@@ -88,13 +88,13 @@ namespace ConsultaPlus.Tests.Consultas
             Assert.Equal(20, dto.Duracao);
             Assert.Equal("Marcada", dto.Estado);
 
-            _repo.Verify(r => r.GetByIdAsync(7), Times.Once);
+            _svc.Verify(r => r.GetByIdAsync(7, default), Times.Once);
         }
 
         [Fact]
         public async Task GetById_Inexistente_DeveRetornarNotFound_ComMensagem()
         {
-            _repo.Setup(r => r.GetByIdAsync(123)).ReturnsAsync((Consulta?)null);
+            _svc.Setup(r => r.GetByIdAsync(123, default)).ReturnsAsync((Consulta?)null);
 
             var result = await _controller.GetById(123);
 
@@ -103,7 +103,7 @@ namespace ConsultaPlus.Tests.Consultas
             Assert.NotNull(messageProp);
             Assert.Contains("Consulta 123 não encontrada", messageProp!.GetValue(nf.Value)?.ToString());
 
-            _repo.Verify(r => r.GetByIdAsync(123), Times.Once);
+            _svc.Verify(r => r.GetByIdAsync(123, default), Times.Once);
         }
 
         [Fact]
@@ -116,16 +116,21 @@ namespace ConsultaPlus.Tests.Consultas
                 new Consulta { Id = 2, MedicoId = 5, PacienteId = 11, SalaId = 2, EspecialidadeId = 1, DataConsulta = now, Duracao = 30, Estado = "Marcada" },
                 new Consulta { Id = 3, MedicoId = 9, PacienteId = 12, SalaId = 3, EspecialidadeId = 2, DataConsulta = now, Duracao = 30, Estado = "Marcada" },
             };
-            _repo.Setup(r => r.GetAllAsync()).ReturnsAsync(data.AsEnumerable());
+
+            var consultasMedico5 = data.Where(c => c.MedicoId == 5).ToList();
+
+            _svc.Setup(r => r.GetByMedicoAsync(5, It.IsAny<CancellationToken>())).ReturnsAsync(consultasMedico5);
 
             var result = await _controller.GetByMedico(5);
 
-            var ok = Assert.IsType<OkObjectResult>(result);
-            var list = Assert.IsAssignableFrom<IEnumerable<ConsultaResponseDto>>(ok.Value);
-            Assert.Equal(2, list.Count());
-            Assert.All(list, c => Assert.Equal(5, c.MedicoId));
+            var okResult = Assert.IsType<OkObjectResult>(result);
+            var responseList = Assert.IsAssignableFrom<IEnumerable<ConsultaResponseDto>>(okResult.Value);
 
-            _repo.Verify(r => r.GetAllAsync(), Times.Once);
+            Assert.Equal(2, responseList.Count());
+            Assert.All(responseList, consultaDto => Assert.Equal(5, consultaDto.MedicoId));
+
+
+            _svc.Verify(r => r.GetByMedicoAsync(5, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -138,7 +143,10 @@ namespace ConsultaPlus.Tests.Consultas
                 new Consulta { Id = 2, MedicoId = 6, PacienteId = 10, SalaId = 2, EspecialidadeId = 1, DataConsulta = now, Duracao = 30, Estado = "Marcada" },
                 new Consulta { Id = 3, MedicoId = 9, PacienteId = 99, SalaId = 3, EspecialidadeId = 2, DataConsulta = now, Duracao = 30, Estado = "Marcada" },
             };
-            _repo.Setup(r => r.GetAllAsync()).ReturnsAsync(data.AsEnumerable());
+
+            var consultasPaciente10 = data.Where(c => c.PacienteId == 10).ToList();
+
+            _svc.Setup(r => r.GetByPacienteAsync(10, It.IsAny<CancellationToken>())).ReturnsAsync(consultasPaciente10);
 
             var result = await _controller.GetByPaciente(10);
 
@@ -147,7 +155,7 @@ namespace ConsultaPlus.Tests.Consultas
             Assert.Equal(2, list.Count());
             Assert.All(list, c => Assert.Equal(10, c.PacienteId));
 
-            _repo.Verify(r => r.GetAllAsync(), Times.Once);
+            _svc.Verify(r => r.GetByPacienteAsync(10, It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -162,12 +170,22 @@ namespace ConsultaPlus.Tests.Consultas
                 SalaId = 1000,
                 EspecialidadeId = 200,
                 DataConsulta = dt,
-                Duracao = 30
             };
 
-            _repo.Setup(r => r.AddAsync(It.IsAny<Consulta>()))
-                 .Callback<Consulta>(c => c.Id = 55)
-                 .Returns(Task.CompletedTask);
+            var consultaCriada = new Consulta
+            {
+                Id = 55,
+                PacienteId = 10,
+                MedicoId = 100,
+                SalaId = 1000,
+                EspecialidadeId = 200,
+                DataConsulta = dt,
+                Duracao = 30,
+                Estado = "Confirmada"
+            };
+
+            _svc.Setup(r => r.CreateAsync(It.IsAny<Consulta>(), It.IsAny<CancellationToken>()))
+                 .ReturnsAsync(consultaCriada);
 
             var result = await _controller.Create(dto);
 
@@ -184,26 +202,24 @@ namespace ConsultaPlus.Tests.Consultas
             Assert.Equal(30, body.Duracao);
             Assert.Equal("Confirmada", body.Estado);
 
-            _repo.Verify(r => r.AddAsync(It.Is<Consulta>(c =>
+            _svc.Verify(r => r.CreateAsync(It.Is<Consulta>(c =>
                 c.PacienteId == 10 &&
                 c.MedicoId == 100 &&
                 c.SalaId == 1000 &&
                 c.EspecialidadeId == 200 &&
-                c.DataConsulta == dt &&
-                c.Duracao == 30 &&
-                c.Estado == "Confirmada"
-            )), Times.Once);
+                c.DataConsulta == dt 
+            ), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task Delete_DeveInvocarRepositorio_ERetornarNoContent()
         {
-            _repo.Setup(r => r.DeleteAsync(9)).Returns(Task.CompletedTask);
+            _svc.Setup(r => r.DeleteAsync(9, It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
 
             var result = await _controller.Delete(9);
 
             Assert.IsType<NoContentResult>(result);
-            _repo.Verify(r => r.DeleteAsync(9), Times.Once);
+            _svc.Verify(r => r.DeleteAsync(9, It.IsAny<CancellationToken>()), Times.Once);
         }
     }
 }

@@ -13,12 +13,12 @@ namespace ConsultaPlus.API.Controllers
     [Route("api/[controller]")]
     public class MedicosController : ControllerBase
     {
-        private readonly IMedicoRepository _repo;
+        private readonly IMedicoService _svc;
         private readonly IDisponibilidadeService _agenda;
 
-        public MedicosController(IMedicoRepository repo, IDisponibilidadeService agenda)
+        public MedicosController(IMedicoService svc, IDisponibilidadeService agenda)
         {
-            _repo = repo;
+            _svc = svc;
             _agenda = agenda;
         }
 
@@ -26,7 +26,7 @@ namespace ConsultaPlus.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var medicos = await _repo.GetAllAsync();
+            var medicos = await _svc.GetAllAsync();
             var res = medicos.Select(ToResponse);
             return Ok(res);
         }
@@ -35,7 +35,7 @@ namespace ConsultaPlus.API.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var medico = await _repo.GetByIdAsync(id);
+            var medico = await _svc.GetByIdAsync(id);
             if (medico is null) return NotFound();
             return Ok(ToResponse(medico));
         }
@@ -47,7 +47,7 @@ namespace ConsultaPlus.API.Controllers
             if (string.IsNullOrWhiteSpace(nome))
                 return BadRequest(new { message = "Parâmetro 'nome' é obrigatório." });
 
-            var medicos = await _repo.SearchByNameAsync(nome);
+            var medicos = await _svc.SearchByNomeAsync(nome);
             var res = medicos.Select(ToResponse);
             return Ok(res);
         }
@@ -76,7 +76,7 @@ namespace ConsultaPlus.API.Controllers
                 DataNascimento = dto.DataNascimento
             };
 
-            await _repo.AddAsync(medico);
+            await _svc.CreateAsync(medico);
 
             var res = ToResponse(medico);
             return CreatedAtAction(nameof(GetById), new { id = medico.Id }, res);
@@ -86,7 +86,7 @@ namespace ConsultaPlus.API.Controllers
         [HttpPut("{id:int}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateMedicoDto dto)
         {
-            var medico = await _repo.GetByIdAsync(id);
+            var medico = await _svc.GetByIdAsync(id);
             if (medico is null) return NotFound();
 
             medico.NomeCompleto = dto.NomeCompleto?.Trim() ?? medico.NomeCompleto;
@@ -94,7 +94,7 @@ namespace ConsultaPlus.API.Controllers
             medico.Email = dto.Email?.Trim() ?? medico.Email;
             medico.DataNascimento = dto.DataNascimento;
 
-            await _repo.UpdateAsync(medico);
+            await _svc.UpdateAsync(medico);
             return NoContent();
         }
 
@@ -102,7 +102,7 @@ namespace ConsultaPlus.API.Controllers
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _repo.DeleteAsync(id);
+            await _svc.DeleteAsync(id);
             return NoContent();
         }
 

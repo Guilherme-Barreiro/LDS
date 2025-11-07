@@ -22,6 +22,9 @@ namespace ConsultaPlus.Core.Interfaces
             DateTime to,
             bool onlyConfirmed,
             CancellationToken ct = default);
+
+        Task<IEnumerable<Consulta>> GetByMedicoIdAsync(int medicoId, CancellationToken ct = default);
+        Task<IEnumerable<Consulta>> GetByPacienteIdAsync(int pacienteId, CancellationToken ct = default);
     }
 
     public record PagedResult<T>(int Total, int Page, int PageSize, IReadOnlyList<T> Items);

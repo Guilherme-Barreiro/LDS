@@ -65,13 +65,13 @@ namespace ConsultaPlus.Tests.Integracao.EspecialidadeMedico
         private record AssocDto(int MedicoId, int EspecialidadeId);
 
         private async Task<HttpResponseMessage> AssocAsync(int medicoId, int especialidadeId)
-            => await _client.PostAsJsonAsync("/api/EspecialidadeMedico/associar-especialidade-medico",
+            => await _client.PostAsJsonAsync("/api/EspecialidadeMedico/add",
                                              new AssocDto(medicoId, especialidadeId));
 
         private async Task<HttpResponseMessage> UnassocAsync(int medicoId, int especialidadeId)
         {
             var req = new HttpRequestMessage(HttpMethod.Delete,
-                "/api/EspecialidadeMedico/remover-especialidade-medico")
+                "/api/EspecialidadeMedico/delete")
             {
                 Content = JsonContent.Create(new AssocDto(medicoId, especialidadeId))
             };

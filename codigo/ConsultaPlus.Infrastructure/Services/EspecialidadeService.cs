@@ -1,4 +1,3 @@
-using ConsultaPlus.API.Repositories;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Repositories;
