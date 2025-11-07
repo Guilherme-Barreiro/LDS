@@ -1,6 +1,7 @@
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Infrastructure.Data;
 using ConsultaPlus.Infrastructure.Repositories;
+using ConsultaPlus.Infrastructure.Security;       
 using ConsultaPlus.Infrastructure.Services;
 using ConsultaPlus.Infrastructure.UoW;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -82,6 +83,9 @@ builder.Services.AddSwaggerGen(options =>
     });
 });
 
+builder.Services.AddMemoryCache();
+builder.Services.AddSingleton<ITokenBlacklist, InMemoryTokenBlacklist>();
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -98,7 +102,20 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
         ValidAudience = builder.Configuration["JwtSettings:Audience"],
         IssuerSigningKey = new SymmetricSecurityKey(
-            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"]))
+            Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"])),
+        ClockSkew = TimeSpan.Zero 
+    };
+
+    options.Events = new JwtBearerEvents
+    {
+        OnTokenValidated = ctx =>
+        {
+            var bl = ctx.HttpContext.RequestServices.GetRequiredService<ITokenBlacklist>();
+            var jti = ctx.Principal?.FindFirst(System.IdentityModel.Tokens.Jwt.JwtRegisteredClaimNames.Jti)?.Value;
+            if (!string.IsNullOrEmpty(jti) && bl.Contains(jti))
+                ctx.Fail("Token revogado.");
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -107,10 +124,9 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();                    // aplica todas as migrations
-    await DbSeeder.SeedAdminAsync(db);        // cria admin "admin/admin" se não existir
+    db.Database.Migrate();                    
+    await DbSeeder.SeedAdminAsync(db);        
 }
-
 
 if (app.Environment.IsDevelopment())
 {

@@ -15,13 +15,16 @@ namespace ConsultaPlus.Infrastructure.Services
         private readonly IPacienteRepository _pacientes;
         private readonly IMedicoRepository _medicos;
         private readonly IConfiguration _configuration;
+        private readonly ITokenBlacklist _blacklist;
 
         public AuthService(IPacienteRepository pacienteRepository,
                            IMedicoRepository medicoRepository,
+                           ITokenBlacklist blacklist,
                            IConfiguration configuration)
         {
             _pacientes = pacienteRepository;
             _medicos = medicoRepository;
+            _blacklist = blacklist;
             _configuration = configuration;
         }
 
@@ -87,5 +90,19 @@ namespace ConsultaPlus.Infrastructure.Services
             var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
+
+        public Task LogoutAsync(string jwt)
+        {
+            var handler = new JwtSecurityTokenHandler();
+            var raw = jwt.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
+            var token = handler.ReadJwtToken(raw);
+
+            var jti = token.Id;      // precisares do claim JTI (já geras no token)
+            var exp = token.ValidTo; // expiração em UTC
+
+            _blacklist.Add(jti, exp);
+            return Task.CompletedTask;
+        }
+
     }
 }

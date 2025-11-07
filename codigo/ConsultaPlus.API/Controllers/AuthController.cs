@@ -38,6 +38,13 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout()
+        {
+            var authHeader = Request.Headers.Authorization.ToString();
+            await _authService.LogoutAsync(authHeader);
+            return Ok(new { message = "Sessão terminada com sucesso." });
+        }
     }
 }
