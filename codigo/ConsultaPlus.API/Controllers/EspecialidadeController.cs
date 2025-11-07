@@ -17,7 +17,7 @@ namespace ConsultaPlus.API.Controllers
             _especialidadeService = especialidadeService;
         }
 
-        [HttpPost("registo-especialidade")]
+        [HttpPost("add")]
         public async Task<IActionResult> Create([FromBody] CreateEspecialidadeDTO requestDto)
         {
             try
@@ -46,7 +46,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpDelete("remover-especialidade/{id}")]
+        [HttpDelete("delete/{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -68,7 +68,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpPut("atualizar-especialidade/{id}")]
+        [HttpPut("update/{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateEspecialidadeDTO requestDto)
         {
             try
@@ -95,7 +95,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpGet("obter-especialidade-id/{id}")]
+        [HttpGet("get-id/{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var ent = await _especialidadeService.GetByIdAsync(id);
@@ -105,7 +105,7 @@ namespace ConsultaPlus.API.Controllers
             
         }
 
-        [HttpGet("pesquisar-especialidade")]
+        [HttpGet("search")]
         public async Task<IActionResult> Search([FromQuery] string termo)
         {
             try
@@ -129,7 +129,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
 
-        [HttpGet("obter-todas-especialidades")]
+        [HttpGet("get-all")]
         public async Task<IActionResult> GetAll()
         {
             var todas = await _especialidadeService.GetAllAsync();

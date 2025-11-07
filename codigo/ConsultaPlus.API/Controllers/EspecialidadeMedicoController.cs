@@ -19,7 +19,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
 
-        [HttpPost("associar-especialidade-medico")]
+        [HttpPost("add")]
         public async Task<IActionResult> AddEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
         {
             try
@@ -41,7 +41,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpDelete("remover-especialidade-medico")]
+        [HttpDelete("delete")]
         public async Task<IActionResult> DeleteEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
         {
             try
