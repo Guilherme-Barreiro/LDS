@@ -10,7 +10,7 @@ namespace ConsultaPlus.API.Controllers
 {
     [ApiController]
     [Route("api/admin/medicos/{medicoId:int}")]
-    //[Authorize(Roles = "Admin")]
+    [Authorize(Roles = "Admin")]
     public class AdminHorariosController : ControllerBase
     {
         private readonly IHorarioTrabalhoMedico _horarioSvc;

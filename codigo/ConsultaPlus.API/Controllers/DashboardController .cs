@@ -17,7 +17,7 @@ namespace ConsultaPlus.API.Controllers
         public DashboardController(IConsultaRepository repo) => _repo = repo;
 
         [HttpGet("medico/{medicoId:int}/consultas")]
-        //[Authorize(Roles = "Medico,Admin")]
+        [Authorize(Roles = "Medico,Admin")]
         public async Task<IActionResult> GetAgendaMedico(
             int medicoId,
             [FromQuery] DateTime? from = null,
@@ -46,7 +46,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpGet("paciente/{pacienteId:int}/consultas")]
-        //[Authorize(Roles = "Paciente,Admin")]
+        [Authorize(Roles = "Paciente,Admin")]
         public async Task<IActionResult> GetHistoricoPaciente(
             int pacienteId,
             [FromQuery] int page = 1,

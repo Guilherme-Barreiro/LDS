@@ -1,26 +1,37 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using System.Security.Claims;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Security.Claims;
-using System.Text.Encodings.Web;
 
 public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions>
 {
     public const string Scheme = "Test";
-    public TestAuthHandler(IOptionsMonitor<AuthenticationSchemeOptions> o, ILoggerFactory l, UrlEncoder e, ISystemClock c)
-        : base(o, l, e, c) { }
+
+    public TestAuthHandler(
+        IOptionsMonitor<AuthenticationSchemeOptions> options,
+        ILoggerFactory logger,
+        UrlEncoder encoder,
+        ISystemClock clock) : base(options, logger, encoder, clock) { }
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        var claims = new[] {
+        // Utilizador “fake” com vários roles para cobrir os endpoints:
+        // - Medico ou Admin para /medico/...
+        // - Paciente ou Admin para /paciente/...
+        var claims = new[]
+        {
             new Claim(ClaimTypes.NameIdentifier, "test-user"),
+            new Claim(ClaimTypes.Name, "Integration Tester"),
             new Claim(ClaimTypes.Role, "Admin"),
             new Claim(ClaimTypes.Role, "Medico"),
             new Claim(ClaimTypes.Role, "Paciente"),
         };
-        var id = new ClaimsIdentity(claims, Scheme);
-        var principal = new ClaimsPrincipal(id);
+
+        var identity = new ClaimsIdentity(claims, Scheme);
+        var principal = new ClaimsPrincipal(identity);
         var ticket = new AuthenticationTicket(principal, Scheme);
+
         return Task.FromResult(AuthenticateResult.Success(ticket));
     }
 }
