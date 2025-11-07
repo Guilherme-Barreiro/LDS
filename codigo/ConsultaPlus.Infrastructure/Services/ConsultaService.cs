@@ -1,5 +1,7 @@
 ﻿using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
+using ConsultaPlus.Infrastructure.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace ConsultaPlus.Infrastructure.Services
 {
@@ -10,19 +12,22 @@ namespace ConsultaPlus.Infrastructure.Services
         private readonly IPacienteRepository _pacientes;
         private readonly ISalaRepository _salas;
         private readonly IEspecialidadeService _especialidades;
+        private readonly ApplicationDbContext _db; // << ADICIONADO
 
         public ConsultaService(
             IConsultaRepository consultas,
             IMedicoRepository medicos,
             IPacienteRepository pacientes,
             ISalaRepository salas,
-            IEspecialidadeService especialidades)
+            IEspecialidadeService especialidades,
+            ApplicationDbContext db) // << ADICIONADO
         {
             _consultas = consultas;
             _medicos = medicos;
             _pacientes = pacientes;
             _salas = salas;
             _especialidades = especialidades;
+            _db = db; // << ADICIONADO
         }
 
         public Task<Consulta?> GetByIdAsync(int id, CancellationToken ct = default)
@@ -45,37 +50,32 @@ namespace ConsultaPlus.Infrastructure.Services
 
         public async Task<Consulta> CreateAsync(Consulta nova, CancellationToken ct = default)
         {
-            // Validações de FK
+            // 1) Entidades existem
             if (await _pacientes.GetByIdAsync(nova.PacienteId) is null)
                 throw new ArgumentException($"PacienteId {nova.PacienteId} não existe.");
+
             if (await _medicos.GetByIdAsync(nova.MedicoId) is null)
                 throw new ArgumentException($"MedicoId {nova.MedicoId} não existe.");
+
             if (await _especialidades.GetByIdAsync(nova.EspecialidadeId) is null)
                 throw new ArgumentException($"EspecialidadeId {nova.EspecialidadeId} não existe.");
 
-            // 1) Forçar duração = 30 min
+            // (Se estiveres a usar Sala agora, mantém; se não, remove estas 2 linhas)
+            if (nova.SalaId != 0 && await _salas.GetByIdAsync(nova.SalaId) is null)
+                throw new ArgumentException($"SalaId {nova.SalaId} não existe.");
+
+            // 2) VALIDACAO NOVA: Médico tem a especialidade pedida
+            var medicoTemEspecialidade = await _db.EspecialidadesMedico
+                .AsNoTracking()
+                .AnyAsync(em => em.MedicoId == nova.MedicoId && em.EspecialidadeId == nova.EspecialidadeId, ct);
+
+            if (!medicoTemEspecialidade)
+                throw new ArgumentException("O médico não possui a especialidade selecionada.");
+
+            // 3) Duração fixa de 30 min (reforço de regra server-side)
             nova.Duracao = 30;
 
-            var inicio = nova.DataConsulta;
-            var fim = inicio.AddMinutes(30);
-
-            // 2) Escolher automaticamente uma sala livre
-            var salas = await _salas.GetAllAsync();
-            var todasConsultas = await _consultas.GetAllAsync();
-
-            bool Overlap(DateTime aIni, DateTime aFim, DateTime bIni, DateTime bFim)
-                => aIni < bFim && bIni < aFim; // intervalo semiaberto
-
-            var salaLivre = salas.FirstOrDefault(s =>
-                !todasConsultas.Any(c =>
-                    c.SalaId == s.Id &&
-                    c.Estado == "Confirmada" &&
-                    Overlap(c.DataConsulta, c.DataConsulta.AddMinutes(c.Duracao), inicio, fim)));
-
-            if (salaLivre is null)
-                throw new InvalidOperationException("Não há nenhuma sala livre para esse horário.");
-
-            nova.SalaId = salaLivre.Id;
+            // 4) Estado padrão
             nova.Estado = "Confirmada";
 
             await _consultas.AddAsync(nova);

@@ -5,24 +5,23 @@ using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.API.DTOs.Consultas;
 
-
 namespace ConsultaPlus.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class ConsultasController : ControllerBase
     {
-        private readonly IConsultaRepository _repo;
+        private readonly IConsultaService _service;
 
-        public ConsultasController(IConsultaRepository repo)
+        public ConsultasController(IConsultaService service)
         {
-            _repo = repo;
+            _service = service;
         }
 
         [HttpGet]
         public async Task<IActionResult> GetAll()
         {
-            var list = await _repo.GetAllAsync();
+            var list = await _service.GetAllAsync();
             var res = list.Select(ToResponse);
             return Ok(res);
         }
@@ -30,7 +29,7 @@ namespace ConsultaPlus.API.Controllers
         [HttpGet("{id:int}")]
         public async Task<IActionResult> GetById(int id)
         {
-            var c = await _repo.GetByIdAsync(id);
+            var c = await _service.GetByIdAsync(id);
             if (c is null) return NotFound(new { message = $"Consulta {id} não encontrada." });
             return Ok(ToResponse(c));
         }
@@ -38,57 +37,50 @@ namespace ConsultaPlus.API.Controllers
         [HttpGet("medico/{medicoId:int}")]
         public async Task<IActionResult> GetByMedico(int medicoId)
         {
-            var list = await _repo.GetAllAsync();
-            var res = list.Where(c => c.MedicoId == medicoId).Select(ToResponse);
+            var list = await _service.GetByMedicoAsync(medicoId);
+            var res = list.Select(ToResponse);
             return Ok(res);
         }
 
         [HttpGet("paciente/{pacienteId:int}")]
         public async Task<IActionResult> GetByPaciente(int pacienteId)
         {
-            var list = await _repo.GetAllAsync();
-            var res = list.Where(c => c.PacienteId == pacienteId).Select(ToResponse);
+            var list = await _service.GetByPacienteAsync(pacienteId);
+            var res = list.Select(ToResponse);
             return Ok(res);
         }
-
 
         [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateConsultaDto dto)
         {
-            var c = new Consulta
+            try
             {
-                PacienteId = dto.PacienteId,
-                MedicoId = dto.MedicoId,
-                SalaId = dto.SalaId,
-                EspecialidadeId = dto.EspecialidadeId,
-                DataConsulta = dto.DataConsulta,
-                Duracao = 30,
-                Estado = "Confirmada"
-            };
+                var nova = new Consulta
+                {
+                    PacienteId = dto.PacienteId,
+                    MedicoId = dto.MedicoId,
+                    SalaId = dto.SalaId,
+                    EspecialidadeId = dto.EspecialidadeId,
+                    DataConsulta = dto.DataConsulta
+                    // Duracao/Estado são definidos no serviço (regras de negócio)
+                };
 
-            await _repo.AddAsync(c);
-
-            var res = new ConsultaResponseDto
+                var c = await _service.CreateAsync(nova);
+                return StatusCode(201, ToResponse(c));
+            }
+            catch (ArgumentException ex)
             {
-                Id = c.Id,
-                PacienteId = c.PacienteId,
-                MedicoId = c.MedicoId,
-                SalaId = c.SalaId,
-                EspecialidadeId = c.EspecialidadeId,
-                DataConsulta = c.DataConsulta,
-                Duracao = c.Duracao,
-                Estado = c.Estado
-            };
-
-            return StatusCode(201, res);
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {
-            await _repo.DeleteAsync(id);
+            await _service.DeleteAsync(id);
             return NoContent();
         }
+
         private static ConsultaResponseDto ToResponse(Consulta c) => new()
         {
             Id = c.Id,
@@ -102,4 +94,3 @@ namespace ConsultaPlus.API.Controllers
         };
     }
 }
-
