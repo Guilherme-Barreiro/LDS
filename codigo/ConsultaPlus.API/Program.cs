@@ -15,15 +15,17 @@ builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-if (builder.Environment.IsEnvironment("Testing"))
+var env = builder.Environment;
+
+if (env.IsEnvironment("Testing"))
 {
-    builder.Services.AddDbContext<ApplicationDbContext>(opts =>
-        opts.UseInMemoryDatabase("TestingDb"));
+    
 }
 else
 {
-    builder.Services.AddDbContext<ApplicationDbContext>(opts =>
-        opts.UseSqlServer(connectionString));
+    var conn = builder.Configuration.GetConnectionString("DefaultConnection");
+    builder.Services.AddDbContext<ApplicationDbContext>(o =>
+        o.UseSqlServer(conn)); 
 }
 
 builder.Services.AddScoped<IMedicoRepository, MedicoRepository>();
@@ -121,12 +123,14 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
+if (!app.Environment.IsEnvironment("Testing"))
 {
+    using var scope = app.Services.CreateScope();
     var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-    db.Database.Migrate();                    
-    await DbSeeder.SeedAdminAsync(db);        
+    db.Database.Migrate();                
+    await DbSeeder.SeedAdminAsync(db);    
 }
+
 
 if (app.Environment.IsDevelopment())
 {

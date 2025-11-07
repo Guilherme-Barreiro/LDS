@@ -27,7 +27,6 @@ namespace ConsultaPlus.API.Controllers
             _db = db;
         }
 
-        // POST /api/admin/medicos/{medicoId}/horario
         [HttpPost("horario")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -69,7 +68,6 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        // POST /api/admin/medicos/{medicoId}/excecoes
         [HttpPost("excecoes")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -106,7 +104,6 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        // GET /api/admin/medicos/{medicoId}/horario
         [HttpGet("horario")]
         public async Task<IActionResult> GetHorarios(int medicoId, CancellationToken ct)
         {
@@ -127,7 +124,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(lista);
         }
 
-        // GET /api/admin/medicos/{medicoId}/horario/{horarioId}
         [HttpGet("horario/{horarioId:int}")]
         public async Task<IActionResult> GetHorario(int medicoId, int horarioId, CancellationToken ct)
         {
@@ -148,7 +144,6 @@ namespace ConsultaPlus.API.Controllers
                 : Ok(h);
         }
 
-        // PUT /api/admin/medicos/{medicoId}/horario/{horarioId}
         [HttpPut("horario/{horarioId:int}")]
         public async Task<IActionResult> AtualizarHorario(
             int medicoId,
@@ -204,7 +199,6 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        // GET /api/admin/medicos/{medicoId}/excecoes
         [HttpGet("excecoes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetExcecoes(int medicoId, [FromQuery] DateOnly? data, CancellationToken ct)
@@ -236,7 +230,6 @@ namespace ConsultaPlus.API.Controllers
         }
 
 
-        // DELETE /api/admin/medicos/{medicoId}/horario/{horarioId}
         [HttpDelete("horario/{horarioId:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -254,7 +247,6 @@ namespace ConsultaPlus.API.Controllers
             return NoContent();
         }
 
-        // GET /api/admin/medicos/{medicoId}/excecoes/{horarioId}
         [HttpGet("excecoes/{horarioId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -279,7 +271,6 @@ namespace ConsultaPlus.API.Controllers
                 : Ok(e);
         }
 
-        // PUT /api/admin/medicos/{medicoId}/excecoes/{horarioId}
         [HttpPut("excecoes/{horarioId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -324,7 +315,6 @@ namespace ConsultaPlus.API.Controllers
             return Ok(dto);
         }
 
-        // DELETE /api/admin/medicos/{medicoId}/excecoes/{horarioId}
         [HttpDelete("excecoes/{horarioId:int}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
