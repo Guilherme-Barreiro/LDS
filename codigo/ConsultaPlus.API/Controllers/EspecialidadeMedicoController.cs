@@ -2,6 +2,7 @@ using ConsultaPlus.API.DTOs;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ namespace ConsultaPlus.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     public class EspecialidadeMedicoController : ControllerBase
     {
         private readonly IEspecialidadeMedicoService _especialidadeMedicoService;

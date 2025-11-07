@@ -1,6 +1,7 @@
 ﻿using ConsultaPlus.API.DTOs.Sns;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -116,6 +117,7 @@ public class SnsPacientesController : ControllerBase
     };
 
     [HttpPost("importar/{nUtente}")]
+    [Authorize(Roles = "Paciente")]
     public async Task<IActionResult> ImportarParaPaciente(string nUtente, CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(nUtente))
