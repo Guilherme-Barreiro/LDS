@@ -5,192 +5,203 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace ConsultaPlus.Tests.Integracao.HorarioMedico;
-public class AdminHorariosControllerTests : IClassFixture<ApiFactory>
+namespace ConsultaPlus.Tests.Integracao.HorarioMedico
 {
-    private readonly ApiFactory _factory;
-    private readonly HttpClient _client;
-    public record HorarioVm(int Id, int MedicoId, string DiaSemana, string HoraInicio, string HoraFim);
-    public record ExcecaoVm(int Id, int MedicoId, string Data, string HoraInicio, string HoraFim, bool IsReducao, string? Motivo);
-
-
-    public AdminHorariosControllerTests(ApiFactory factory)
+    public class AdminHorariosControllerTests : IClassFixture<ApiFactory>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+        private readonly ApiFactory _factory;
+        private readonly HttpClient _client;
 
-    private async Task<int> GetMedicoIdAsync()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var id = await db.Medicos.Select(m => m.Id).FirstOrDefaultAsync();
-        if (id == 0)
+        public record HorarioVm(int Id, int MedicoId, string DiaSemana, string HoraInicio, string HoraFim);
+        public record ExcecaoVm(int Id, int MedicoId, string Data, string HoraInicio, string HoraFim, bool IsReducao, string? Motivo);
+
+        public AdminHorariosControllerTests(ApiFactory factory)
         {
-            db.Medicos.Add(new ConsultaPlus.Core.Models.Medico
+            _factory = factory;
+            _client = factory.CreateClient();
+        }
+
+        private async Task<int> GetMedicoIdAsync()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var id = await db.Medicos.Select(m => m.Id).FirstOrDefaultAsync();
+            if (id == 0)
             {
-                NomeCompleto = "Dr Teste",
-                Email = "dr@x.com",
+                db.Medicos.Add(new ConsultaPlus.Core.Models.Medico
+                {
+                    NomeCompleto = "Dr Teste",
+                    Email = $"{Guid.NewGuid():N}@x.com",
+                    Telemovel = "900000000",
+                    NUtente = Guid.NewGuid().ToString("N")[..9],
+                    PasswordHash = "x",
+                    DataNascimento = DateTime.UtcNow.AddYears(-40)
+                });
+                await db.SaveChangesAsync();
+                id = await db.Medicos.Select(m => m.Id).FirstAsync();
+            }
+            return id;
+        }
+
+        private async Task<int> CreateMedicoNovoAsync()
+        {
+            using var scope = _factory.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+            var m = new ConsultaPlus.Core.Models.Medico
+            {
+                NomeCompleto = "Dr Novo",
+                Email = $"{Guid.NewGuid():N}@x.com",
                 Telemovel = "900000000",
-                NUtente = Guid.NewGuid().ToString("N").Substring(0, 9),
+                NUtente = Guid.NewGuid().ToString("N")[..9],
                 PasswordHash = "x",
                 DataNascimento = DateTime.UtcNow.AddYears(-40)
-            });
+            };
+            db.Medicos.Add(m);
             await db.SaveChangesAsync();
-            id = await db.Medicos.Select(m => m.Id).FirstAsync();
-        }
-        return id;
-    }
-
-    [Fact]
-    public async Task Post_Horario_Sobreposicao_Devolve409()
-    {
-        var medicoId = await GetMedicoIdAsync();
-
-        await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/horario",
-            new { diaSemana = "Ter", horaInicio = "09:00:00", horaFim = "12:00:00" });
-
-        var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/horario",
-            new { diaSemana = "Ter", horaInicio = "11:00:00", horaFim = "13:00:00" });
-
-        Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
-    }
-
-    [Fact]
-    public async Task Get_Excecao_ById_200_E_404()
-    {
-        var medicoId = await GetMedicoIdAsync();
-
-        await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
-            new { data = "2025-10-30", horaInicio = "09:00:00", horaFim = "10:00:00", isReducao = true, motivo = "Teste" });
-
-        int excId;
-        using (var scope = _factory.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            excId = await db.HorariosExcecaoMedicos
-                .Where(e => e.MedicoId == medicoId && e.Data == new DateTime(2025, 10, 30))
-                .OrderByDescending(e => e.Id)
-                .Select(e => e.Id)
-                .FirstAsync();
+            return m.Id;
         }
 
-        var ok = await _client.GetAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}");
-        Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
-
-        var nf = await _client.GetAsync($"/api/admin/medicos/{medicoId + 1}/excecoes/{excId}");
-        Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
-    }
-
-    [Fact]
-    public async Task Post_Horario_HorasInvalidas_400()
-    {
-        var medicoId = await GetMedicoIdAsync();
-
-        var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/horario",
-            new { diaSemana = "Ter", horaInicio = "12:00:00", horaFim = "11:00:00" });
-
-        Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
-    }
-
-    [Fact]
-    public async Task Post_Excecao_HorasInvalidas_400()
-    {
-        var medicoId = await GetMedicoIdAsync();
-
-        var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
-            new { data = "2025-10-31", horaInicio = "10:00:00", horaFim = "09:00:00", isReducao = false });
-
-        Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
-    }
-
-    [Fact]
-    public async Task Put_Excecao_400_404_200()
-    {
-        var medicoId = await GetMedicoIdAsync();
-
-        await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
-            new { data = "2025-11-01", horaInicio = "09:00:00", horaFim = "10:00:00", isReducao = true, motivo = "Inicial" });
-
-        int excId;
-        using (var scope = _factory.Services.CreateScope())
+        [Fact]
+        public async Task Post_Horario_Sobreposicao_Devolve409()
         {
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            excId = await db.HorariosExcecaoMedicos
-                .Where(e => e.MedicoId == medicoId && e.Data == new DateTime(2025, 11, 1))
-                .Select(e => e.Id).FirstAsync();
+            var medicoId = await GetMedicoIdAsync();
+
+            await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/horario",
+                new { diaSemana = "Ter", horaInicio = "09:00:00", horaFim = "12:00:00" });
+
+            var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/horario",
+                new { diaSemana = "Ter", horaInicio = "11:00:00", horaFim = "13:00:00" });
+
+            Assert.Equal(HttpStatusCode.Conflict, resp.StatusCode);
         }
 
-        var bad = await _client.PutAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}",
-            new { data = "2025-11-01", horaInicio = "10:00:00", horaFim = "10:00:00", isReducao = true, motivo = "x" });
-        Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
-
-        var nf = await _client.PutAsJsonAsync($"/api/admin/medicos/{medicoId + 1}/excecoes/{excId}",
-            new { data = "2025-11-02", horaInicio = "08:30:00", horaFim = "09:30:00", isReducao = false, motivo = "y" });
-        Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
-
-        var ok = await _client.PutAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}",
-            new { data = "2025-11-02", horaInicio = "08:30:00", horaFim = "09:30:00", isReducao = false, motivo = "Atual" });
-        Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
-
-        var dto = await ok.Content.ReadFromJsonAsync<ExcecaoVm>();
-        Assert.NotNull(dto);
-        Assert.Equal("2025-11-02", dto!.Data);
-        Assert.False(dto.IsReducao);
-        Assert.Equal("Atual", dto.Motivo);
-    }
-
-    [Fact]
-    public async Task Delete_Excecao_204_EDepois_404()
-    {
-        var medicoId = await GetMedicoIdAsync();
-
-        await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
-            new { data = "2025-11-03", horaInicio = "14:00:00", horaFim = "15:00:00", isReducao = false });
-
-        int excId;
-        using (var scope = _factory.Services.CreateScope())
+        [Fact]
+        public async Task Post_Horario_HorasInvalidas_400()
         {
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            excId = await db.HorariosExcecaoMedicos
-                .Where(e => e.MedicoId == medicoId && e.Data == new DateTime(2025, 11, 3))
-                .Select(e => e.Id).FirstAsync();
+            var medicoId = await GetMedicoIdAsync();
+
+            var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/horario",
+                new { diaSemana = "Ter", horaInicio = "12:00:00", horaFim = "11:00:00" });
+
+            Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
         }
 
-        var del = await _client.DeleteAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}");
-        Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);
-
-        var again = await _client.DeleteAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}");
-        Assert.Equal(HttpStatusCode.NotFound, again.StatusCode);
-    }
-
-    [Fact]
-    public async Task Post_Horario_MedicoInexistente_404()
-    {
-        var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{int.MaxValue}/horario",
-            new { diaSemana = "Seg", horaInicio = "09:00:00", horaFim = "12:00:00" });
-
-        Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
-    }
-
-
-    private async Task<int> CreateMedicoNovoAsync()
-    {
-        using var scope = _factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-
-        var m = new ConsultaPlus.Core.Models.Medico
+        [Fact]
+        public async Task Post_Horario_MedicoInexistente_404()
         {
-            NomeCompleto = "Dr Novo",
-            Email = $"{Guid.NewGuid():N}@x.com",
-            Telemovel = "900000000",
-            NUtente = Guid.NewGuid().ToString("N").Substring(0, 9),
-            PasswordHash = "x",
-            DataNascimento = DateTime.UtcNow.AddYears(-40)
-        };
-        db.Medicos.Add(m);
-        await db.SaveChangesAsync();
-        return m.Id;
-    }
+            var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{int.MaxValue}/horario",
+                new { diaSemana = "Seg", horaInicio = "09:00:00", horaFim = "12:00:00" });
 
+            Assert.Equal(HttpStatusCode.NotFound, resp.StatusCode);
+        }
+
+        [Fact]
+        public async Task Post_Excecao_Sucesso_204()
+        {
+            var medicoId = await GetMedicoIdAsync();
+
+            var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
+                new { data = "2025-10-30", horaInicio = "09:00:00", horaFim = "10:00:00", isReducao = true, motivo = "Teste" });
+
+            Assert.Equal(HttpStatusCode.NoContent, resp.StatusCode);
+        }
+
+        [Fact]
+        public async Task Post_Excecao_HorasInvalidas_400()
+        {
+            var medicoId = await GetMedicoIdAsync();
+
+            var resp = await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
+                new { data = "2025-10-31", horaInicio = "10:00:00", horaFim = "09:00:00", isReducao = false });
+
+            Assert.Equal(HttpStatusCode.BadRequest, resp.StatusCode);
+        }
+
+        [Fact]
+        public async Task Get_Excecao_ById_200_E_404()
+        {
+            var medicoId = await GetMedicoIdAsync();
+
+            await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
+                new { data = "2025-10-30", horaInicio = "09:00:00", horaFim = "10:00:00", isReducao = true, motivo = "Teste" });
+
+            int excId;
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                excId = await db.HorariosExcecaoMedicos
+                    .Where(e => e.MedicoId == medicoId && e.Data == new DateTime(2025, 10, 30))
+                    .OrderByDescending(e => e.Id)
+                    .Select(e => e.Id)
+                    .FirstAsync();
+            }
+
+            var ok = await _client.GetAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}");
+            Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
+
+            var nf = await _client.GetAsync($"/api/admin/medicos/{medicoId + 1}/excecoes/{excId}");
+            Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
+        }
+
+        [Fact]
+        public async Task Put_Excecao_400_404_200()
+        {
+            var medicoId = await GetMedicoIdAsync();
+
+            await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
+                new { data = "2025-11-01", horaInicio = "09:00:00", horaFim = "10:00:00", isReducao = true, motivo = "Inicial" });
+
+            int excId;
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                excId = await db.HorariosExcecaoMedicos
+                    .Where(e => e.MedicoId == medicoId && e.Data == new DateTime(2025, 11, 1))
+                    .Select(e => e.Id).FirstAsync();
+            }
+
+            var bad = await _client.PutAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}",
+                new { data = "2025-11-01", horaInicio = "10:00:00", horaFim = "10:00:00", isReducao = true, motivo = "x" });
+            Assert.Equal(HttpStatusCode.BadRequest, bad.StatusCode);
+
+            var nf = await _client.PutAsJsonAsync($"/api/admin/medicos/{medicoId + 1}/excecoes/{excId}",
+                new { data = "2025-11-02", horaInicio = "08:30:00", horaFim = "09:30:00", isReducao = false, motivo = "y" });
+            Assert.Equal(HttpStatusCode.NotFound, nf.StatusCode);
+
+            var ok = await _client.PutAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}",
+                new { data = "2025-11-02", horaInicio = "08:30:00", horaFim = "09:30:00", isReducao = false, motivo = "Atual" });
+            Assert.Equal(HttpStatusCode.OK, ok.StatusCode);
+
+            var dto = await ok.Content.ReadFromJsonAsync<ExcecaoVm>();
+            Assert.NotNull(dto);
+            Assert.Equal("2025-11-02", dto!.Data);
+            Assert.False(dto.IsReducao);
+            Assert.Equal("Atual", dto.Motivo);
+        }
+
+        [Fact]
+        public async Task Delete_Excecao_204_EDepois_404()
+        {
+            var medicoId = await GetMedicoIdAsync();
+
+            await _client.PostAsJsonAsync($"/api/admin/medicos/{medicoId}/excecoes",
+                new { data = "2025-11-03", horaInicio = "14:00:00", horaFim = "15:00:00", isReducao = false });
+
+            int excId;
+            using (var scope = _factory.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                excId = await db.HorariosExcecaoMedicos
+                    .Where(e => e.MedicoId == medicoId && e.Data == new DateTime(2025, 11, 3))
+                    .Select(e => e.Id).FirstAsync();
+            }
+
+            var del = await _client.DeleteAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}");
+            Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);
+
+            var again = await _client.DeleteAsync($"/api/admin/medicos/{medicoId}/excecoes/{excId}");
+            Assert.Equal(HttpStatusCode.NotFound, again.StatusCode);
+        }
+    }
 }
