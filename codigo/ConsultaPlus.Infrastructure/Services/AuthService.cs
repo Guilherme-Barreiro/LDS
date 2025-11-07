@@ -14,24 +14,33 @@ namespace ConsultaPlus.Infrastructure.Services
     {
         private readonly IPacienteRepository _pacientes;
         private readonly IMedicoRepository _medicos;
+        private readonly IAdminRepository _admins;   
         private readonly IConfiguration _configuration;
         private readonly ITokenBlacklist _blacklist;
 
-        public AuthService(IPacienteRepository pacienteRepository,
-                           IMedicoRepository medicoRepository,
-                           ITokenBlacklist blacklist,
-                           IConfiguration configuration)
+        public AuthService(
+            IPacienteRepository pacienteRepository,
+            IMedicoRepository medicoRepository,
+            ITokenBlacklist blacklist,
+            IConfiguration configuration,
+            IAdminRepository adminRepository)          
         {
             _pacientes = pacienteRepository;
             _medicos = medicoRepository;
             _blacklist = blacklist;
             _configuration = configuration;
+            _admins = adminRepository;                 
         }
 
         public async Task<string> LoginAsync(string nUtente, string password)
         {
-            if (IsAdminCredentials(nUtente, password))
-                return GenerateJwtToken(-1, "admin@local", "Admin");
+            var admin = await _admins.GetByUsernameAsync(nUtente);
+            if (admin != null)
+            {
+                if (!BCrypt.Net.BCrypt.Verify(password, admin.PasswordHash))
+                    throw new Exception("Credenciais inválidas.");
+                return GenerateJwtToken(admin.Id, admin.Email, "Admin");
+            }
 
             var paciente = await _pacientes.GetByNUtenteAsync(nUtente);
             if (paciente != null)
@@ -49,15 +58,7 @@ namespace ConsultaPlus.Infrastructure.Services
                 return GenerateJwtToken(medico.Id, medico.Email, "Medico");
             }
 
-            throw new Exception("Número de utente ou password inválidos.");
-        }
-
-        private bool IsAdminCredentials(string nUtente, string password)
-        {
-            var cfgUser = _configuration["AdminLogin:User"] ?? "admin";
-            var cfgPass = _configuration["AdminLogin:Password"] ?? "admin";
-            return string.Equals(nUtente, cfgUser, StringComparison.Ordinal)
-                && string.Equals(password, cfgPass, StringComparison.Ordinal);
+            throw new Exception("Credenciais inválidas.");
         }
 
         private string GenerateJwtToken(int userId, string? email, string role)
@@ -74,7 +75,7 @@ namespace ConsultaPlus.Infrastructure.Services
                 new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
             };
 
-            var tokenDescriptor = new SecurityTokenDescriptor
+            var token = tokenHandler.CreateToken(new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddHours(8),
@@ -83,9 +84,8 @@ namespace ConsultaPlus.Infrastructure.Services
                 SigningCredentials = new SigningCredentials(
                     new SymmetricSecurityKey(key),
                     SecurityAlgorithms.HmacSha256Signature)
-            };
+            });
 
-            var token = tokenHandler.CreateToken(tokenDescriptor);
             return tokenHandler.WriteToken(token);
         }
 
@@ -95,10 +95,7 @@ namespace ConsultaPlus.Infrastructure.Services
             var raw = jwt.Replace("Bearer ", "", StringComparison.OrdinalIgnoreCase);
             var token = handler.ReadJwtToken(raw);
 
-            var jti = token.Id;
-            var exp = token.ValidTo;
-
-            _blacklist.Add(jti, exp);
+            _blacklist.Add(token.Id, token.ValidTo);
             return Task.CompletedTask;
         }
 

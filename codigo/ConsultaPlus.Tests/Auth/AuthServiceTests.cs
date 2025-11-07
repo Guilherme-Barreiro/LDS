@@ -20,6 +20,7 @@ namespace ConsultaPlus.Tests.Auth
         private readonly Mock<IPacienteRepository> _pacientes = new();
         private readonly Mock<IMedicoRepository> _medicos = new();
         private readonly Mock<ITokenBlacklist> _blacklist = new();
+        private readonly Mock<IAdminRepository> _admins = new();         
         private readonly IConfiguration _cfg;
 
         public AuthServiceTests()
@@ -29,15 +30,12 @@ namespace ConsultaPlus.Tests.Auth
                 {
                     ["JwtSettings:Secret"] = "TEST_SECRET_123456789012345678901234567890",
                     ["JwtSettings:Issuer"] = "TestIssuer",
-                    ["JwtSettings:Audience"] = "TestAudience",
-                    ["AdminLogin:User"] = "admin",
-                    ["AdminLogin:Password"] = "admin"
+                    ["JwtSettings:Audience"] = "TestAudience"
                 })
                 .Build();
         }
-
         private AuthService CreateSut() =>
-            new AuthService(_pacientes.Object, _medicos.Object, _blacklist.Object, _cfg);
+            new AuthService(_pacientes.Object, _medicos.Object, _blacklist.Object, _cfg, _admins.Object);
         private static bool HasRoleClaim(JwtSecurityToken t, string role) =>
             t.Claims.Any(c =>
                 (c.Type == "role" || c.Type == ClaimTypes.Role) &&
@@ -49,16 +47,28 @@ namespace ConsultaPlus.Tests.Auth
                 string.Equals(c.Value, sub, StringComparison.Ordinal));
 
         [Fact]
-        public async Task Login_Admin_By_Config_Works()
+        public async Task Login_Admin_From_Db_Works()
         {
-            var sut = CreateSut();
+            var hash = BCrypt.Net.BCrypt.HashPassword("admin");
+            _admins.Setup(r => r.GetByUsernameAsync("admin"))
+                   .ReturnsAsync(new Admin
+                   {
+                       Id = 1,
+                       Username = "admin",
+                       Email = "admin@local",
+                       PasswordHash = hash
+                   });
 
+            var sut = CreateSut();
+            
             var jwt = await sut.LoginAsync("admin", "admin");
 
             Assert.False(string.IsNullOrWhiteSpace(jwt));
             var token = new JwtSecurityTokenHandler().ReadJwtToken(jwt);
             Assert.True(HasRoleClaim(token, "Admin"));
+            Assert.True(HasSub(token, "1"));
         }
+
 
         [Fact]
         public async Task Login_Paciente_By_NUtente_Works()

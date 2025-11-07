@@ -28,7 +28,6 @@ namespace ConsultaPlus.Tests.SNS
             var dbMock = new Mock<ApplicationDbContext>(new DbContextOptions<ApplicationDbContext>());
             dbMock.Setup(x => x.SnsPacientes).ReturnsDbSet(snsSeed);
             dbMock.Setup(x => x.Pacientes).ReturnsDbSet(pacSeed);
-            // SaveChangesAsync default
             dbMock.Setup(d => d.SaveChangesAsync(It.IsAny<CancellationToken>())).ReturnsAsync(1);
             return dbMock;
         }

@@ -16,9 +16,6 @@ public class TestAuthHandler : AuthenticationHandler<AuthenticationSchemeOptions
 
     protected override Task<AuthenticateResult> HandleAuthenticateAsync()
     {
-        // Utilizador “fake” com vários roles para cobrir os endpoints:
-        // - Medico ou Admin para /medico/...
-        // - Paciente ou Admin para /paciente/...
         var claims = new[]
         {
             new Claim(ClaimTypes.NameIdentifier, "test-user"),

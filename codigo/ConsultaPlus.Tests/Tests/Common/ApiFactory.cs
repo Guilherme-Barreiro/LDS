@@ -18,7 +18,6 @@ public class ApiFactory : WebApplicationFactory<Program>
 
         builder.ConfigureServices(services =>
         {
-            // --- DB in-memory SQLite (como já tinhas) ---
             services.RemoveAll(typeof(DbContextOptions<ApplicationDbContext>));
             services.RemoveAll<ApplicationDbContext>();
             services.RemoveAll(typeof(IDbContextFactory<ApplicationDbContext>));
@@ -32,7 +31,6 @@ public class ApiFactory : WebApplicationFactory<Program>
                 opt.ConfigureWarnings(w => w.Ignore(RelationalEventId.PendingModelChangesWarning));
             });
 
-            // --- Auth de testes ---
             services.AddAuthentication(o =>
             {
                 o.DefaultAuthenticateScheme = TestAuthHandler.Scheme;
@@ -40,9 +38,8 @@ public class ApiFactory : WebApplicationFactory<Program>
             })
             .AddScheme<AuthenticationSchemeOptions, TestAuthHandler>(TestAuthHandler.Scheme, _ => { });
 
-            services.AddAuthorization(); // usa as roles dos claims do TestAuthHandler
+            services.AddAuthorization(); 
 
-            // build + seed inicial opcional fica a cargo dos testes
             var sp = services.BuildServiceProvider();
             using var scope = sp.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();

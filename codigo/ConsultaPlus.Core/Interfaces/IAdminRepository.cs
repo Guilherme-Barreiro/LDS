@@ -7,5 +7,6 @@ namespace ConsultaPlus.Core.Interfaces
     {
         Task<Admin?> GetByUsernameAsync(string username);
         Task AddAsync(Admin admin);
+        Task<bool> AnyAsync();
     }
 }
