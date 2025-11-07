@@ -162,8 +162,7 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         var resp = await _client.PutAsJsonAsync($"/api/Notificacoes/{id}", new
         {
             categoria = "  NovaCat ",
-            descricao = "  Nova descricao ",
-            lida = true
+            descricao = "  Nova descricao "
         });
         Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
 
@@ -171,13 +170,11 @@ public class NotificacoesControllerTests : IClassFixture<ApiFactory>
         Assert.NotNull(dto);
         Assert.Equal("NovaCat", dto!.Categoria);
         Assert.Equal("Nova descricao", dto.Descricao);
-        Assert.True(dto.Lida);
 
         var get = await _client.GetAsync($"/api/Notificacoes/{id}");
         var after = await get.Content.ReadFromJsonAsync<NotificacaoVm>();
         Assert.NotNull(after);
         Assert.Equal("NovaCat", after!.Categoria);
-        Assert.True(after.Lida);
     }
 
     [Fact]

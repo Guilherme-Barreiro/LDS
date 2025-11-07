@@ -68,16 +68,14 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             return new Ids(pac.Id, med.Id, sala.Id, esp.Id);
         }
 
-        private async Task<ConsultaResponseDto> PostConsultaAsync(Ids ids, DateTime inicioUtc, int duracaoMin)
+        private async Task<ConsultaResponseDto> PostConsultaAsync(Ids ids, DateTime inicioUtc)
         {
             var body = new
             {
                 pacienteId = ids.PacienteId,
                 medicoId = ids.MedicoId,
-                salaId = ids.SalaId,
                 especialidadeId = ids.EspecialidadeId,
-                dataConsulta = inicioUtc,
-                duracao = duracaoMin
+                dataConsulta = inicioUtc
             };
 
             var resp = await _client.PostAsJsonAsync("/api/Consultas", body);
@@ -92,9 +90,38 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         public async Task Post__201_ComBody_EstadoConfirmada()
         {
             var ids = await SeedBaseAsync();
-            var inicio = new DateTime(2025, 11, 04, 10, 0, 0, DateTimeKind.Utc);
+            var inicio = new DateTime(2025, 12, 04, 10, 0, 0, DateTimeKind.Utc);
 
-            var created = await PostConsultaAsync(ids, inicio, 30);
+            var body = new
+            {
+                pacienteId = ids.PacienteId,
+                medicoId = ids.MedicoId,
+                especialidadeId = ids.EspecialidadeId,
+                dataConsulta = inicio
+            };
+
+            var resp = await _client.PostAsJsonAsync("/api/Consultas", body);
+
+            // DEBUG: Capture a mensagem de erro se não for Created
+            if (resp.StatusCode != HttpStatusCode.Created)
+            {
+                var errorContent = await resp.Content.ReadAsStringAsync();
+                throw new Exception($"Expected Created, but got {resp.StatusCode}. Error: {errorContent}");
+            }
+
+            var dto = await resp.Content.ReadFromJsonAsync<ConsultaResponseDto>();
+            Assert.NotNull(dto);
+
+            Assert.True(dto.Id > 0);
+            Assert.Equal(ids.PacienteId, dto.PacienteId);
+            Assert.Equal(ids.MedicoId, dto.MedicoId);
+            Assert.Equal(ids.SalaId, dto.SalaId);
+            Assert.Equal(ids.EspecialidadeId, dto.EspecialidadeId);
+            Assert.Equal(inicio, dto.DataConsulta);
+            Assert.Equal(30, dto.Duracao);
+            Assert.Equal("Confirmada", dto.Estado);
+
+            /*var created = await PostConsultaAsync(ids, inicio);
 
             Assert.True(created.Id > 0);
             Assert.Equal(ids.PacienteId, created.PacienteId);
@@ -103,14 +130,14 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
             Assert.Equal(ids.EspecialidadeId, created.EspecialidadeId);
             Assert.Equal(inicio, created.DataConsulta);
             Assert.Equal(30, created.Duracao);
-            Assert.Equal("Confirmada", created.Estado);  
+            Assert.Equal("Confirmada", created.Estado);*/  
         }
 
         [Fact]
         public async Task GetById__200_AposCriar()
         {
             var ids = await SeedBaseAsync();
-            var created = await PostConsultaAsync(ids, DateTime.UtcNow, 20);
+            var created = await PostConsultaAsync(ids, DateTime.UtcNow);
 
             var resp = await _client.GetAsync($"/api/Consultas/{created.Id}");
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -124,8 +151,8 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         public async Task GetAll__200_ContemRegistos()
         {
             var ids = await SeedBaseAsync();
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1), 30);
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(2), 30);
+            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
+            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(2));
 
             var resp = await _client.GetAsync("/api/Consultas");
             Assert.Equal(HttpStatusCode.OK, resp.StatusCode);
@@ -140,7 +167,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         {
             var ids = await SeedBaseAsync();
 
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1), 30);
+            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
 
             using (var scope = _factory.Services.CreateScope())
             {
@@ -183,8 +210,8 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         {
             var ids = await SeedBaseAsync();
 
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1), 30);
-            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(2), 30);
+            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
+            await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(2));
 
             using (var scope = _factory.Services.CreateScope())
             {
@@ -226,7 +253,7 @@ namespace ConsultaPlus.Tests.Integracao.Consultas
         public async Task Delete__204_E_AposIsso_GetById_404()
         {
             var ids = await SeedBaseAsync();
-            var created = await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1), 30);
+            var created = await PostConsultaAsync(ids, DateTime.UtcNow.AddHours(1));
 
             var del = await _client.DeleteAsync($"/api/Consultas/{created.Id}");
             Assert.Equal(HttpStatusCode.NoContent, del.StatusCode);

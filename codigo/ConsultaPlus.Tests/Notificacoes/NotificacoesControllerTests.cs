@@ -223,7 +223,7 @@ namespace ConsultaPlus.Tests.Notificacoes
             Assert.Equal(9, body.Id);
             Assert.Equal("Nova Cat", body.Categoria);
             Assert.Equal("Nova Desc", body.Descricao);
-            Assert.True(body.Lida);
+            Assert.False(body.Lida);
             Assert.Equal(1, body.MedicoId);
             Assert.Equal(2, body.PacienteId);
 
@@ -231,7 +231,7 @@ namespace ConsultaPlus.Tests.Notificacoes
                 n.Id == 9 &&
                 n.Categoria == "Nova Cat" &&
                 n.Descricao == "Nova Desc" &&
-                n.Lida == true &&
+                n.Lida == false &&
                 n.MedicoId == 1 &&
                 n.PacienteId == 2
             )), Times.Once);

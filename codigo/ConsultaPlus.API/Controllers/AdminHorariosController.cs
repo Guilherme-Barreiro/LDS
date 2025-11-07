@@ -207,27 +207,32 @@ namespace ConsultaPlus.API.Controllers
         // GET /api/admin/medicos/{medicoId}/excecoes
         [HttpGet("excecoes")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetExcecoes(
-            int medicoId,
-            CancellationToken ct)
+        public async Task<IActionResult> GetExcecoes(int medicoId, [FromQuery] DateOnly? data, CancellationToken ct)
         {
-            var lista = await _db.HorariosExcecaoMedicos
-                .Where(e => e.MedicoId == medicoId)
-                .OrderBy(e => e.Data)
-                .ThenBy(e => e.HoraInicio)
-                .Select(e => new ExcecaoDto
+            var query = _db.HorariosExcecaoMedicos
+                .Where(x => x.MedicoId == medicoId);
+
+            if (data.HasValue)
+            {
+                query = query.Where(x => DateOnly.FromDateTime(x.Data) == data.Value);
+            }
+
+            var excecoes = await query
+                .OrderBy(x => x.Data)
+                .ThenBy(x => x.HoraInicio)
+                .Select(x => new ExcecaoDto
                 {
-                    Id = e.Id,
-                    MedicoId = e.MedicoId,
-                    Data = DateOnly.FromDateTime(e.Data),
-                    HoraInicio = e.HoraInicio,
-                    HoraFim = e.HoraFim,
-                    IsReducao = e.IsReducao,
-                    Motivo = e.Motivo
+                    Id = x.Id,
+                    MedicoId = x.MedicoId,
+                    Data = DateOnly.FromDateTime(x.Data),
+                    HoraInicio = x.HoraInicio,
+                    HoraFim = x.HoraFim,
+                    IsReducao = x.IsReducao,
+                    Motivo = x.Motivo
                 })
                 .ToListAsync(ct);
 
-            return Ok(lista);
+            return Ok(excecoes);
         }
 
 

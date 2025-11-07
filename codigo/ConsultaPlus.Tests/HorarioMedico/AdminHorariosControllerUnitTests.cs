@@ -140,7 +140,7 @@ namespace ConsultaPlus.Tests.HorarioMedico
 
 
             var sut = SUT(db);
-            var result = await sut.GetExcecoes(5, CancellationToken.None);
+            var result = await sut.GetExcecoes(5,default, CancellationToken.None);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var list = Assert.IsAssignableFrom<List<ExcecaoDto>>(ok.Value);
@@ -160,7 +160,8 @@ namespace ConsultaPlus.Tests.HorarioMedico
             await db.SaveChangesAsync();
 
             var sut = SUT(db);
-            var result = await sut.GetExcecoes(5, CancellationToken.None);
+            var dataFiltro = new DateOnly(2025, 10, 27);
+            var result = await sut.GetExcecoes(5, dataFiltro, CancellationToken.None);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var list = Assert.IsAssignableFrom<List<ExcecaoDto>>(ok.Value);

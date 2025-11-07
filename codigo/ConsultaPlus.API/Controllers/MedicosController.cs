@@ -75,10 +75,10 @@ namespace ConsultaPlus.API.Controllers
                 DataNascimento = dto.DataNascimento
             };
 
-            await _svc.CreateAsync(medico);
+            var createdMedico = await _svc.CreateAsync(medico);
 
-            var res = ToResponse(medico);
-            return CreatedAtAction(nameof(GetById), new { id = medico.Id }, res);
+            var res = ToResponse(createdMedico);
+            return CreatedAtAction(nameof(GetById), new { id = createdMedico.Id }, res);
         }
 
         // PUT /api/Medicos/{id}

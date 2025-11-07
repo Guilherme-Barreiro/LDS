@@ -1,15 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
-using Moq;
-using Xunit;
-
-using ConsultaPlus.API.Controllers;
+﻿using ConsultaPlus.API.Controllers;
 using ConsultaPlus.API.DTOs.Consultas;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
+using ConsultaPlus.Infrastructure.Data;
+using ConsultaPlus.Tests.Helper;
+using Microsoft.AspNetCore.Mvc;
+using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace ConsultaPlus.Tests.Consultas
 {
@@ -17,11 +18,13 @@ namespace ConsultaPlus.Tests.Consultas
     {
         private readonly Mock<IConsultaService> _svc;
         private readonly ConsultasController _controller;
+        private readonly ApplicationDbContext _dbContext;
 
         public ConsultasControllerTests()
         {
             _svc = new Mock<IConsultaService>(MockBehavior.Strict);
-            _controller = new ConsultasController(_svc.Object);
+            _dbContext = TestDb.Create();
+            _controller = new ConsultasController(_svc.Object,_dbContext);
         }
 
         [Fact]
@@ -167,7 +170,6 @@ namespace ConsultaPlus.Tests.Consultas
             {
                 PacienteId = 10,
                 MedicoId = 100,
-                SalaId = 1000,
                 EspecialidadeId = 200,
                 DataConsulta = dt,
             };
@@ -205,9 +207,11 @@ namespace ConsultaPlus.Tests.Consultas
             _svc.Verify(r => r.CreateAsync(It.Is<Consulta>(c =>
                 c.PacienteId == 10 &&
                 c.MedicoId == 100 &&
-                c.SalaId == 1000 &&
                 c.EspecialidadeId == 200 &&
-                c.DataConsulta == dt 
+                c.DataConsulta == dt &&
+                c.SalaId == 0 && 
+                c.Duracao == 0 && 
+                c.Estado == null
             ), It.IsAny<CancellationToken>()), Times.Once);
         }
 

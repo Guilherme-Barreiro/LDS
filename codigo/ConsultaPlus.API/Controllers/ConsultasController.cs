@@ -1,9 +1,11 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using ConsultaPlus.API.DTOs.Consultas;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
-using ConsultaPlus.API.DTOs.Consultas;
+using ConsultaPlus.Infrastructure.Data;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace ConsultaPlus.API.Controllers
 {
@@ -12,10 +14,12 @@ namespace ConsultaPlus.API.Controllers
     public class ConsultasController : ControllerBase
     {
         private readonly IConsultaService _service;
+        private readonly ApplicationDbContext _context;
 
-        public ConsultasController(IConsultaService service)
+        public ConsultasController(IConsultaService service, ApplicationDbContext context)
         {
             _service = service;
+            _context = context;
         }
 
         [HttpGet]
@@ -55,16 +59,26 @@ namespace ConsultaPlus.API.Controllers
         {
             try
             {
+                var salaId = await _context.Salas
+                .Select(s => s.Id)
+                .FirstOrDefaultAsync();
+
+                if (salaId == 0)
+                    return BadRequest(new { message = "Nenhuma sala disponível para associar à consulta." });
+
                 var nova = new Consulta
                 {
                     PacienteId = dto.PacienteId,
                     MedicoId = dto.MedicoId,
                     EspecialidadeId = dto.EspecialidadeId,
-                    DataConsulta = dto.DataConsulta
+                    SalaId = salaId,
+                    DataConsulta = dto.DataConsulta,
+                    Duracao = 30,
+                    Estado = "Confirmada"
                 };
 
                 var c = await _service.CreateAsync(nova);
-                return StatusCode(201, ToResponse(c));
+                return CreatedAtAction(nameof(GetById), new { id = c.Id }, ToResponse(c));
             }
             catch (ArgumentException ex)
             {
