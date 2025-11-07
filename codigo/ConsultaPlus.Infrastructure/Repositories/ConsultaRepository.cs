@@ -48,5 +48,27 @@ namespace ConsultaPlus.Infrastructure.Repositories
 
             return await q.OrderBy(c => c.DataConsulta).ToListAsync(ct);
         }
+
+        public async Task<IEnumerable<Consulta>> GetByMedicoIdAsync(int medicoId, CancellationToken ct = default)
+        {
+            return await _context.Consultas
+                .Include(c => c.Paciente)
+                .Include(c => c.Especialidade)
+                .Include(c => c.Sala)
+                .Where(c => c.MedicoId == medicoId)
+                .OrderByDescending(c => c.DataConsulta)
+                .ToListAsync(ct);
+        }
+
+        public async Task<IEnumerable<Consulta>> GetByPacienteIdAsync(int pacienteId, CancellationToken ct = default)
+        {
+            return await _context.Consultas
+                .Include(c => c.Medico)
+                .Include(c => c.Especialidade)
+                .Include(c => c.Sala)
+                .Where(c => c.PacienteId == pacienteId)
+                .OrderByDescending(c => c.DataConsulta)
+                .ToListAsync(ct);
+        }
     }
 }

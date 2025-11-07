@@ -3,6 +3,7 @@ using ConsultaPlus.API.DTOs;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
 using ConsultaPlus.Infrastructure.Data;
+using ConsultaPlus.Tests.Helper;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using System;
@@ -137,8 +138,9 @@ namespace ConsultaPlus.Tests.HorarioMedico
             );
             await db.SaveChangesAsync();
 
+
             var sut = SUT(db);
-            var result = await sut.GetExcecoes(5, data: null, CancellationToken.None);
+            var result = await sut.GetExcecoes(5, CancellationToken.None);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var list = Assert.IsAssignableFrom<List<ExcecaoDto>>(ok.Value);
@@ -158,7 +160,7 @@ namespace ConsultaPlus.Tests.HorarioMedico
             await db.SaveChangesAsync();
 
             var sut = SUT(db);
-            var result = await sut.GetExcecoes(5, new DateOnly(2025, 10, 27), CancellationToken.None);
+            var result = await sut.GetExcecoes(5, CancellationToken.None);
 
             var ok = Assert.IsType<OkObjectResult>(result);
             var list = Assert.IsAssignableFrom<List<ExcecaoDto>>(ok.Value);

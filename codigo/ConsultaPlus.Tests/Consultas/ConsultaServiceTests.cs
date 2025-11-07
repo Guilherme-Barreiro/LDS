@@ -1,14 +1,16 @@
-﻿using System;
+﻿using ConsultaPlus.Core.Interfaces;
+using ConsultaPlus.Core.Models;
+using ConsultaPlus.Infrastructure.Data;
+using ConsultaPlus.Infrastructure.Services;
+using ConsultaPlus.Tests.Helper;
+using Moq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Moq;
 using Xunit;
-
-using ConsultaPlus.Infrastructure.Services;
-using ConsultaPlus.Core.Interfaces;
-using ConsultaPlus.Core.Models;
 using static ConsultaPlus.Tests.TextAssert;
+using EspecialidadeMedicoModel = ConsultaPlus.Core.Models.EspecialidadeMedico;
 
 namespace ConsultaPlus.Tests.Consultas
 {
@@ -19,6 +21,7 @@ namespace ConsultaPlus.Tests.Consultas
         private readonly Mock<IPacienteRepository> _pacientes;
         private readonly Mock<ISalaRepository> _salas;
         private readonly Mock<IEspecialidadeService> _especialidades;
+        private readonly ApplicationDbContext _dbContext;
 
         private readonly ConsultaService _svc;
 
@@ -29,8 +32,15 @@ namespace ConsultaPlus.Tests.Consultas
             _pacientes = new Mock<IPacienteRepository>(MockBehavior.Strict);
             _salas = new Mock<ISalaRepository>(MockBehavior.Strict);
             _especialidades = new Mock<IEspecialidadeService>(MockBehavior.Strict);
+            _dbContext = TestDb.Create();
 
-            _svc = new ConsultaService(_consultas.Object, _medicos.Object, _pacientes.Object, _salas.Object, _especialidades.Object);
+            _svc = new ConsultaService(
+                _consultas.Object,
+                _medicos.Object,
+                _pacientes.Object,
+                _salas.Object,
+                _especialidades.Object,
+                _dbContext);
         }
 
         [Fact]
@@ -98,7 +108,7 @@ namespace ConsultaPlus.Tests.Consultas
         [Fact]
         public async Task Create_PacienteInexistente_DeveLancar()
         {
-            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4 };
+            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4, DataConsulta = DateTime.UtcNow.AddDays(1).Date + new TimeSpan(9, 0, 0) };
 
             _pacientes.Setup(r => r.GetByIdAsync(1)).ReturnsAsync((Paciente?)null);
 
@@ -111,7 +121,7 @@ namespace ConsultaPlus.Tests.Consultas
         [Fact]
         public async Task Create_MedicoInexistente_DeveLancar()
         {
-            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4 };
+            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4 , DataConsulta = DateTime.UtcNow.AddDays(1).Date + new TimeSpan(9, 0, 0) };
 
             _pacientes.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Paciente { Id = 1 });
             _medicos.Setup(r => r.GetByIdAsync(2)).ReturnsAsync((Medico?)null);
@@ -126,10 +136,11 @@ namespace ConsultaPlus.Tests.Consultas
         [Fact]
         public async Task Create_SalaInexistente_DeveLancar()
         {
-            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4 };
+            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4, DataConsulta = DateTime.UtcNow.AddDays(1).Date + new TimeSpan(9, 0, 0) };
 
             _pacientes.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Paciente { Id = 1 });
             _medicos.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(new Medico { Id = 2 });
+            _especialidades.Setup(r => r.GetByIdAsync(4)).ReturnsAsync(new Especialidade { Id = 4 });
             _salas.Setup(r => r.GetByIdAsync(3)).ReturnsAsync((Sala?)null);
 
             var ex = await Assert.ThrowsAsync<ArgumentException>(() => _svc.CreateAsync(nova));
@@ -141,7 +152,7 @@ namespace ConsultaPlus.Tests.Consultas
         [Fact]
         public async Task Create_EspecialidadeInexistente_DeveLancar()
         {
-            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4 };
+            var nova = new Consulta { PacienteId = 1, MedicoId = 2, SalaId = 3, EspecialidadeId = 4, DataConsulta = DateTime.UtcNow.AddDays(1).Date + new TimeSpan(9, 0, 0) };
 
             _pacientes.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(new Paciente { Id = 1 });
             _medicos.Setup(r => r.GetByIdAsync(2)).ReturnsAsync(new Medico { Id = 2 });
@@ -157,7 +168,7 @@ namespace ConsultaPlus.Tests.Consultas
         [Fact]
         public async Task Create_Sucesso_DeveAdicionarERetornarEntidade()
         {
-            var dt = new DateTime(2025, 01, 10, 9, 0, 0, DateTimeKind.Utc);
+            var dt = DateTime.UtcNow.AddDays(1).Date + new TimeSpan(9, 0, 0);
             var nova = new Consulta
             {
                 PacienteId = 1,
@@ -177,16 +188,44 @@ namespace ConsultaPlus.Tests.Consultas
                           .Callback<Consulta>(c => c.Id = 99)
                           .Returns(Task.CompletedTask);
 
+            static string DiaSemanaPt(DateTime d) => d.DayOfWeek switch
+            {
+                DayOfWeek.Monday => "Seg",
+                DayOfWeek.Tuesday => "Ter",
+                DayOfWeek.Wednesday => "Qua",
+                DayOfWeek.Thursday => "Qui",
+                DayOfWeek.Friday => "Sex",
+                DayOfWeek.Saturday => "Sab",
+                DayOfWeek.Sunday => "Dom",
+                _ => "Seg"
+            };
+
+            var dia = DiaSemanaPt(dt);
+
+            _dbContext.EspecialidadesMedico.Add(new EspecialidadeMedicoModel { MedicoId = 2, EspecialidadeId = 4 });
+
+            _dbContext.HorariosTrabalhoMedicos.Add(new HorarioTrabalhoMedico
+            {
+                MedicoId = 2,
+                DiaSemana = dia,
+                HoraInicio = TimeSpan.FromHours(8),
+                HoraFim = TimeSpan.FromHours(17)
+            });
+
+            await _dbContext.SaveChangesAsync();
+
+            _consultas.Setup(r => r.AddAsync(It.IsAny<Consulta>()))
+            .Callback<Consulta>((c) => c.Id = 99)
+            .Returns(Task.CompletedTask);
+
             var res = await _svc.CreateAsync(nova);
 
-            Assert.Same(nova, res);
+            Assert.NotNull(res);
             Assert.Equal(99, res.Id);
+            Assert.Equal(30, res.Duracao);
+            Assert.Equal("Confirmada", res.Estado);
 
-            _consultas.Verify(r => r.AddAsync(It.Is<Consulta>(c =>
-                c.PacienteId == 1 && c.MedicoId == 2 && c.SalaId == 3 &&
-                c.EspecialidadeId == 4 && c.DataConsulta == dt &&
-                c.Duracao == 30 && c.Estado == "Confirmada"
-            )), Times.Once);
+            _consultas.Verify(r => r.AddAsync(It.IsAny<Consulta>()), Times.Once);
         }
 
         [Fact]

@@ -2,9 +2,9 @@
 using Microsoft.EntityFrameworkCore;
 using ConsultaPlus.Infrastructure.Data;
 
-namespace ConsultaPlus.Tests.HorarioMedico
+namespace ConsultaPlus.Tests.Helper
 {
-    internal static class TestDb
+    public static class TestDb
     {
         public static ApplicationDbContext Create()
         {
