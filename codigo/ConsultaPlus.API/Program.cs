@@ -34,6 +34,7 @@ builder.Services.AddScoped<IEspecialidadeMedicoRepository, EspecialidadeMedicoRe
 builder.Services.AddScoped<INotificacaoRepository, NotificacaoRepository>();
 builder.Services.AddScoped<ISnsPacienteRepository, SnsPacienteRepository>();
 builder.Services.AddScoped<IRelatorioRepository, RelatorioRepository>();
+builder.Services.AddScoped<IAdminRepository, AdminRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IHorarioTrabalhoMedico, HorarioTrabalhoMedicoService>();
@@ -102,6 +103,14 @@ builder.Services.AddAuthentication(options =>
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.Migrate();                    // aplica todas as migrations
+    await DbSeeder.SeedAdminAsync(db);        // cria admin "admin/admin" se não existir
+}
+
 
 if (app.Environment.IsDevelopment())
 {

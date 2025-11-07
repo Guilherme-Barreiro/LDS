@@ -1,6 +1,7 @@
 ﻿using ConsultaPlus.API.DTOs;
 using ConsultaPlus.Core.Interfaces;
 using ConsultaPlus.Core.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Threading.Tasks;
@@ -18,34 +19,6 @@ namespace ConsultaPlus.API.Controllers
             _authService = authService;
         }
 
-        [HttpPost("registo-paciente")]
-        public async Task<IActionResult> Register(RegisterPacienteDto requestDto)
-        {
-            try
-            {
-                // Mapeamento de DTO para o Modelo de Domínio
-                var novoPaciente = new Paciente
-                {
-                    NomeCompleto = requestDto.NomeCompleto,
-                    NUtente = requestDto.NUtente,
-                    Email = requestDto.Email,
-                    Nif = requestDto.Nif,
-                    Telemovel = requestDto.Telemovel,
-                    Morada = requestDto.Morada,
-                    DataNascimento = requestDto.DataNascimento
-                };
-
-                // Chama o serviço para executar 
-                await _authService.RegisterPacienteAsync(novoPaciente, requestDto.Password);
-
-                return StatusCode(201, new { message = "Paciente registado com sucesso." });
-            }
-            catch (Exception ex)
-            {
-                // Retorna um erro 400 com a mensagem de erro
-                return BadRequest(new { message = ex.Message });
-            }
-        }
 
         [HttpPost("login")]
         public async Task<IActionResult> Login(LoginDto loginDto)
@@ -64,5 +37,7 @@ namespace ConsultaPlus.API.Controllers
                 return Unauthorized(new { message = ex.Message });
             }
         }
+
+
     }
 }

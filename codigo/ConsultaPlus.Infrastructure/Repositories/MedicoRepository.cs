@@ -33,5 +33,7 @@ namespace ConsultaPlus.Infrastructure.Repositories
                 .AsNoTracking()
                 .AnyAsync(m => m.Id == medicoId);
         }
+        public Task<Medico?> GetByNUtenteAsync(string nUtente) =>
+            _context.Medicos.AsNoTracking().FirstOrDefaultAsync(m => m.NUtente == nUtente);
     }
 }
