@@ -25,15 +25,12 @@ namespace ConsultaPlus.API.Controllers
         {
             try
             {
-                //valida as credenciais e gera um token
                 var token = await _authService.LoginAsync(loginDto.NUtente, loginDto.Password);
 
-                // Retorna uma resposta 200 OK com o token
                 return Ok(new { Token = token });
             }
             catch (Exception ex)
             {
-                // Retorna 401 se o login falhar
                 return Unauthorized(new { message = ex.Message });
             }
         }
@@ -46,5 +43,41 @@ namespace ConsultaPlus.API.Controllers
             await _authService.LogoutAsync(authHeader);
             return Ok(new { message = "Sessão terminada com sucesso." });
         }
+
+        [HttpPost("forgot-password")]
+        public async Task<IActionResult> Forgot(ForgotPasswordDto dto)
+        {
+            try
+            {
+                var resetToken = await _authService.CreatePasswordResetAsync(dto.Identifier);
+                var ok = !string.IsNullOrWhiteSpace(resetToken);
+                return Ok(new
+                {
+                    message = ok
+                        ? "Se o identificador existir, foi gerado um token de reset."
+                        : "Se o identificador existir, receberás instruções (demo: sem token).",
+                    resetToken = resetToken
+                });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> Reset(ResetPasswordDto dto)
+        {
+            try
+            {
+                await _authService.ResetPasswordAsync(dto.Token, dto.NewPassword);
+                return Ok(new { message = "Password atualizada com sucesso." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
     }
 }
