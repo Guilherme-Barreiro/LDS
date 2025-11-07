@@ -38,19 +38,19 @@ namespace ConsultaPlus.Infrastructure.Services
 
         public async Task<IEnumerable<Consulta>> GetByMedicoAsync(int medicoId, CancellationToken ct = default)
         {
-            var all = await _consultas.GetByMedicoIdAsync(medicoId);
+            var all = await _consultas.GetAllAsync();
             return all.Where(c => c.MedicoId == medicoId);
         }
 
         public async Task<IEnumerable<Consulta>> GetByPacienteAsync(int pacienteId, CancellationToken ct = default)
         {
-            var all = await _consultas.GetByPacienteIdAsync(pacienteId);
+            var all = await _consultas.GetAllAsync();
             return all.Where(c => c.PacienteId == pacienteId);
         }
 
         public async Task<Consulta> CreateAsync(Consulta nova, CancellationToken ct = default)
         {
-            // --- Normalizar data para UTC e bloquear passado ---
+            // normalizar data para UTC nao deixar marcar consultas no passado
             var dataUtc = nova.DataConsulta.Kind == DateTimeKind.Unspecified
                 ? DateTime.SpecifyKind(nova.DataConsulta, DateTimeKind.Utc)
                 : nova.DataConsulta.ToUniversalTime();
@@ -58,17 +58,16 @@ namespace ConsultaPlus.Infrastructure.Services
             if (dataUtc < DateTime.UtcNow)
                 throw new ArgumentException("Nao e possivel marcar consultas no passado.");
 
-            // --- Regra 30 minutos: só hh:00 e hh:30; segundos têm de ser 0 (ms podem existir) ---
+            // consultas apenas podem der de meia em meia hora
             if (dataUtc.Second != 0 || (dataUtc.Minute % 30) != 0)
-                throw new ArgumentException("A consulta deve começar em intervalos de 30 minutos (hh:00 ou hh:30).");
+                throw new ArgumentException("A consulta deve comecar em intervalos de 30 minutos (hh:00 ou hh:30).");
 
             var start = dataUtc;
-            var end = start.AddMinutes(30); // duração fixa
+            var end = start.AddMinutes(30);
 
-            // Guardar a data normalizada
             nova.DataConsulta = start;
 
-            // --- Entidades existem ---
+            // garantir que fk existem
             if (await _pacientes.GetByIdAsync(nova.PacienteId) is null)
                 throw new ArgumentException($"PacienteId {nova.PacienteId} nao existe.");
 
@@ -78,10 +77,7 @@ namespace ConsultaPlus.Infrastructure.Services
             if (await _especialidades.GetByIdAsync(nova.EspecialidadeId) is null)
                 throw new ArgumentException($"EspecialidadeId {nova.EspecialidadeId} nao existe.");
 
-            if (nova.SalaId != 0 && await _salas.GetByIdAsync(nova.SalaId) is null)
-                throw new ArgumentException($"SalaId {nova.SalaId} nao existe.");
-
-            // --- Médico tem a especialidade pedida ---
+            // mdico tem a especialidade pedida
             var medicoTemEspecialidade = await _db.EspecialidadesMedico
                 .AsNoTracking()
                 .AnyAsync(em => em.MedicoId == nova.MedicoId &&
@@ -90,7 +86,7 @@ namespace ConsultaPlus.Infrastructure.Services
             if (!medicoTemEspecialidade)
                 throw new ArgumentException("O medico nao possui a especialidade selecionada.");
 
-            // --- Dentro do horário de trabalho do médico (respeitando exceções) ---
+            // dentro do horario de trabalho
             static string DiaSemanaPt(DateTime d) => d.DayOfWeek switch
             {
                 DayOfWeek.Monday => "Seg",
@@ -105,7 +101,6 @@ namespace ConsultaPlus.Infrastructure.Services
 
             var dia = DiaSemanaPt(start);
 
-            // horários do dia
             var horariosDia = await _db.HorariosTrabalhoMedicos
                 .AsNoTracking()
                 .Where(h => h.MedicoId == nova.MedicoId && h.DiaSemana == dia)
@@ -116,9 +111,8 @@ namespace ConsultaPlus.Infrastructure.Services
                 end.TimeOfDay <= h.HoraFim);
 
             if (!dentroHorario)
-                throw new ArgumentException("Fora do horario de trabalho do medico.");
+                throw new ArgumentException("Fora do horário de trabalho do médico.");
 
-            // exceções no dia (tratamos qualquer exceção como bloqueio se houver sobreposição)
             var excecoesDia = await _db.HorariosExcecaoMedicos
                 .AsNoTracking()
                 .Where(x => x.MedicoId == nova.MedicoId && x.Data.Date == start.Date)
@@ -131,7 +125,7 @@ namespace ConsultaPlus.Infrastructure.Services
             if (bloqueadoPorExcecao)
                 throw new ArgumentException("Indisponivel devido a excecao na agenda do medico.");
 
-            // --- Sem sobreposição com consultas do mesmo médico (qualquer especialidade) ---
+            // sem sobreposicoa com consultas do msemo medico
             var overlap = await _db.Consultas
                 .AsNoTracking()
                 .AnyAsync(c => c.MedicoId == nova.MedicoId &&
@@ -139,9 +133,23 @@ namespace ConsultaPlus.Infrastructure.Services
                                c.DataConsulta.AddMinutes(c.Duracao) > start, ct);
 
             if (overlap)
-                throw new ArgumentException("O medico já tem uma consulta nesse horario.");
+                throw new ArgumentException("O medico ja tem uma consulta nesse horario.");
 
-            // --- Duração fixa + estado ---
+            var salaLivreId = await _db.Salas
+                .Where(s => !_db.Consultas.Any(c =>
+                    c.SalaId == s.Id &&
+                    c.DataConsulta < end &&
+                    c.DataConsulta.AddMinutes(c.Duracao) > start))
+                .Select(s => s.Id)
+                .OrderBy(id => id)
+                .FirstOrDefaultAsync(ct);
+
+            if (salaLivreId == 0)
+                throw new ArgumentException("Nao ha salas disponiveis nesse horario.");
+
+            nova.SalaId = salaLivreId;
+
+            // Duracao fixa e estado 
             nova.Duracao = 30;
             nova.Estado = "Confirmada";
 

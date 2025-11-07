@@ -59,10 +59,8 @@ namespace ConsultaPlus.API.Controllers
                 {
                     PacienteId = dto.PacienteId,
                     MedicoId = dto.MedicoId,
-                    SalaId = dto.SalaId,
                     EspecialidadeId = dto.EspecialidadeId,
                     DataConsulta = dto.DataConsulta
-                    // Duracao/Estado são definidos no serviço (regras de negócio)
                 };
 
                 var c = await _service.CreateAsync(nova);
