@@ -19,7 +19,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
 
-        [HttpPost("add")]
+        [HttpPost]
         public async Task<IActionResult> AddEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
         {
             try
@@ -41,7 +41,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpDelete("delete")]
+        [HttpDelete]
         public async Task<IActionResult> DeleteEspecialidadeMedico([FromBody] EspecialidadeMedicoDTO requestDto)
         {
             try
@@ -63,7 +63,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpGet("medicos-por-especialidade/{especialidadeId}")]
+        [HttpGet("especialidade/{especialidadeId}")]
         public async Task<IActionResult> GetMedicosByEspecialidadeId(int especialidadeId)
         {
 
@@ -78,7 +78,7 @@ namespace ConsultaPlus.API.Controllers
 
         }
 
-        [HttpGet("especialidades-por-medico/{medicoId}")]
+        [HttpGet("medico/{medicoId}")]
         public async Task<IActionResult> GetEspecialidadesByMedicoId(int medicoId)
         {
 

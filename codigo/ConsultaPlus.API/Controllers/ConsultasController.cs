@@ -86,6 +86,36 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
+        //api/consultas/{id}/cancelar/paciente
+        [HttpPost("{id:int}/cancelar/paciente")]
+        public async Task<IActionResult> CancelarPorPaciente(int id, [FromQuery] int pacienteId)
+        {
+            try
+            {
+                var ok = await _service.CancelByPacienteAsync(id, pacienteId);
+                return ok ? NoContent() : NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        //api/consultas/{id}/cancelar/medico
+        [HttpPost("{id:int}/cancelar/medico")]
+        public async Task<IActionResult> CancelarPorMedico(int id, [FromQuery] int medicoId)
+        {
+            try
+            {
+                var ok = await _service.CancelByMedicoAsync(id, medicoId);
+                return ok ? NoContent() : NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
         [HttpDelete("{id:int}")]
         public async Task<IActionResult> Delete(int id)
         {

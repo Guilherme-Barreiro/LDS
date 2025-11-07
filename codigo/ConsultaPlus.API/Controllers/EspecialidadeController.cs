@@ -17,7 +17,7 @@ namespace ConsultaPlus.API.Controllers
             _especialidadeService = especialidadeService;
         }
 
-        [HttpPost("add")]
+        [HttpPost]
         public async Task<IActionResult> Create([FromBody] CreateEspecialidadeDTO requestDto)
         {
             try
@@ -46,7 +46,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpDelete("delete/{id}")]
+        [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(int id)
         {
             try
@@ -68,7 +68,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpPut("update/{id}")]
+        [HttpPut("{id}")]
         public async Task<IActionResult> Update(int id, [FromBody] UpdateEspecialidadeDTO requestDto)
         {
             try
@@ -95,7 +95,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        [HttpGet("get-id/{id}")]
+        [HttpGet("{id}")]
         public async Task<IActionResult> GetById(int id)
         {
             var ent = await _especialidadeService.GetByIdAsync(id);
@@ -106,16 +106,16 @@ namespace ConsultaPlus.API.Controllers
         }
 
         [HttpGet("search")]
-        public async Task<IActionResult> Search([FromQuery] string termo)
+        public async Task<IActionResult> Search([FromQuery] string nome)
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(termo))
+                if (string.IsNullOrWhiteSpace(nome))
                 {
-                    return BadRequest(new { message = "Termo de pesquisa e obrigatorio." });
+                    return BadRequest(new { message = "Nome e obrigatorio." });
                 }
 
-                var resultados = await _especialidadeService.SearchAsync(termo);
+                var resultados = await _especialidadeService.SearchAsync(nome);
                 if (!resultados.Any())
                     return NotFound(new { message = "Nenhuma especialidade encontrada." });
 
@@ -129,7 +129,7 @@ namespace ConsultaPlus.API.Controllers
         }
 
 
-        [HttpGet("get-all")]
+        [HttpGet]
         public async Task<IActionResult> GetAll()
         {
             var todas = await _especialidadeService.GetAllAsync();

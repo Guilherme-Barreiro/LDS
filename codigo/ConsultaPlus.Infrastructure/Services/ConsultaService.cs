@@ -12,6 +12,7 @@ namespace ConsultaPlus.Infrastructure.Services
         private readonly IPacienteRepository _pacientes;
         private readonly ISalaRepository _salas;
         private readonly IEspecialidadeService _especialidades;
+        private readonly INotificacaoRepository _notificacoes;
         private readonly ApplicationDbContext _db;
 
         public ConsultaService(
@@ -20,7 +21,8 @@ namespace ConsultaPlus.Infrastructure.Services
             IPacienteRepository pacientes,
             ISalaRepository salas,
             IEspecialidadeService especialidades,
-            ApplicationDbContext db)
+            ApplicationDbContext db,
+            INotificacaoRepository notificacoes)
         {
             _consultas = consultas;
             _medicos = medicos;
@@ -28,6 +30,7 @@ namespace ConsultaPlus.Infrastructure.Services
             _salas = salas;
             _especialidades = especialidades;
             _db = db;
+            _notificacoes = notificacoes;
         }
 
         public Task<Consulta?> GetByIdAsync(int id, CancellationToken ct = default)
@@ -125,19 +128,22 @@ namespace ConsultaPlus.Infrastructure.Services
             if (bloqueadoPorExcecao)
                 throw new ArgumentException("Indisponivel devido a excecao na agenda do medico.");
 
-            // sem sobreposicoa com consultas do msemo medico
+            // sem sobreposicoa com consultas do msemo medico (ignorar canceladas)
             var overlap = await _db.Consultas
                 .AsNoTracking()
                 .AnyAsync(c => c.MedicoId == nova.MedicoId &&
+                               c.Estado != "Cancelada" &&
                                c.DataConsulta < end &&
                                c.DataConsulta.AddMinutes(c.Duracao) > start, ct);
 
             if (overlap)
                 throw new ArgumentException("O medico ja tem uma consulta nesse horario.");
 
+            // escolher automaticamente uma sala livre (ignorar canceladas)
             var salaLivreId = await _db.Salas
                 .Where(s => !_db.Consultas.Any(c =>
                     c.SalaId == s.Id &&
+                    c.Estado != "Cancelada" &&
                     c.DataConsulta < end &&
                     c.DataConsulta.AddMinutes(c.Duracao) > start))
                 .Select(s => s.Id)
@@ -155,6 +161,60 @@ namespace ConsultaPlus.Infrastructure.Services
 
             await _consultas.AddAsync(nova);
             return nova;
+        }
+
+        public async Task<bool> CancelByPacienteAsync(int consultaId, int pacienteId, CancellationToken ct = default)
+        {
+            var c = await _consultas.GetByIdAsync(consultaId);
+            if (c is null) return false;
+
+            // valida que a consulta pertence ao paciente (simples)
+            if (c.PacienteId != pacienteId)
+                throw new ArgumentException("Consulta nao pertence a este paciente.");
+
+            if (c.Estado == "Cancelada") return true; // idempotente
+
+            c.Estado = "Cancelada";
+            await _consultas.UpdateAsync(c);
+
+            // notificar medico
+            var n = new Notificacao
+            {
+                Categoria = "Cancelamento",
+                Descricao = $"Paciente {pacienteId} cancelou a consulta {consultaId}.",
+                MedicoId = c.MedicoId,
+                PacienteId = null // destinatário é o médico
+            };
+            await _notificacoes.AddAsync(n);
+
+            return true;
+        }
+
+        public async Task<bool> CancelByMedicoAsync(int consultaId, int medicoId, CancellationToken ct = default)
+        {
+            var c = await _consultas.GetByIdAsync(consultaId);
+            if (c is null) return false;
+
+            // valida que a consulta pertence ao medico (simples)
+            if (c.MedicoId != medicoId)
+                throw new ArgumentException("Consulta nao pertence a este medico.");
+
+            if (c.Estado == "Cancelada") return true; // idempotente
+
+            c.Estado = "Cancelada";
+            await _consultas.UpdateAsync(c);
+
+            // notificar paciente
+            var n = new Notificacao
+            {
+                Categoria = "Cancelamento",
+                Descricao = $"Medico {medicoId} cancelou a consulta {consultaId}.",
+                MedicoId = null, // destinatário é o paciente
+                PacienteId = c.PacienteId
+            };
+            await _notificacoes.AddAsync(n);
+
+            return true;
         }
 
         public async Task DeleteAsync(int id, CancellationToken ct = default)
