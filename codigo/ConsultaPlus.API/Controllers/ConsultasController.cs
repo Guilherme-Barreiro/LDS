@@ -60,8 +60,8 @@ namespace ConsultaPlus.API.Controllers
             try
             {
                 var salaId = await _context.Salas
-                .Select(s => s.Id)
-                .FirstOrDefaultAsync();
+                    .Select(s => s.Id)
+                    .FirstOrDefaultAsync();
 
                 if (salaId == 0)
                     return BadRequest(new { message = "Nenhuma sala disponível para associar à consulta." });
@@ -86,7 +86,7 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        //api/consultas/{id}/cancelar/paciente
+        // api/consultas/{id}/cancelar/paciente
         [HttpPost("{id:int}/cancelar/paciente")]
         public async Task<IActionResult> CancelarPorPaciente(int id, [FromQuery] int pacienteId)
         {
@@ -101,13 +101,43 @@ namespace ConsultaPlus.API.Controllers
             }
         }
 
-        //api/consultas/{id}/cancelar/medico
+        // api/consultas/{id}/cancelar/medico
         [HttpPost("{id:int}/cancelar/medico")]
         public async Task<IActionResult> CancelarPorMedico(int id, [FromQuery] int medicoId)
         {
             try
             {
                 var ok = await _service.CancelByMedicoAsync(id, medicoId);
+                return ok ? NoContent() : NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // api/consultas/{id}/atraso/medico?medicoId=3002
+        [HttpPost("{id:int}/atraso/medico")]
+        public async Task<IActionResult> AtrasoMedico(int id, [FromQuery] int medicoId)
+        {
+            try
+            {
+                var ok = await _service.MarkLateByMedicoAsync(id, medicoId);
+                return ok ? NoContent() : NotFound();
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // api/consultas/{id}/atraso/paciente?pacienteId=2
+        [HttpPost("{id:int}/atraso/paciente")]
+        public async Task<IActionResult> AtrasoPaciente(int id, [FromQuery] int pacienteId)
+        {
+            try
+            {
+                var ok = await _service.MarkLateByPacienteAsync(id, pacienteId);
                 return ok ? NoContent() : NotFound();
             }
             catch (ArgumentException ex)

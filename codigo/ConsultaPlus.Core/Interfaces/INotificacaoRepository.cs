@@ -12,5 +12,6 @@ namespace ConsultaPlus.Core.Interfaces
         Task<IEnumerable<Notificacao>> GetByMedicoAsync(int medicoId, bool unreadOnly = false);
         Task<IEnumerable<Notificacao>> GetByPacienteAsync(int pacienteId, bool unreadOnly = false);
         Task<bool> MarcarComoLidaAsync(int id, bool lida = true);
+        Task<bool> ExistsAsync(string categoria, string descricao, int? medicoId, int? pacienteId);
     }
 }

@@ -63,7 +63,6 @@ namespace ConsultaPlus.Infrastructure.Services
             {
                 var slotEnd = cursor.AddMinutes(SLOT_MINUTES);
 
-                // FIX: nunca aceitar slots que atravessam a meia-noite
                 if (slotEnd.Date != cursor.Date)
                 {
                     cursor = new DateTime(cursor.Year, cursor.Month, cursor.Day, 0, 0, 0, DateTimeKind.Utc)

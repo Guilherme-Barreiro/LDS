@@ -36,5 +36,14 @@ namespace ConsultaPlus.Infrastructure.Repositories
             await _context.SaveChangesAsync();
             return true;
         }
+
+        public async Task<bool> ExistsAsync(string categoria, string descricao, int? medicoId, int? pacienteId)
+        {
+            return await _context.Notificacoes.AsNoTracking().AnyAsync(n =>
+                n.Categoria == categoria &&
+                n.Descricao == descricao &&
+                n.MedicoId == medicoId &&
+                n.PacienteId == pacienteId);
+        }
     }
 }

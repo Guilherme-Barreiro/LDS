@@ -89,7 +89,7 @@ namespace ConsultaPlus.Infrastructure.Services
             if (!medicoTemEspecialidade)
                 throw new ArgumentException("O medico nao possui a especialidade selecionada.");
 
-            // dentro do horario de trabalho
+            // dentro do horario de trabalho (com exceções)
             static string DiaSemanaPt(DateTime d) => d.DayOfWeek switch
             {
                 DayOfWeek.Monday => "Seg",
@@ -109,21 +109,29 @@ namespace ConsultaPlus.Infrastructure.Services
                 .Where(h => h.MedicoId == nova.MedicoId && h.DiaSemana == dia)
                 .ToListAsync(ct);
 
-            var dentroHorario = horariosDia.Any(h =>
-                start.TimeOfDay >= h.HoraInicio &&
-                end.TimeOfDay <= h.HoraFim);
-
-            if (!dentroHorario)
-                throw new ArgumentException("Fora do horário de trabalho do médico.");
-
             var excecoesDia = await _db.HorariosExcecaoMedicos
                 .AsNoTracking()
                 .Where(x => x.MedicoId == nova.MedicoId && x.Data.Date == start.Date)
                 .ToListAsync(ct);
 
+            bool dentroHorarioBase = horariosDia.Any(h =>
+                start.TimeOfDay >= h.HoraInicio &&
+                end.TimeOfDay <= h.HoraFim);
+
+            // permitir janelas extra (IsReducao == false)
+            bool dentroExcecaoExtra = excecoesDia.Any(x =>
+                !x.IsReducao &&
+                !(end.TimeOfDay <= x.HoraInicio || start.TimeOfDay >= x.HoraFim));
+
+            bool dentroHorarioFinal = dentroHorarioBase || dentroExcecaoExtra;
+
+            if (!dentroHorarioFinal)
+                throw new ArgumentException("Fora do horário de trabalho do médico.");
+
+            // bloquear apenas reduções (IsReducao == true)
             var bloqueadoPorExcecao = excecoesDia.Any(x =>
-                !(end.TimeOfDay <= x.HoraInicio ||
-                  start.TimeOfDay >= x.HoraFim));
+                x.IsReducao &&
+                !(end.TimeOfDay <= x.HoraInicio || start.TimeOfDay >= x.HoraFim));
 
             if (bloqueadoPorExcecao)
                 throw new ArgumentException("Indisponivel devido a excecao na agenda do medico.");
@@ -168,7 +176,6 @@ namespace ConsultaPlus.Infrastructure.Services
             var c = await _consultas.GetByIdAsync(consultaId);
             if (c is null) return false;
 
-            // valida que a consulta pertence ao paciente (simples)
             if (c.PacienteId != pacienteId)
                 throw new ArgumentException("Consulta nao pertence a este paciente.");
 
@@ -177,15 +184,17 @@ namespace ConsultaPlus.Infrastructure.Services
             c.Estado = "Cancelada";
             await _consultas.UpdateAsync(c);
 
-            // notificar medico
-            var n = new Notificacao
+            var descricao = $"CANCELAMENTO_PACIENTE|consulta:{c.Id}|inicio:{c.DataConsulta:O}|paciente:{pacienteId}";
+            if (!await _notificacoes.ExistsAsync("Cancelamento", descricao, c.MedicoId, null))
             {
-                Categoria = "Cancelamento",
-                Descricao = $"Paciente {pacienteId} cancelou a consulta {consultaId}.",
-                MedicoId = c.MedicoId,
-                PacienteId = null // destinatário é o médico
-            };
-            await _notificacoes.AddAsync(n);
+                await _notificacoes.AddAsync(new Notificacao
+                {
+                    Categoria = "Cancelamento",
+                    Descricao = descricao,
+                    MedicoId = c.MedicoId,
+                    PacienteId = null
+                });
+            }
 
             return true;
         }
@@ -195,7 +204,6 @@ namespace ConsultaPlus.Infrastructure.Services
             var c = await _consultas.GetByIdAsync(consultaId);
             if (c is null) return false;
 
-            // valida que a consulta pertence ao medico (simples)
             if (c.MedicoId != medicoId)
                 throw new ArgumentException("Consulta nao pertence a este medico.");
 
@@ -204,15 +212,71 @@ namespace ConsultaPlus.Infrastructure.Services
             c.Estado = "Cancelada";
             await _consultas.UpdateAsync(c);
 
-            // notificar paciente
-            var n = new Notificacao
+            var descricao = $"CANCELAMENTO_MEDICO|consulta:{c.Id}|inicio:{c.DataConsulta:O}|medico:{medicoId}";
+            if (!await _notificacoes.ExistsAsync("Cancelamento", descricao, null, c.PacienteId))
             {
-                Categoria = "Cancelamento",
-                Descricao = $"Medico {medicoId} cancelou a consulta {consultaId}.",
-                MedicoId = null, // destinatário é o paciente
-                PacienteId = c.PacienteId
-            };
-            await _notificacoes.AddAsync(n);
+                await _notificacoes.AddAsync(new Notificacao
+                {
+                    Categoria = "Cancelamento",
+                    Descricao = descricao,
+                    MedicoId = null,
+                    PacienteId = c.PacienteId
+                });
+            }
+
+            return true;
+        }
+
+        public async Task<bool> MarkLateByMedicoAsync(int consultaId, int medicoId, CancellationToken ct = default)
+        {
+            var c = await _consultas.GetByIdAsync(consultaId);
+            if (c is null) return false;
+            if (c.MedicoId != medicoId)
+                throw new ArgumentException("Consulta nao pertence a este medico.");
+
+            var start = c.DataConsulta;
+            var endOfDay = new DateTime(start.Year, start.Month, start.Day, 23, 59, 59, DateTimeKind.Utc);
+
+            var proximas = await _consultas.GetByMedicoRangeAsync(medicoId, start, endOfDay, true, ct);
+
+            foreach (var x in proximas)
+            {
+                var desc = $"ATRASO_MEDICO|consulta:{x.Id}|inicio:{x.DataConsulta:O}|medico:{medicoId}";
+                var exists = await _notificacoes.ExistsAsync("AtrasoMedico", desc, null, x.PacienteId);
+                if (!exists)
+                {
+                    await _notificacoes.AddAsync(new Notificacao
+                    {
+                        Categoria = "AtrasoMedico",
+                        Descricao = desc,
+                        PacienteId = x.PacienteId,
+                        MedicoId = null
+                    });
+                }
+            }
+
+            return true;
+        }
+
+        public async Task<bool> MarkLateByPacienteAsync(int consultaId, int pacienteId, CancellationToken ct = default)
+        {
+            var c = await _consultas.GetByIdAsync(consultaId);
+            if (c is null) return false;
+            if (c.PacienteId != pacienteId)
+                throw new ArgumentException("Consulta nao pertence a este paciente.");
+
+            var desc = $"ATRASO_PACIENTE|consulta:{c.Id}|inicio:{c.DataConsulta:O}|paciente:{pacienteId}";
+            var exists = await _notificacoes.ExistsAsync("AtrasoPaciente", desc, c.MedicoId, null);
+            if (!exists)
+            {
+                await _notificacoes.AddAsync(new Notificacao
+                {
+                    Categoria = "AtrasoPaciente",
+                    Descricao = desc,
+                    MedicoId = c.MedicoId,
+                    PacienteId = null
+                });
+            }
 
             return true;
         }

@@ -19,5 +19,7 @@ namespace ConsultaPlus.Core.Interfaces
 
         Task<bool> CancelByPacienteAsync(int consultaId, int pacienteId, CancellationToken ct = default);
         Task<bool> CancelByMedicoAsync(int consultaId, int medicoId, CancellationToken ct = default);
+        Task<bool> MarkLateByMedicoAsync(int consultaId, int medicoId, CancellationToken ct = default);
+        Task<bool> MarkLateByPacienteAsync(int consultaId, int pacienteId, CancellationToken ct = default);
     }
 }
