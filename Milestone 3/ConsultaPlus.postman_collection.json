@@ -1,0 +1,2045 @@
+{
+	"info": {
+		"_postman_id": "44e3f9c8-5826-4139-bca9-6a21736a26b6",
+		"name": "ConsultaPlus",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "40075475"
+	},
+	"item": [
+		{
+			"name": "HorariosAdmin",
+			"item": [
+				{
+					"name": "Criar horário",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript",
+								"packages": {},
+								"requests": {}
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{token}}",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"diaSemana\": \"Sex\",\r\n  \"horaInicio\": \"10:00:00\",\r\n  \"horaFim\": \"11:00:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/4/horario",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"4",
+								"horario"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter todos os horários de um médico",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/4/horario",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"4",
+								"horario"
+							],
+							"query": [
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar exceção",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text",
+								"disabled": true
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"data\": \"2025-11-04\",\r\n  \"horaInicio\": \"09:00:00\",\r\n  \"horaFim\": \"19:00:00\",\r\n  \"isReducao\": true,\r\n  \"motivo\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/4/excecoes",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"4",
+								"excecoes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter todas as exceções de um médico",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/2/excecoes",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"2",
+								"excecoes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter horário específico",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/2/horario/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"2",
+								"horario",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar horário",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"diaSemana\": \"Sab\",\r\n  \"horaInicio\": \"01:00:00\",\r\n  \"horaFim\": \"02:00:00\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/2/horario/1002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"2",
+								"horario",
+								"1002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover horário",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/2/horario/1002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"2",
+								"horario",
+								"1002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter exceção específica",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/2/excecoes/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"2",
+								"excecoes",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar exceção",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"data\": \"2025-11-05\",\r\n  \"horaInicio\": \"14:00:00\",\r\n  \"horaFim\": \"15:00:00\",\r\n  \"isReducao\": true,\r\n  \"motivo\": \"asdasd\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/2/excecoes/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"2",
+								"excecoes",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover exceção",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/admin/medicos/2/excecoes/1002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"admin",
+								"medicos",
+								"2",
+								"excecoes",
+								"1002"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Admins",
+			"item": [
+				{
+					"name": "Criar primeiro admin",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"admin\",\r\n  \"password\": \"admin\",\r\n  \"email\": \"admin@admin.admin\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Admins/seed-first-admin",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Admins",
+								"seed-first-admin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar mais admins",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"username\": \"admi2n\",\r\n  \"password\": \"admi2n\",\r\n  \"email\": \"admi2n@admi2n.admi2n\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Admins",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Admins"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Auth",
+			"item": [
+				{
+					"name": "Login",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Auth/login",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Auth",
+								"login"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Auth/logout",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Auth",
+								"logout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Esqueceu password?",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"identifier\": \"NUtente\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Auth/forgot-password",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Auth",
+								"forgot-password"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Resetar password",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"token\": \"token\",\r\n  \"newPassword\": \"NovaPassword\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Auth/reset-password",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Auth",
+								"reset-password"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Consultas",
+			"item": [
+				{
+					"name": "Obter Consulta",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar Consulta",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"pacienteId\": 2,\r\n  \"medicoId\": 2,\r\n  \"salaId\": 1,\r\n  \"especialidadeId\": 1,\r\n  \"dataConsulta\": \"2025-11-05T15:27:24.352Z\",\r\n  \"duracao\": 20,\r\n  \"estado\": \"string\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter Consulta por ID",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas/3008",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas",
+								"3008"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover Consulta",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas/3008",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas",
+								"3008"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter Consultas por medico",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas/medico/2",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas",
+								"medico",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter Consultas por paciente",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json",
+								"type": "text"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer <>",
+								"type": "text"
+							}
+						],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas/paciente/2",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas",
+								"paciente",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancelar Consulta por patiente",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas/1/cancelar/paciente?pacienteId=1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas",
+								"1",
+								"cancelar",
+								"paciente"
+							],
+							"query": [
+								{
+									"key": "pacienteId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Cancelar Consulta por Medico",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas/1/cancelar/medico?medicoId=1\n",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas",
+								"1",
+								"cancelar",
+								"medico"
+							],
+							"query": [
+								{
+									"key": "medicoId",
+									"value": "1\n"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar atraso por paciente",
+					"request": {
+						"method": "POST",
+						"header": []
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar atraso por medico",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Consultas/1/cancelar/paciente?pacienteId=1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Consultas",
+								"1",
+								"cancelar",
+								"paciente"
+							],
+							"query": [
+								{
+									"key": "pacienteId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Especialidade",
+			"item": [
+				{
+					"name": "Criar Especialidade",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"pediatria\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Especialidade",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Especialidade"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter todas as especialidades",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Especialidade",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Especialidade"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover especialidade",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Especialidade/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Especialidade",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar especialidade",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"pediatria2\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Especialidade/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Especialidade",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter especialidade por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Especialidade/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Especialidade",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter especialidade por nome",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Especialidade/search?nome=pediatria",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Especialidade",
+								"search"
+							],
+							"query": [
+								{
+									"key": "nome",
+									"value": "pediatria"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "EspecialidadeMedico",
+			"item": [
+				{
+					"name": "Associar uma especialidade a um médico",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"medicoId\": 1,\r\n  \"especialidadeId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/EspecialidadeMedico",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"EspecialidadeMedico"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover especialidade de um médico",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"medicoId\": 1,\r\n  \"especialidadeId\": 1\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/EspecialidadeMedico",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"EspecialidadeMedico"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter todas as especialidades de um médico",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/EspecialidadeMedico/especialidade/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"EspecialidadeMedico",
+								"especialidade",
+								"1"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter todos os médicos de uma a especialidade",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/EspecialidadeMedico/medico/1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"EspecialidadeMedico",
+								"medico",
+								"1"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Medicos",
+			"item": [
+				{
+					"name": "Obter todos os médicos",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar médico",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nomeCompleto\": \"Joao Faria\",\r\n  \"telemovel\": \"457457457\",\r\n  \"email\": \"joao@faria.com\",\r\n  \"nUtente\": \"123456789\",\r\n  \"password\": \"joaofaria\",\r\n  \"dataNascimento\": \"2005-11-05T18:49:36.115Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter médico por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos/2",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar médico",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nomeCompleto\": \"Joao Faria 2\",\r\n  \"telemovel\": \"4234234\",\r\n  \"email\": \"asidbu@afasf.a\",\r\n  \"dataNascimento\": \"2001-11-05T18:51:39.980Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos/2",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover médico",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos/5002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos",
+								"5002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter médico por nome",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos/search?nome=joao",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos",
+								"search"
+							],
+							"query": [
+								{
+									"key": "nome",
+									"value": "joao"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter disponibilidade entre x dia a y dia",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos/6002/disponibilidade?from=2025-11-07T23%3A06%3A21.645Z&to=2025-12-07T23%3A06%3A21.645Z",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos",
+								"6002",
+								"disponibilidade"
+							],
+							"query": [
+								{
+									"key": "from",
+									"value": "2025-11-07T23%3A06%3A21.645Z"
+								},
+								{
+									"key": "to",
+									"value": "2025-12-07T23%3A06%3A21.645Z"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter x slots de disponibilidade",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Medicos/6002/proximos-slots?count=10",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Medicos",
+								"6002",
+								"proximos-slots"
+							],
+							"query": [
+								{
+									"key": "count",
+									"value": "10"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Notificacoes",
+			"item": [
+				{
+					"name": "Obter todas as notificações",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Notificacoes?medicoId=2&unreadOnly=false",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Notificacoes"
+							],
+							"query": [
+								{
+									"key": "medicoId",
+									"value": "2"
+								},
+								{
+									"key": "unreadOnly",
+									"value": "false"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar notificação",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"categoria\": \"Cancelamento\",\r\n  \"descricao\": \"A sua consulta para dia 09-10-2025 foi cancelada\",\r\n  \"medicoId\": 2\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Notificacoes",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Notificacoes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter notificação por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Notificacoes/2007",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Notificacoes",
+								"2007"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar notificação",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"categoria\": \"cancelada\",\r\n  \"descricao\": \"consulta cancelada\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Notificacoes/2007",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Notificacoes",
+								"2007"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover notificação",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Notificacoes/2007",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Notificacoes",
+								"2007"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Marcar notificação como lida",
+					"request": {
+						"method": "PATCH",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Notificacoes/3/ler?Lida=true",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Notificacoes",
+								"3",
+								"ler"
+							],
+							"query": [
+								{
+									"key": "Lida",
+									"value": "true"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Pacientes",
+			"item": [
+				{
+					"name": "Obter todos os pacientes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Pacientes",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar paciente",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nUtente\": \"123456789\",\r\n  \"password\": \"joao alves\",\r\n  \"nomeCompleto\": \"joao alves\",\r\n  \"nif\": \"123456789\",\r\n  \"telemovel\": \"123456789\",\r\n  \"morada\": \"rua dali do lado\",\r\n  \"email\": \"joao@alves.com\",\r\n  \"dataNascimento\": \"2005-11-05T20:20:24.796Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Pacientes",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Pacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter paciente por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Pacientes/2",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Pacientes",
+								"2"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar paciente",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nomeCompleto\": \"joao alves\",\r\n  \"nif\": \"123456789\",\r\n  \"telemovel\": \"123456789\",\r\n  \"morada\": \"rua dali do lado\",\r\n  \"email\": \"joao@alves.com\",\r\n  \"dataNascimento\": \"2005-11-05T20:20:24.796Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Pacientes/37",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Pacientes",
+								"37"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover paciente",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Pacientes/36",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Pacientes",
+								"36"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Relatorios",
+			"item": [
+				{
+					"name": "Consultas por período",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Relatorio/consultas-por-periodo?DataInicio=2025-10-01&DataFim=2025-12-01&MedicoId=6002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Relatorio",
+								"consultas-por-periodo"
+							],
+							"query": [
+								{
+									"key": "DataInicio",
+									"value": "2025-10-01"
+								},
+								{
+									"key": "DataFim",
+									"value": "2025-12-01"
+								},
+								{
+									"key": "MedicoId",
+									"value": "6002"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Taxa de não comparecimento",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Relatorio/taxa-nao-comparecimento?DataInicio=2025-10-01&DataFim=2025-12-01&MedicoId=6002&EspecialidadeId=1",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Relatorio",
+								"taxa-nao-comparecimento"
+							],
+							"query": [
+								{
+									"key": "DataInicio",
+									"value": "2025-10-01"
+								},
+								{
+									"key": "DataFim",
+									"value": "2025-12-01"
+								},
+								{
+									"key": "MedicoId",
+									"value": "6002"
+								},
+								{
+									"key": "EspecialidadeId",
+									"value": "1"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Salas",
+			"item": [
+				{
+					"name": "Obter todas as salas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Salas",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Salas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Criar sala",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nome\": \"sala 4\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/Salas",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Salas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter sala por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Salas/1002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Salas",
+								"1002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover sala",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Salas/2003",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Salas",
+								"2003"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Procurar salas",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/Salas/search?nome=sala",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"Salas",
+								"search"
+							],
+							"query": [
+								{
+									"key": "nome",
+									"value": "sala"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "SnsPacientes",
+			"item": [
+				{
+					"name": "Criar registo SNS de paciente",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nUtente\": \"1234256789\",\r\n  \"nomeCompleto\": \"João Martins\",\r\n  \"nif\": \"245879630\",\r\n  \"telemovel\": \"912345678\",\r\n  \"morada\": \"Rua das Flores 25, Porto\",\r\n  \"email\": \"joao.martins@example.com\",\r\n  \"dataNascimento\": \"1990-07-14T00:00:00Z\"\r\n}\r\n",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/SnsPacientes",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"SnsPacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter todos os pacientes SNS",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/SnsPacientes",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"SnsPacientes"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter paciente SNS por ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/SnsPacientes/1002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"SnsPacientes",
+								"1002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Atualizar paciente SNS",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n  \"nomeCompleto\": \"João Maaaaaaaaaaaaartins\",\r\n  \"nif\": \"245879630\",\r\n  \"telemovel\": \"912345678\",\r\n  \"morada\": \"Rua das Flores 25, Porto\",\r\n  \"email\": \"joao.martins@example.com\",\r\n  \"dataNascimento\": \"1990-07-14T00:00:00Z\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/SnsPacientes/1002",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"SnsPacientes",
+								"1002"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Remover paciente SNS",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/SnsPacientes/1003",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"SnsPacientes",
+								"1003"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Obter paciente SNS por número de utente",
+					"protocolProfileBehavior": {
+						"disableBodyPruning": true
+					},
+					"request": {
+						"method": "GET",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "https://localhost:7218/api/SnsPacientes/UT900017",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"SnsPacientes",
+								"UT900017"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Importar paciente SNS por número de utente",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "https://localhost:7218/api/SnsPacientes/importar/UT900018",
+							"protocol": "https",
+							"host": [
+								"localhost"
+							],
+							"port": "7218",
+							"path": [
+								"api",
+								"SnsPacientes",
+								"importar",
+								"UT900018"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
